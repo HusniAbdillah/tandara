@@ -445,35 +445,19 @@ The hackathon MVP must prioritize depth over breadth.
 # 9. Product Architecture Overview
 
 ```text
-                         ┌─────────────────────────────┐
-                         │ Tandara Warga               │
-                         │ Resident PWA                │
-                         │ React + Vite + Workbox      │
-                         └──────────────┬──────────────┘
-                                        │ HTTPS API
-                         ┌──────────────▼──────────────┐
-                         │ Tandara API                 │
-                         │ NestJS + Fastify            │
-                         │ Authentication + RBAC       │
-                         └───────┬──────────────┬──────┘
-                                 │              │
-                  ┌──────────────▼──┐      ┌────▼────────────────┐
-                  │ PostgreSQL      │      │ Redis + BullMQ      │
-                  │ PostGIS         │      │ Background Jobs     │
-                  └────────┬────────┘      └────┬────────────────┘
-                           │                    │
-              ┌────────────▼───────┐    ┌───────▼────────────────┐
-              │ S3-compatible storage Object Store │    │ Tandara Worker         │
-              │ Private Media      │    │ AI / Notifications     │
-              └────────────────────┘    │ Imports / Dedupe       │
-                                        └────────────────────────┘
-
-                         ┌─────────────────────────────┐
-                         │ Tandara Posko               │
-                         │ Coordinator Dashboard       │
-                         │ React + Vite                │
-                         └─────────────────────────────┘
+Tandara Warga (resident PWA) ----┐
+                               ├── HTTPS /api ── API ── PostgreSQL/PostGIS
+Tandara Posko (dashboard) ------┘                  │
+                                                 └── durable outbox
+                                                      ↓
+                                               Redis + worker
+                                                      ↓
+                                          Human-reviewed AI suggestions
 ```
+
+Source structure and dependency boundaries are defined in ARCHITECTURE.md.
+API and worker share server modules. Media and production deployment are deferred
+in the three-day simulation MVP; storage will use a maintained S3-compatible adapter.
 
 ---
 
@@ -1455,6 +1439,8 @@ application-network
 └── redis
 
 data-network
+├── api
+├── worker
 ├── postgres
 ├── redis
 └── minio

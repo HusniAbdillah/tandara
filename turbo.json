@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["tooling/typescript/*.json"],
   "tasks": {
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"], "env": ["VITE_API_BASE_URL"] },
     "typecheck": { "dependsOn": ["^build"], "outputs": [] },

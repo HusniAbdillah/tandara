@@ -11,6 +11,11 @@ export const systemInfoSchema = z.strictObject({
   stage: z.literal('foundation'),
 });
 
+export const readinessResponseSchema = z.strictObject({
+  status: z.literal('ready'),
+  dependencies: z.strictObject({ database: z.literal('ok') }),
+});
+
 export const errorResponseSchema = z.strictObject({
   error: z.strictObject({
     code: z.string(),

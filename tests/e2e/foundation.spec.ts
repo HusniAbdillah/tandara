@@ -9,14 +9,10 @@ test('resident shell connects to API and reloads offline without caching API dat
   await expect(page.getByRole('status')).toContainText('API terhubung');
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
-    if (!navigator.serviceWorker.controller) {
-      await new Promise<void>((resolve) =>
-        navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), {
-          once: true,
-        }),
-      );
-    }
   });
+  // A newly installed worker may only control the next navigation.
+  await page.reload();
+  expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   const cachedUrls = await page.evaluate(async () => {
     const urls: string[] = [];
     for (const name of await caches.keys()) {
@@ -28,7 +24,7 @@ test('resident shell connects to API and reloads offline without caching API dat
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Fondasi Tandara Warga' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('API belum terhubung');
+  await expect(page.getByRole('status')).toContainText('Offline');
 });
 
 test('coordinator shell has no service worker and does not contain resident data', async ({
@@ -40,6 +36,7 @@ test('coordinator shell has no service worker and does not contain resident data
   expect(
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
   ).toBe(0);
+  await page.screenshot({ path: 'test-results/posko-desktop.png', fullPage: true });
   await expect(
     page.getByText('Halaman ini belum memuat data warga.', { exact: false }),
   ).toBeVisible();
@@ -55,4 +52,5 @@ test('resident remains usable at mobile width and provides a keyboard skip link'
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
+  await page.screenshot({ path: 'test-results/warga-mobile.png', fullPage: true });
 });

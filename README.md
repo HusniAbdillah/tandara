@@ -6,7 +6,7 @@ arsitektur; autentikasi, laporan, rencana lokal, triage AI, dan sinkronisasi bel
 
 ## Mulai di Windows / PowerShell
 
-Prasyarat: Node.js **22.13.1 atau patch Node 22 yang lebih baru**, pnpm **10.26.2**,
+Prasyarat: Node.js **22.23.3 disarankan** (minimum 22.13.1), pnpm **10.26.2**,
 dan Docker Desktop dengan Linux containers untuk database lokal.
 
 ```powershell
@@ -73,6 +73,8 @@ pnpm db:migrate
 pnpm db:migrate
 pnpm test:integration
 pnpm api:openapi
+pnpm exec playwright install chromium
+pnpm test:e2e
 ```
 
 `pnpm check` menjalankan lint + boundaries, typecheck, pengujian kontrak/config/
@@ -89,6 +91,7 @@ offline plan atau report sync. Dashboard tidak memiliki service worker.
 
 - [Architecture](docs/ARCHITECTURE.md): struktur aktual dan dependency rules.
 - [ADR foundation](docs/adr/0001-foundation.md): keputusan dan batas implementasi.
+- [Validation](docs/VALIDATION.md): hasil pemeriksaan aktual dan batas pengujian.
 - [Implementation Plan](docs/Implementation-Plan.md): pembagian 3 developer dan gates 3 hari.
 - [PRD](docs/PRD.md): kebutuhan produk dan fase.
 - [TDD](docs/TDD.md): desain teknis; fitur yang direncanakan bukan bukti implementasi.

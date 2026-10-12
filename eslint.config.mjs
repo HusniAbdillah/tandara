@@ -56,4 +56,15 @@ export default [
     },
   },
   prettier,
+  {
+    files: [
+      'apps/*-web/src/**/*.{ts,tsx}',
+      'packages/ui/src/**/*.{ts,tsx}',
+      'packages/contracts/src/**/*.ts',
+      'packages/api-client/src/**/*.ts',
+    ],
+    rules: {
+      'no-restricted-globals': ['error', 'process', 'Buffer', 'require', '__dirname', '__filename'],
+    },
+  },
 ];

@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { createApiClient } from '@tandara/api-client';
 import { AppShell, StatusCard } from '@tandara/ui';
+import { useOnlineStatus } from '../../offline/use-online-status.js';
 
 const client = createApiClient({ baseUrl: import.meta.env['VITE_API_BASE_URL'] ?? '/api/v1' });
 
 export function FoundationPage() {
+  const isOnline = useOnlineStatus();
   const system = useQuery({
     queryKey: ['system-info'],
     queryFn: ({ signal }) => client.getSystemInfo(signal),
@@ -20,11 +22,13 @@ export function FoundationPage() {
       <div className="grid">
         <StatusCard title="Koneksi aplikasi">
           <p role="status">
-            {system.isPending
-              ? 'Memeriksa koneksi API…'
-              : system.isError
-                ? 'API belum terhubung. Periksa layanan lokal.'
-                : 'API terhubung · mode simulasi.'}
+            {!isOnline || system.fetchStatus === 'paused'
+              ? 'Offline — Anda melihat app shell tersimpan.'
+              : system.isPending
+                ? 'Memeriksa koneksi API…'
+                : system.isError
+                  ? 'API belum terhubung. Periksa layanan lokal.'
+                  : 'API terhubung · mode simulasi.'}
           </p>
           {system.isError && (
             <button

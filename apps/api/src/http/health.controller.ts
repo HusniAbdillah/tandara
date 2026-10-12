@@ -1,6 +1,6 @@
 import { Controller, Get, Inject, ServiceUnavailableException } from '@nestjs/common';
 import { DatabaseService } from '@tandara/backend';
-import { healthResponseSchema } from '@tandara/contracts';
+import { healthResponseSchema, readinessResponseSchema } from '@tandara/contracts';
 
 @Controller()
 export class HealthController {
@@ -17,6 +17,6 @@ export class HealthController {
       throw new ServiceUnavailableException('Database unavailable.');
     }
     // Redis is not required for basic API readiness. Background processing has its own health.
-    return { status: 'ready', dependencies: { database: 'ok' } };
+    return readinessResponseSchema.parse({ status: 'ready', dependencies: { database: 'ok' } });
   }
 }

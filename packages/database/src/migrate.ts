@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { FileMigrationProvider, Migrator } from 'kysely/migration';
 import { createDatabase } from './client.js';
 
@@ -14,6 +14,7 @@ try {
     provider: new FileMigrationProvider({
       fs,
       path,
+      import: (filePath) => import(pathToFileURL(filePath).href),
       migrationFolder: fileURLToPath(new URL('./migrations/', import.meta.url)),
     }),
   });

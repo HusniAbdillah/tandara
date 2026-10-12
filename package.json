@@ -10,7 +10,7 @@
     "dev": "pnpm build && turbo run dev",
     "build:packages": "turbo run build --filter='./packages/*'",
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "tsc --noEmit -p tooling/tsconfig.json && turbo run typecheck",
     "lint": "eslint . && node tooling/check-boundaries.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

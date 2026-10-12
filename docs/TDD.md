@@ -166,50 +166,22 @@ A modular monolith gives separation of responsibilities in code without creating
 # 5. High-Level System Architecture
 
 ```text
-                                ┌────────────────────────────┐
-                                │      Resident Browser      │
-                                │  Tandara Warga PWA         │
-                                └─────────────┬──────────────┘
-                                              │ HTTPS
-                                ┌─────────────▼──────────────┐
-                                │    Caddy Reverse Proxy     │
-                                │ HTTPS / Routing / Headers  │
-                                └───────┬─────────┬──────────┘
-                                        │         │
-                        ┌───────────────▼───┐ ┌───▼────────────────┐
-                        │ Resident Web App  │ │ Coordinator Web App │
-                        │ React + Vite PWA  │ │ React + Vite        │
-                        └───────────────────┘ └─────────────────────┘
-                                        │
-                                        ▼
-                         ┌──────────────────────────────────┐
-                         │ Tandara API                      │
-                         │ NestJS + Fastify                 │
-                         │ REST API + OpenAPI               │
-                         └───────┬───────────┬──────────────┘
-                                 │           │
-                     ┌───────────▼───┐   ┌───▼─────────────────┐
-                     │ PostgreSQL    │   │ Redis               │
-                     │ + PostGIS     │   │ Cache + Queue       │
-                     └───────┬───────┘   └─────────┬───────────┘
-                             │                     │
-                     ┌───────▼─────────┐    ┌──────▼─────────────┐
-                     │ S3-compatible storage Storage   │    │ Tandara Worker      │
-                     │ Private Media   │    │ BullMQ Consumers    │
-                     └─────────────────┘    ├─────────────────────┤
-                                            │ AI triage           │
-                                            │ duplicate analysis  │
-                                            │ media processing    │
-                                            │ notifications       │
-                                            │ external sync       │
-                                            │ retention jobs      │
-                                            └─────────┬───────────┘
-                                                      │
-                                             ┌────────▼────────┐
-                                             │ AI Provider API  │
-                                             │ Server-side only │
-                                             └─────────────────┘
+Resident browser ------> Caddy / Warga assets
+Coordinator browser ---> Caddy / Posko assets
+Both browser origins --> Caddy /api proxy --> API --> PostgreSQL/PostGIS
+                                                    (source of truth)
+
+Future async slice:
+API transaction -------> report + audit + outbox in PostgreSQL
+Worker dispatcher -----> PostgreSQL outbox --> Redis/BullMQ
+Worker consumer -------> backend operations --> PostgreSQL
+                        sanitization/adapter --> AI provider (optional)
 ```
+
+API and worker share backend code, not an HTTP dependency. PostgreSQL does not
+connect to object storage. A future server storage adapter handles private media.
+The foundation has local API/web processes, PostGIS/Redis Compose services, and
+an idle worker. Caddy is a deployment routing template, not a deployed service.
 
 ---
 

@@ -6,10 +6,11 @@ export default defineConfig({
   forbidOnly: Boolean(process.env['CI']),
   retries: process.env['CI'] ? 1 : 0,
   workers: 2,
-  use: { browserName: 'chromium', trace: 'retain-on-failure' },
+  use: { browserName: 'chromium', trace: 'retain-on-failure', screenshot: 'only-on-failure' },
   webServer: [
     {
       command: 'node --env-file=.env apps/api/dist/main.js',
+      timeout: 120000,
       url: 'http://127.0.0.1:3000/health',
       reuseExistingServer: !process.env['CI'],
     },
