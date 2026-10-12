@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgis/postgis:16-3.5
+        env:
+          POSTGRES_USER: tandara
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: tandara
+        ports: ['55432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tandara -d tandara"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: cp .env.example .env
+      - run: pnpm format:check
+      - run: pnpm check
+      - run: pnpm db:migrate && pnpm db:migrate
+        env:
+          DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
+      - run: pnpm test:integration
+        env:
+          DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
+      - run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json

@@ -2,8 +2,8 @@
 # **TANDARA**  
 ## *From Local Signals to Shared Readiness.*
 
-**Document status:** Development-ready Technical Design Document  
-**Version:** 1.0  
+**Document status:** Foundation implemented; feature designs require the gates in ARCHITECTURE.md  
+**Version:** 1.1  
 **Product stage:** Hackathon MVP → Closed Community Pilot → Multi-region Platform  
 **Primary language:** Bahasa Indonesia  
 **Document language:** English  
@@ -11,7 +11,7 @@
 **Platforms:** Resident PWA, Coordinator Dashboard, Platform Administration Console  
 **Deployment:** Self-hosted VPS with Docker Compose  
 **Primary architecture:** Modular monolith + asynchronous worker  
-**Core technologies:** React, Vite, TypeScript, NestJS, Fastify, PostgreSQL, PostGIS, Redis, BullMQ, MinIO, Caddy  
+**Core technologies:** React, Vite, TypeScript, NestJS, Fastify, PostgreSQL, PostGIS, Redis, BullMQ, S3-compatible storage, Caddy  
 **Source repository model:** TypeScript monorepo  
 **Safety boundary:** Tandara is not an official warning issuer, prediction engine, emergency dispatch system, evacuation command system, or replacement for government authorities and emergency services.
 
@@ -68,7 +68,7 @@ This TDD is deliberately designed for a small student team building a hackathon 
 | TNG-03 | Do not build an in-house machine-learning flood prediction model. |
 | TNG-04 | Do not implement real-time route optimization or “safe route” scoring. |
 | TNG-05 | Do not use client-side API keys for AI, storage, or privileged services. |
-| TNG-06 | Do not expose PostgreSQL, Redis, MinIO, or worker services publicly. |
+| TNG-06 | Do not expose PostgreSQL, Redis, S3-compatible storage, or worker services publicly. |
 | TNG-07 | Do not depend on a live third-party disaster API for the hackathon demo. |
 | TNG-08 | Do not store report images directly as binary data inside PostgreSQL. |
 | TNG-09 | Do not allow AI output to change a report status automatically. |
@@ -87,7 +87,7 @@ This TDD is deliberately designed for a small student team building a hackathon 
 | Database | PostgreSQL + PostGIS | Strong relational consistency, auditing, workflows, and geospatial capability. |
 | Query layer | Kysely + parameterized SQL | Type-safe SQL while preserving full PostGIS flexibility. |
 | Async tasks | Redis + BullMQ | Reliable background processing for AI, media, notifications, and external sync. |
-| Media storage | MinIO, S3-compatible interface | Private object storage controlled by the team, without storing files in the database. |
+| Media storage | S3-compatible storage, S3-compatible interface | Private object storage controlled by the team, without storing files in the database. |
 | Reverse proxy | Caddy | Simple HTTPS, reverse proxy, automated certificate renewal. |
 | PWA/offline | Workbox + IndexedDB + Dexie | Reliable caching, local plans, offline report queue, and drafts. |
 | Maps | MapLibre GL JS | Open-source map rendering, flexible tile-provider support. |
@@ -98,7 +98,7 @@ This TDD is deliberately designed for a small student team building a hackathon 
 
 ---
 
-## 4.2 Why Not Supabase
+## 4.2 Self-hosting Trade-off
 
 Supabase is capable and useful, but Tandara requires strong control over:
 
@@ -113,7 +113,7 @@ Supabase is capable and useful, but Tandara requires strong control over:
 - Self-hosted deployment.
 - Long-term operational flexibility.
 
-For Tandara, self-hosting a modular backend offers clearer architecture and better technical credibility for a system handling community reports and sensitive follow-up requests.
+Self-hosting is an infrastructure ownership choice, not a guarantee of security or credibility. Tandara keeps it for the VPS learning/deployment goal; the three-person team must own patching, backups, monitoring, and recovery. Managed platforms can also support strong migrations, geospatial data, and access controls.
 
 The trade-off is responsibility: the team must manage security updates, backups, monitoring, access controls, and recovery procedures.
 
@@ -192,7 +192,7 @@ A modular monolith gives separation of responsibilities in code without creating
                      └───────┬───────┘   └─────────┬───────────┘
                              │                     │
                      ┌───────▼─────────┐    ┌──────▼─────────────┐
-                     │ MinIO Storage   │    │ Tandara Worker      │
+                     │ S3-compatible storage Storage   │    │ Tandara Worker      │
                      │ Private Media   │    │ BullMQ Consumers    │
                      └─────────────────┘    ├─────────────────────┤
                                             │ AI triage           │
@@ -213,63 +213,47 @@ A modular monolith gives separation of responsibilities in code without creating
 
 # 6. Repository and Monorepo Structure
 
-Use `pnpm workspaces` and `Turborepo`.
+The implemented foundation uses pnpm 10.26.2 workspaces and Turborepo.
+See [ARCHITECTURE.md](ARCHITECTURE.md) and [ADR-0001](adr/0001-foundation.md)
+for the canonical dependency graph, actual structure, and implementation limits.
 
 ```text
 tandara/
 ├── apps/
-│   ├── resident-web/                # Tandara Warga PWA
-│   ├── coordinator-web/             # Tandara Posko dashboard
-│   ├── api/                         # NestJS + Fastify API
-│   └── worker/                      # Background worker
-│
+│   ├── resident-web/          # Browser: app, features, offline
+│   ├── coordinator-web/       # Browser: app, features; no service worker
+│   ├── api/                   # HTTP adapters and Nest bootstrap
+│   └── worker/                # Job adapters and standalone bootstrap
 ├── packages/
-│   ├── contracts/                   # Shared DTOs, Zod schemas, enums
-│   ├── database/                    # Kysely types, migrations, repositories
-│   ├── ui/                          # Shared React components
-│   ├── config/                      # Environment parsing, feature flags
-│   ├── map/                         # Shared MapLibre utilities
-│   ├── security/                    # Permission helpers, token utilities
-│   ├── ai/                          # AI provider abstraction and schemas
-│   └── utils/                       # Shared utilities
-│
+│   ├── contracts/             # Browser-safe public Zod schemas
+│   ├── api-client/            # Fetch transport and response validation
+│   ├── backend/               # Server config, platform, business modules
+│   ├── database/              # Kysely pool/types/migrations, not repositories
+│   └── ui/                    # Presentational React components and CSS
+├── tooling/                   # Shared TS/ESLint and import checks
 ├── infrastructure/
-│   ├── compose/
-│   │   ├── docker-compose.dev.yml
-│   │   ├── docker-compose.prod.yml
-│   │   └── docker-compose.monitoring.yml
-│   ├── caddy/
-│   │   └── Caddyfile
-│   ├── postgres/
-│   │   └── init/
-│   ├── scripts/
-│   │   ├── deploy.sh
-│   │   ├── backup.sh
-│   │   ├── restore.sh
-│   │   └── health-check.sh
-│   └── systemd/
-│       └── tandara-backup.service
-│
-├── docs/
-│   ├── PRD.md
-│   ├── TDD.md
-│   ├── API.md
-│   ├── SECURITY.md
-│   ├── RUNBOOK.md
-│   └── ADR/
-│
-├── .github/
-│   └── workflows/
-│       ├── ci.yml
-│       ├── deploy-staging.yml
-│       └── deploy-production.yml
-│
+│   ├── compose/compose.dev.yml # Local PostGIS/Redis only
+│   └── caddy/Caddyfile         # Routing template, not production deployment
+├── tests/integration/
+├── docs/{adr,api}/
+├── .github/workflows/ci.yml
 ├── pnpm-workspace.yaml
+├── pnpm-lock.yaml
 ├── turbo.json
 ├── package.json
 ├── .env.example
 └── README.md
 ```
+
+Apps never import other apps. Frontends import contracts, api-client, and ui only.
+API and worker import public backend operations; backend imports database and
+contracts. Repositories belong to their feature module. No cross-package source
+aliases or relative imports. Lint verifies workspace dependency boundaries.
+No generic config/security/utils/map/AI package is created without demonstrated reuse.
+
+Pinned package versions support the local Node 22.13.1 baseline. TypeScript 5.9.3
+is retained for compatibility with the selected lint tooling. Use supported,
+patched Node 22 for deployed environments. Secrets never enter VITE-prefixed config.
 
 ---
 
@@ -376,8 +360,8 @@ Avoid storing sensitive server data in `localStorage`.
 | Published plan API | Stale While Revalidate | Serve cached plan quickly but fetch newer version |
 | Contacts | Stale While Revalidate | Useful offline but must show timestamp |
 | Map tiles | Limited Cache First | Only if provider policy permits |
-| Report submission | Network First + local queue fallback | Avoid false “submitted” state |
-| Coordinator dashboard data | Network First | Sensitive and should not remain cached broadly |
+| Report submission | Explicit network send + single Dexie queue | No Cache API mutation handling or duplicate Workbox queue; acknowledge only committed writes |
+| Coordinator dashboard data | Network Only, no-store | No persistent API cache; clear in-memory query data on logout/membership change |
 | Help requests | Network Only | Sensitive information should not be offline cached |
 
 ---
@@ -503,7 +487,7 @@ OpenAPI / Swagger
 Argon2id
 Redis
 BullMQ
-MinIO SDK
+S3-compatible storage SDK
 Sentry SDK
 ```
 
@@ -512,47 +496,27 @@ Sentry SDK
 # 8.2 NestJS Module Structure
 
 ```text
-src/
-├── app.module.ts
-├── main.ts
-│
-├── modules/
-│   ├── auth/
-│   ├── users/
-│   ├── organizations/
-│   ├── regions/
-│   ├── plans/
-│   ├── reports/
-│   ├── report-reviews/
-│   ├── report-media/
-│   ├── help-requests/
-│   ├── ai-triage/
-│   ├── duplicates/
-│   ├── drills/
-│   ├── notifications/
-│   ├── external-sources/
-│   ├── audit/
-│   └── admin/
-│
-├── common/
-│   ├── guards/
-│   ├── decorators/
-│   ├── filters/
-│   ├── interceptors/
-│   ├── middleware/
-│   ├── validators/
-│   └── errors/
-│
-├── infrastructure/
-│   ├── database/
-│   ├── redis/
-│   ├── minio/
-│   ├── queues/
-│   ├── logging/
-│   └── telemetry/
-│
-└── config/
+apps/api/src/                  # HTTP controllers, filters, bootstrap
+apps/worker/src/               # Job consumers, dispatcher adapters, bootstrap
+packages/backend/src/
+├── config/                    # Validated server environment + DI wiring
+├── platform/                  # Database service, structured logging
+└── modules/                   # Feature-owned services/repositories/policies
+packages/database/src/
+├── client.ts                  # Pool, Kysely, schema types
+├── migrate.ts                 # Dedicated locked migration CLI
+└── migrations/
 ```
+
+Business modules are created when their first vertical slice is implemented.
+Auth, reports, plans, regions, triage, and audit are the planned MVP modules;
+they do not exist as empty scaffolds. Start with service/repository/policy files.
+Add domain/application/infrastructure directories when complexity warrants them.
+
+Controllers and job consumers call exported operations. Authorization, tenant
+integrity, state transitions, audit, and transactions live in server operations,
+not only HTTP guards. Standalone worker calls do not execute HTTP guards/pipes.
+Cross-module writes go through the owning module's public operation.
 
 ---
 
@@ -656,26 +620,15 @@ Coordinator and administrator accounts require:
 
 # 9.2 Session Model
 
-Use secure HTTP-only cookies.
+The three-day browser MVP will use opaque server-side sessions stored in PostgreSQL.
+Cookies are HTTP-only, Secure in HTTPS deployment, SameSite=Lax, host-only, and
+revocable on logout. Define idle/absolute expiration, CSRF token/origin checks,
+and membership revocation tests before implementing mutations. Do not store
+authentication tokens in localStorage. JWT access/refresh rotation is deferred.
 
-```text
-Access session:
-- Short lifetime
-- Secure
-- HttpOnly
-- SameSite=Lax
-- HTTPS only
-
-Refresh session:
-- Longer lifetime
-- Rotated on use
-- Stored hashed server-side
-- Revoked on logout or suspicious activity
-```
-
-### Why not localStorage JWT
-
-Avoid storing authentication tokens in `localStorage` because XSS attacks can expose them.
+Both web origins proxy /api to the same backend. Sessions are scoped to their
+host; do not broaden cookie Domain merely to share login between subdomains.
+Authentication is a planned slice and is not implemented by the foundation.
 
 ---
 
@@ -685,7 +638,7 @@ Guest users need a safe way to view submission status without creating an accoun
 
 On guest report creation:
 
-1. Backend generates a random one-time receipt token.
+1. Backend generates a random receipt token, delivered once but usable for limited status reads until expiry.
 2. Backend stores only its hash.
 3. Client stores the token locally.
 4. Guest can view limited report status using the receipt token.
@@ -744,7 +697,7 @@ Authorization must always be enforced server-side.
 7. Use soft deletion where audit retention is required.
 8. Use database constraints for important business rules.
 9. Use indexes for geographic, time-based, and status-based queries.
-10. Use SQL migrations, never manual production changes.
+10. Use committed migrations through the dedicated Kysely migration CLI; never manual production changes or application-startup migrations.
 
 ---
 
@@ -1279,7 +1232,7 @@ The UI must never infer “safe” from missing reports.
 - RESTful APIs.
 - JSON requests and responses.
 - API versioning: `/api/v1`.
-- OpenAPI documentation generated from NestJS.
+- OpenAPI response schemas generated from shared Zod schemas, with explicit route metadata. Foundation documents implemented routes only; feature slices must add request/response schemas and contract checks.
 - Request validation using Zod.
 - Request ID included in responses.
 - Idempotency key required for report creation.
@@ -1693,7 +1646,7 @@ Resident Browser
    ↓ multipart upload
 NestJS API
    ↓ validates type and size
-MinIO private bucket
+S3-compatible storage private bucket
    ↓
 Background media worker
    ↓
@@ -1702,7 +1655,7 @@ EXIF stripping / metadata check
 Media available to authorized users
 ```
 
-This is simpler and safer than publicly exposing MinIO for direct browser upload.
+This is simpler and safer than publicly exposing S3-compatible storage for direct browser upload.
 
 ---
 
@@ -1713,7 +1666,7 @@ For larger uploads or higher traffic, use signed direct uploads:
 1. Client requests upload authorization.
 2. API validates expected file type and size.
 3. API returns short-lived signed URL.
-4. Browser uploads directly to MinIO.
+4. Browser uploads directly to S3-compatible storage.
 5. Client calls upload completion endpoint.
 6. Worker scans and processes file.
 7. Media becomes available only after processing.
@@ -1768,8 +1721,8 @@ Do not expose:
 ```text
 5432  PostgreSQL
 6379  Redis
-9000  MinIO API
-9001  MinIO Console
+9000  S3-compatible storage API
+9001  S3-compatible storage Console
 ```
 
 ---
@@ -1863,7 +1816,7 @@ For pilot readiness:
 | Data | Backup method | Frequency | Storage |
 |---|---|---|---|
 | PostgreSQL database | `pg_dump` initially; WAL/PITR later | Daily + continuous WAL for pilot | Encrypted offsite storage |
-| MinIO media | `restic` or `rclone` encrypted backup | Daily | Separate provider/region |
+| S3-compatible storage media | `restic` or `rclone` encrypted backup | Daily | Separate provider/region |
 | Environment configuration | Encrypted secret store | On changes | Restricted repository or secret manager |
 | Docker Compose configuration | Git repository | Every change | GitHub |
 | Audit logs | Included in PostgreSQL backup | Daily | Offsite encrypted storage |
@@ -1879,7 +1832,7 @@ Required restore test:
 ```text
 1. Provision temporary environment.
 2. Restore PostgreSQL backup.
-3. Restore MinIO media sample.
+3. Restore S3-compatible storage media sample.
 4. Start API.
 5. Verify plans, reports, media, and audit logs.
 6. Record restore duration and issues.
@@ -2128,7 +2081,7 @@ Redis Exporter
 | AI failure rate spike | Medium |
 | Unusual login failures | Medium |
 | High report submission failure rate | High |
-| MinIO storage nearing capacity | Medium |
+| S3-compatible storage storage nearing capacity | Medium |
 | External source sync failure | Medium |
 
 ---
@@ -2343,7 +2296,7 @@ For a hackathon, a simplified `main + feature branches` workflow is acceptable, 
 - Configure Docker Compose.
 - Configure PostgreSQL + PostGIS.
 - Add Redis and BullMQ.
-- Add MinIO.
+- Add S3-compatible storage.
 - Add Caddy.
 - Implement environment configuration.
 - Add health checks.
@@ -2441,7 +2394,7 @@ A feature is considered complete only when:
 
 ## Media storage
 
-> **MinIO private object storage with signed-access strategy**
+> **S3-compatible storage private object storage with signed-access strategy**
 
 ## Mapping
 
@@ -2466,3 +2419,23 @@ A feature is considered complete only when:
 > **Tandara must be engineered as a trustworthy preparedness platform, not as an autonomous disaster decision-maker.**
 
 The system should make local information easier to access, clearer to understand, safer to share, and easier for coordinators to review—while always preserving uncertainty, privacy, local ownership, and the authority of official disaster-management channels.
+
+# 30. Foundation Status and Feature Design Gates
+
+Updated 2026-10-13 for three developers and three days. The implemented foundation
+is described in ARCHITECTURE.md. All business table SQL above remains a proposal,
+not an applied migration. Resolve these gates before implementing those tables:
+
+- Normalize membership region assignments and enforce tenant-compatible foreign keys.
+- Use immutable plan-version snapshots for content, contacts, and meeting points.
+- Separate report reviewState, visibility, and closure reason; define concurrency/reopening.
+- Define payload fingerprints and secure idempotency/guest receipt replay after lost responses.
+- Add leased outbox dispatch and idempotent consumers before enabling background work.
+- Use a strict canonical AI schema; distinguish live provider output from mock fixtures.
+- Index geometry/geography expressions actually queried; filter tenant/simulation/deleted records.
+- Do not persist private coordinator data or help-request contact data in PWA caches.
+- Storage/media are deferred; use a maintained S3-compatible implementation through an adapter.
+- API /ready requires the database; Redis health belongs to async processing, not API liveness.
+
+The old roadmap is a product backlog. The three-day execution order, actual team
+ownership, and foundation completion gates are in Implementation-Plan.md.

@@ -1,0 +1,24 @@
+# Deployment template: set real domains and provide built web assets.
+# The API is exposed through each frontend origin, avoiding cross-origin cookies.
+{$RESIDENT_DOMAIN} {
+  handle /api/* {
+    reverse_proxy api:3000
+  }
+  handle {
+    root * /srv/resident
+    try_files {path} /index.html
+    file_server
+  }
+}
+
+{$COORDINATOR_DOMAIN} {
+  handle /api/* {
+    reverse_proxy api:3000
+  }
+  handle {
+    root * /srv/coordinator
+    try_files {path} /index.html
+    header Cache-Control "no-store"
+    file_server
+  }
+}

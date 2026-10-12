@@ -3,14 +3,14 @@
 ## *From Local Signals to Shared Readiness.*
 
 **Document status:** Comprehensive Product Requirements Document  
-**Version:** 1.0  
+**Version:** 1.1  
 **Product stage:** Hackathon prototype → Closed community pilot → Multi-region platform  
 **Primary language:** Bahasa Indonesia  
 **Document language:** English  
 **Initial hazard scope:** Flooding and flood-related access disruption  
 **Platforms:** Resident Progressive Web App (PWA), Coordinator Web Dashboard, Platform Administration Console  
 **Deployment approach:** Self-hosted VPS infrastructure using Docker Compose  
-**Core stack:** React + Vite, NestJS + Fastify, PostgreSQL + PostGIS, Redis + BullMQ, MinIO, Caddy  
+**Core stack:** React + Vite, NestJS + Fastify, PostgreSQL + PostGIS, Redis + BullMQ, S3-compatible storage, Caddy  
 **Safety boundary:** Tandara is **not** an official warning authority, flood prediction system, evacuation command system, emergency dispatch service, or replacement for BMKG, BNPB, BPBD, emergency services, radio, sirens, or local government instructions.
 
 ---
@@ -461,7 +461,7 @@ The hackathon MVP must prioritize depth over breadth.
                   └────────┬────────┘      └────┬────────────────┘
                            │                    │
               ┌────────────▼───────┐    ┌───────▼────────────────┐
-              │ MinIO Object Store │    │ Tandara Worker         │
+              │ S3-compatible storage Object Store │    │ Tandara Worker         │
               │ Private Media      │    │ AI / Notifications     │
               └────────────────────┘    │ Imports / Dedupe       │
                                         └────────────────────────┘
@@ -497,7 +497,7 @@ The hackathon MVP must prioritize depth over breadth.
 |---|---:|---:|---:|---:|---:|---:|
 | View published plans | Yes | Yes | Yes | Yes | Yes | Yes |
 | Save offline plan | Yes | Yes | Yes | Yes | Yes | Yes |
-| Submit report | No | Yes | Yes | Yes | Yes | Yes |
+| Submit report | Guest submission with receipt | Yes | Yes | Yes | Yes | Yes |
 | View own report | No | Yes | Yes | Yes | Yes | Yes |
 | View all reports in region | Limited public only | Limited public only | Assigned only | Yes | Yes | Yes |
 | Review report | No | No | Yes | Yes | Yes | Yes |
@@ -1380,7 +1380,7 @@ GET    /metrics
 | Container runtime | Docker Engine | Containerized deployment |
 | Orchestration | Docker Compose | MVP and pilot multi-service deployment |
 | Reverse proxy | Caddy | HTTPS, reverse proxy, automatic certificate renewal |
-| Object storage | MinIO | Private S3-compatible media storage |
+| Object storage | S3-compatible storage | Private S3-compatible media storage |
 | Container registry | GitHub Container Registry | Store versioned deployment images |
 | CI/CD | GitHub Actions | Testing, image build, deployment automation |
 | DNS/WAF | Cloudflare optional | DNS, DDoS protection, caching, firewall controls |
@@ -1414,7 +1414,7 @@ Caddy Reverse Proxy
         ┌──────────────────────┼───────────────────────┐
         │                      │                       │
         ▼                      ▼                       ▼
-  PostgreSQL + PostGIS       Redis                  MinIO
+  PostgreSQL + PostGIS       Redis                  S3-compatible storage
         │                      │                       │
         └─────────────┬────────┘                       │
                       ▼                                │
@@ -1466,7 +1466,7 @@ data-network
 - Only Caddy exposes ports `80` and `443`.
 - PostgreSQL must not be exposed publicly.
 - Redis must not be exposed publicly.
-- MinIO must not expose buckets publicly by default.
+- S3-compatible storage must not expose buckets publicly by default.
 - Worker must not accept public traffic.
 - API should only be accessible through the reverse proxy.
 - SSH access must use key-based authentication.
@@ -1757,7 +1757,7 @@ Residents should be able to:
 | Database | Connections, slow queries, disk usage, backup status |
 | Redis | Queue depth, failed jobs, memory usage |
 | Worker | AI failures, retry count, job processing time |
-| MinIO | Storage usage, failed upload/download, signed URL errors |
+| S3-compatible storage | Storage usage, failed upload/download, signed URL errors |
 | VPS | CPU, RAM, disk, network, container health |
 | External APIs | Availability, latency, parse failures, authorization failures |
 
@@ -1776,7 +1776,7 @@ GET /metrics
 | Endpoint | Purpose |
 |---|---|
 | `/health` | Confirms the application process is running |
-| `/ready` | Confirms dependencies such as database and Redis are available |
+| `/ready` | Confirms PostgreSQL is available for API operations; async Redis health is checked separately |
 | `/metrics` | Exposes Prometheus-compatible metrics in pilot or production environments |
 
 ---
@@ -1996,14 +1996,18 @@ No analytics event should include raw report content, phone numbers, exact coord
 
 ---
 
-# 28. Recommended Team Allocation
+# 28. Team Allocation — Three Developers
 
-| Team Member | Main responsibility |
-|---|---|
-| Product & Research Lead | PRD, user research, product strategy, pitch, UX flow, safety narrative |
-| Frontend & PWA Engineer | Resident PWA, offline mode, accessibility, checklist, map interface |
-| Backend & Infrastructure Engineer | NestJS API, PostgreSQL/PostGIS, authentication, Docker, VPS deployment |
-| AI & Coordinator Dashboard Engineer | AI triage, worker queue, duplicate detection, coordinator dashboard, analytics |
+| Developer | Primary ownership | Shared product responsibility |
+|---|---|---|
+| Developer 1 | Resident PWA, offline persistence/sync, shared UI | UX, Bahasa Indonesia copy, resident demo |
+| Developer 2 | API, auth/policies, database/migrations, infrastructure | Integration coordination, schema review |
+| Developer 3 | Coordinator dashboard, worker/AI adapters, duplicate suggestions | Test automation, AI provenance, pitch/demo |
+
+All three own QA and scope decisions. Contracts changes are reviewed by their
+consumers; database migrations have one owner (Developer 2). No separate fourth
+product/design/QA member is assumed. Refer to Implementation-Plan.md for the
+three-day MVP cut and daily gates. The roadmap below remains the longer-term backlog.
 
 ---
 
@@ -2083,3 +2087,14 @@ No analytics event should include raw report content, phone numbers, exact coord
 ## Final Differentiator
 
 > Tandara is not another flood-reporting map. It is a preparedness and trust layer that helps communities understand what they know, what they do not know, and what they can prepare for together.
+
+# 31. Implemented Foundation Boundary
+
+Updated 2026-10-13. Canonical source structure: ARCHITECTURE.md and ADR-0001.
+The repository now has two web shells, API metadata/health, a disabled standalone
+worker, shared contracts/client/UI/server/database packages, local Compose, and CI.
+Business workflows described by this PRD are not implemented by the boilerplate.
+
+For three developers in three days, media uploads, plan editor, full administration,
+drill analytics, external sources, and automatic notifications are deferred.
+Production/pilot requires separate operational and security gates.

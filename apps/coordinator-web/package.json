@@ -1,0 +1,25 @@
+{
+  "name": "@tandara/coordinator-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 127.0.0.1 --port 5174 --strictPort"
+  },
+  "dependencies": {
+    "@tandara/contracts": "workspace:*",
+    "@tandara/api-client": "workspace:*",
+    "@tandara/ui": "workspace:*",
+    "@tanstack/react-query": "5.104.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router": "7.9.6"
+  },
+  "devDependencies": {
+    "vite": "8.3.4",
+    "@vitejs/plugin-react": "6.1.2"
+  }
+}

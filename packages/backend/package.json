@@ -1,0 +1,29 @@
+{
+  "name": "@tandara/backend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tandara/contracts": "workspace:*",
+    "@tandara/database": "workspace:*",
+    "@nestjs/common": "12.1.3",
+    "pino": "10.4.0",
+    "kysely": "0.29.6",
+    "zod": "4.6.7"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+.turbo
+.local
+.tmp
+coverage
+pnpm-lock.yaml
+docs/api/openapi.json
