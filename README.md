@@ -1,101 +1,98 @@
-# Tandara
+# Tandara / ArahSiaga
 
-Fondasi monorepo untuk **3 developer, 3 hari**: Warga PWA, Posko dashboard,
-NestJS/Fastify API, dan worker standalone. Tahap ini menyediakan setup dan batas
-arsitektur; autentikasi, laporan, rencana lokal, triage AI, dan sinkronisasi belum diimplementasikan.
+Community flood preparedness: **Tandara Warga** (resident PWA) and **Tandara Posko**
+(coordinator/admin workspace), connected to one API, PostGIS database and durable worker.
+Indonesian interface. Seeded organizations, people, plans, reports and source material are
+explicitly **simulation**, not real incidents or operational emergency instructions.
 
-## Mulai di Windows / PowerShell
+## Run the complete local product
 
-Prasyarat: Node.js **22.23.3 disarankan** (minimum 22.13.1), pnpm **10.26.2**,
-dan Docker Desktop dengan Linux containers untuk database lokal.
-
-```powershell
-Copy-Item .env.example .env
-pnpm install --frozen-lockfile
-pnpm infra:up
-pnpm build:packages
-pnpm db:migrate
-pnpm dev
-```
-
-Jangan timpa `.env` yang sudah dikonfigurasi. Perintah yang sama dapat dipakai pada
-Linux/macOS dengan `cp .env.example .env`.
-
-| Layanan          | Alamat                                           |
-| ---------------- | ------------------------------------------------ |
-| Warga            | http://127.0.0.1:5173                            |
-| Posko            | http://127.0.0.1:5174                            |
-| API liveness     | http://127.0.0.1:3000/health                     |
-| API readiness    | http://127.0.0.1:3000/ready                      |
-| OpenAPI          | http://127.0.0.1:3000/api/v1/system/openapi.json |
-| PostgreSQL lokal | 127.0.0.1:55432                                  |
-| Redis lokal      | 127.0.0.1:56379                                  |
-
-API bisa boot tanpa database, tetapi `/ready` mengembalikan 503 sampai database
-tersedia. Worker hidup tanpa HTTP listener, dalam mode idle; `WORKER_ENABLED=true`
-ditolak sampai consumer benar-benar dibuat. Frontend memakai proxy `/api` agar
-request tetap satu origin. `.env` root hanya untuk proses server dan Compose;
-environment frontend menggunakan `apps/<app>/.env.local` dengan `VITE_API_BASE_URL`
-jika perlu (default `/api/v1`). Jangan beri prefix `VITE_` pada secret.
-
-## Struktur dan pembagian kerja
-
-```text
-apps/
-  resident-web/       # Developer 1: Warga, offline, UX/copy
-  api/               # Developer 2: HTTP, auth, API/core integration
-  coordinator-web/   # Developer 3: Posko, review UI
-  worker/            # Developer 3: background jobs
-packages/
-  contracts/         # Kontrak browser-safe; perubahan direview kedua konsumen
-  api-client/        # Fetch transport + validasi respons
-  backend/           # Modul bisnis server bersama API/worker
-  database/          # Koneksi, tipe, migrations; Developer 2 pemilik schema
-  ui/                # Komponen presentasi + CSS tokens
-tooling/             # TS/ESLint/build dan pemeriksaan dependency boundaries
-infrastructure/      # Compose lokal dan template routing Caddy
-tests/integration/   # Pengujian PostgreSQL nyata
-docs/                # PRD, TDD, architecture, ADR, rencana 3 hari
-```
-
-Aturan import dipastikan oleh `pnpm lint`. Aplikasi tidak mengimpor aplikasi lain,
-frontend tidak mengimpor package server, dan relative import tidak boleh keluar
-dari package. Package dibuild menjadi ESM `dist/` dengan ekspor publik. API dan
-worker menggunakan TypeScript legacy decorators + metadata untuk Nest; TypeScript
-5.9 dipilih karena kompatibel dengan tooling lint yang dipakai.
-
-## Validasi
+Prerequisite: Docker Desktop with Linux containers. Ports 8080 and 8081 must be free.
 
 ```powershell
-pnpm format:check
-pnpm check
-pnpm db:migrate
-pnpm db:migrate
-pnpm test:integration
-pnpm api:openapi
-pnpm exec playwright install chromium
-pnpm test:e2e
+Copy-Item .env.example .env # only if .env does not already exist
+# Edit .env: choose POSTGRES_PASSWORD and DEMO_PASSWORD (at least 12 characters).
+docker compose up --build -d --wait
 ```
 
-`pnpm check` menjalankan lint + boundaries, typecheck, pengujian kontrak/config/
-HTTP/client, lalu build. Test HTTP memakai database adapter terkontrol; test
-integration memerlukan PostGIS lokal dan migrations. CI menjalankan keduanya.
-Unit test tidak memerlukan layanan AI atau Redis.
+Do not commit `.env`. The sample passwords are for local synthetic data only. Compose
+applies migrations, performs an idempotent simulation seed, then checks API, worker,
+database and web health. Database storage persists across restarts; no database port
+is exposed by the complete stack. `docker compose down` stops it without deleting data.
 
-PWA/service worker hanya dibuat oleh production build. Untuk memeriksa app shell
-offline, jalankan `pnpm build`, kemudian `pnpm --filter @tandara/resident-web preview`,
-kunjungi satu kali online, dan uji reload offline. Pengujian ini belum membuktikan
-offline plan atau report sync. Dashboard tidak memiliki service worker.
+| Service   | Local address                                                    |
+| --------- | ---------------------------------------------------------------- |
+| Warga     | [127.0.0.1:8080](http://127.0.0.1:8080)                          |
+| Posko     | [127.0.0.1:8081](http://127.0.0.1:8081)                          |
+| Readiness | [8080/ready](http://127.0.0.1:8080/ready)                        |
+| OpenAPI   | [OpenAPI JSON](http://127.0.0.1:8080/api/v1/system/openapi.json) |
 
-## Dokumen acuan
+Login to Posko with the password you set in `DEMO_PASSWORD`:
 
-- [Architecture](docs/ARCHITECTURE.md): struktur aktual dan dependency rules.
-- [ADR foundation](docs/adr/0001-foundation.md): keputusan dan batas implementasi.
-- [Validation](docs/VALIDATION.md): hasil pemeriksaan aktual dan batas pengujian.
-- [Implementation Plan](docs/Implementation-Plan.md): pembagian 3 developer dan gates 3 hari.
-- [PRD](docs/PRD.md): kebutuhan produk dan fase.
-- [TDD](docs/TDD.md): desain teknis; fitur yang direncanakan bukan bukti implementasi.
+| Account                      | Access                                   |
+| ---------------------------- | ---------------------------------------- |
+| `ciliwung@demo.tandara.test` | Kampung Ciliwung coordinator             |
+| `semarang@demo.tandara.test` | Pesisir Semarang coordinator             |
+| `admin@demo.tandara.test`    | Administrator, independent plan reviewer |
 
-Media/storage, deployment produksi, login, RBAC, outbox, consumer BullMQ, live AI,
-seed laporan, dan business tables adalah pekerjaan berikutnya. Jangan memakai
-Compose/credential lokal sebagai konfigurasi produksi.
+Warga needs no account. Receipt secrets remain on the device; retain them before
+clearing local data. Password changes after initial seed use Admin → Akses pengguna;
+rerunning seed does not overwrite existing passwords or reviewed data.
+
+## Demo and verification
+
+[Demo walkthrough](docs/product/demo.md), [delivery report](docs/DELIVERY.md),
+[completion matrix](docs/product/requirements-matrix.md),
+[screenshots](docs/qa/screenshots), [architecture](docs/ARCHITECTURE.md),
+[operating runbook](docs/operations/runbook.md), [security](docs/security/model.md).
+
+The implemented flows cover source provenance, uncertain reports, private assistance,
+processed private photos, provisional triage, reversible duplicate linking, human
+review, versioned plans with independent approval, explainable coverage gaps,
+offline plans/checklists/text drafts, simulation training and scoped administration.
+Posko displays local layers over an attributed OpenStreetMap street basemap;
+[map configuration and outage behavior](docs/features/map.md) explain its provider settings.
+BMKG/PetaBencana adapters are disabled until configured and authorized. InaRISK is
+reference-only. The default triage is labelled **deterministic**, not live inference.
+
+## Development and tests
+
+Use Node 22.13.1–24.x and pnpm 10.26.2. Docker uses Node 24; CI and local
+validation use Node 24.20.0 from `.node-version`.
+
+```powershell
+npx --yes pnpm@10.26.2 install --frozen-lockfile
+npx --yes pnpm@10.26.2 infra:up
+npx --yes pnpm@10.26.2 db:migrate
+npx --yes pnpm@10.26.2 db:seed
+npx --yes pnpm@10.26.2 dev
+```
+
+Development addresses are 5173 (Warga), 5174 (Posko), and 3000 (API). Vite proxies
+`/api`; secrets never use a `VITE_` prefix. Full-stack Docker and development use
+separate databases. Development PostgreSQL uses 55432; adjust Redis port if Windows
+reserves 56379. Redis remains foundation infrastructure and is not needed by the
+implemented PostgreSQL outbox worker.
+
+```powershell
+npx --yes pnpm@10.26.2 format:check
+npx --yes pnpm@10.26.2 check
+npx --yes pnpm@10.26.2 test:integration # seeded development DB; synthetic mutations
+npx --yes pnpm@10.26.2 exec playwright install chromium
+npx --yes pnpm@10.26.2 test:e2e # running full Docker stack at 8080/8081
+npx --yes pnpm@10.26.2 api:openapi
+node --env-file=.env tooling/measure-performance.mjs
+pwsh -NoProfile -File tooling/backup.ps1
+```
+
+Tests are intended for simulation data, never a real operational database. Browser
+tests add clearly labelled synthetic reports and training outcomes. Integration
+tests also publish/erase test records and add fictional scoped accounts.
+
+## Deployment boundary
+
+This delivery runs locally as a simulation. Public deployment requires a configured
+domain/TLS, `SESSION_SECURE=true`, exact `WEB_ORIGINS`, restricted proxy trust, unique
+secrets, encrypted backups, approved source/model providers and genuine plan/contact
+ownership. Never expose these demo accounts publicly. See the runbook for concrete
+configuration, restoration, monitoring and incident procedures.

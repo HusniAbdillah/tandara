@@ -1,111 +1,105 @@
-# Tandara architecture and repository boundaries
+# Implemented architecture
 
-Updated: 2026-10-13. Team: three developers. Stage: implemented foundation.
+Updated 2026-10-13. Preserves the repository's nine-package pnpm/Turbo structure;
+business operations are implemented in `packages/backend/src/modules`.
 
-## Current structure
-
-```text
-apps/
-  resident-web/src/{app,features,offline}
-  coordinator-web/src/{app,features}
-  api/src/{http,app.module.ts,bootstrap.ts,main.ts}
-  worker/src/{jobs,worker.module.ts,main.ts}
-packages/
-  contracts/src/       # Public API vocabulary and Zod schemas
-  api-client/src/      # Typed browser transport, response validation
-  backend/src/
-    config/           # Validated server configuration and DI wiring
-    platform/         # Database adapter and structured logger
-    modules/          # Future server-only feature modules
-  database/src/
-    migrations/       # One ordered, reviewed migration stream
-    client.ts         # Kysely + pg pool and database type
-    migrate.ts        # Dedicated CLI; not API/worker startup
-  ui/src/             # Shared presentational components and styles
-tooling/typescript/   # Shared strict compiler settings
-tooling/check-boundaries.mjs
-infrastructure/{compose,caddy}
-tests/integration/
-docs/{adr,api}
+```mermaid
+flowchart LR
+  W[Warga React PWA] --> C[Caddy same-origin proxy]
+  P[Posko React workspace] --> C
+  C --> A[NestJS / Fastify API]
+  A --> B[Identity / reports / preparedness / administration]
+  B --> D[(PostgreSQL 16 / PostGIS)]
+  K[Standalone Nest worker] --> D
+  K --> S[Source adapters / triage adapter]
+  W --> I[(IndexedDB / public app shell)]
 ```
 
-No generic utils, security, map, AI, or runtime-config package is created without
-a demonstrated reuse need. Configuration for build tooling stays in tooling;
-server environment parsing stays in backend. UI has no API/session/business-policy dependency.
+## Boundaries
 
-## Enforced dependency graph
+`contracts` owns browser-safe Zod DTOs; `api-client` implements bounded fetch,
+cookie/CSRF transport and response validation. `ui` owns presentation, CSS tokens,
+icons and shared accessible fields. API and worker are deployment entry points,
+sharing backend services rather than importing one another. Database migration
+and seed are separate executable commands. ESLint and `check-boundaries.mjs`
+enforce the acyclic package graph and forbid server imports in browser packages.
 
-```text
-resident-web --------> api-client ------> contracts
-             \------> ui
-coordinator-web -----> api-client ------> contracts
-                \---> ui
-api -----------------> backend --------> database
-  \-----------------> contracts   \----> contracts
-worker --------------> backend
-```
+Controllers authenticate the session and select receipt/public/scoped operations.
+Services validate strict inputs, enforce membership and region/organization
+invariants, perform parameterized SQL, apply transition policies and record audit
+events inside write transactions. Authorization is evaluated from current database
+membership on each request. The frontend never supplies a trusted user/role.
 
-Each workspace is a package with a manifest and explicit public exports.
-Applications are deployment entry points, never reusable libraries.
-Imports across package src directories, cross-app imports, undeclared workspace
-dependencies, and server imports in browser packages fail lint/boundary checks.
-The allow-list dependency graph is acyclic. Root dev dependencies are shared tooling;
-runtime dependencies belong to the package that imports them.
+## Persistence and concurrency
 
-## Business module conventions
+Three migrations create extensions, product tables and workload indexes. UUID primary keys,
+foreign keys, scoped composite constraints and indexes protect relationships.
+Report inputs are separate from review decisions, AI suggestions, duplicate
+relationships, private contact details, processed attachments and public summaries.
+Published plan snapshots are immutable; approval requires a different person from
+the author and publication archives the previous published version atomically.
 
-Create auth/reports/plans/regions/triage/audit modules under backend/modules only
-when implementing their first slice. A module owns its repositories and writes.
-Start with service/repository/policy files; introduce domain/application/infrastructure
-subdirectories when the module needs them. Do not generate empty layered folders.
+Report acceptance acquires a transaction advisory lock on the UUID idempotency
+key, compares the payload fingerprint and receipt-secret hash on replay, then
+inserts report/history/audit/triage job/notification together. Exact retry returns
+the original receipt. Changed payload under the same key returns 409. Review uses
+row locking and revision checks; plans use version allocation locking and stale
+edit checks. Training completion keys are similarly locked and bound to the
+scenario, answers and feedback.
 
-API controllers and worker consumers call exported operations. Controllers own
-HTTP parsing/authentication; services own authorization, tenant invariants,
-transactions, state transitions, and audit writes. A worker has no HTTP guards:
-its operations need explicit service permissions and validated job input.
+SQL outbox jobs use `FOR UPDATE SKIP LOCKED`, bounded attempts with exponential
+backoff, two-minute abandoned-lease recovery and idempotent triage markers. The
+worker schedules enabled sources every thirty minutes and retention daily. Worker
+health is a real database heartbeat. Source failures retain previous successful
+timestamps and information, and do not block unrelated sources or reporting.
+Redis is not required by this implementation.
 
-Public request/response schemas live in contracts. Database records and internal
-job payloads must not be exported as public DTOs. Never return a raw database row.
-Zod strict objects reject unexpected fields, including nested fields. The report
-input rejects client-supplied visibility and simulation mode; these are server decisions.
+## Geospatial behavior
 
-## Runtime behavior provided now
+Regions use WGS84 PostGIS polygons and spatial indexes. Coordinates require
+`ST_Covers` membership in the selected region. Duplicate hints use geography
+distance in meters (250 m), a one-hour observation window and category/text
+similarity. Unknown coordinates/timestamps do not satisfy spatial evidence.
 
-- Warga and Posko boot, show honest foundation status, and query public API metadata.
-- API implements /health, /ready, /api/v1/system/info, and /api/v1/system/openapi.json.
-- /health is process liveness. /ready requires PostgreSQL; Redis is not an API readiness dependency.
-- API has helmet, cookie parsing, generated request IDs, no-store responses, and sanitized errors.
-- Worker starts a standalone Nest context without HTTP, with consumers disabled.
-- Local Compose provides loopback-only PostgreSQL/PostGIS and Redis AOF/noeviction.
-- Kysely migrations provision extensions and app_metadata only, not business tables.
-- Warga precaches its public app shell; neither application caches API responses persistently.
-- Dexie schema exists; offline saving/report delivery are not implemented.
-- OpenAPI describes implemented routes and is generated from their response schemas.
+Coverage intersects four extent quadrants with the actual region polygon and
+counts sufficiently recent, located reports. It explicitly represents
+`insufficient_information`; no cell is labelled safe. MapLibre clusters located
+reports and displays boundary, coverage and local points. Initial tiles are
+disabled, avoiding uncontrolled third-party tile requests or offline downloads.
+A textual report list remains available if WebGL fails.
 
-## Decisions required for feature slices
+## AI and source separation
 
-1. Sessions: opaque, revocable server-side sessions in PostgreSQL, HTTP-only secure
-   host-only cookies, expiration, logout, CSRF protection, exact trusted origins.
-   No refresh-token architecture is necessary for the three-day web MVP.
-2. Authorization: organization membership and region assignment checked inside each
-   service operation. Normalize region assignments and enforce tenant-compatible relations.
-3. Plans: immutable published version snapshots including contacts/locations,
-   version-specific review records, and a current published version reference.
-4. Reports: reviewState, visibility, and closure reason are separate dimensions;
-   define transitions/reopening, optimistic concurrency, and atomic audit records.
-5. Idempotency: bind key to submitter/context, compare payload fingerprint, define
-   replay and receipt recovery after a committed write with a lost response.
-6. Async: persist report/audit/outbox in one PostgreSQL transaction. Dispatcher and
-   consumers use leases, retries, and idempotent effects; distinguish queued from processed.
-7. Offline: one Dexie queue, multi-tab leases, retryable/non-retryable errors,
-   quotas, explicit send consent, and no offline private follow-up contact storage by default.
-8. AI: strict schema, unknown fields, source evidence, sanitized input, and explicit
-   live/mock provenance. Demo fixtures never masquerade as live AI or verification.
-9. Geospatial: index expressions match geometry/geography queries; metric precision
-   policy, observation freshness, unknown locations, tenant and simulation filters.
-10. Storage: defer media in the MVP. Choose a maintained S3-compatible implementation
-    through an adapter before uploads; require private access, processing, and revocation policy.
+Triage adapters support disabled, deterministic heuristic, and server-side
+OpenAI-compatible inference. Results require a strict schema, quoted evidence
+present verbatim in the source, matching report references and human-review flags.
+Invalid output is stored as failed, not a verification decision. Accept/edit/reject
+records a separate human decision and never mutates the original report. A
+deterministic report-group summary exposes its exact bounded sample references.
 
-PRD remains the product target. TDD describes implementation decisions. This file
-and ADR-0001 are the accepted foundation structure and supersede legacy folder
-examples. Implementation status must be reported from code/tests, not inferred from docs.
+Fixture, BMKG weather and PetaBencana adapters normalize provenance independently.
+URLs for network adapters are fixed/validated; responses have timeout, redirect
+and size limits. No external source is rebranded as an official Tandara alert.
+InaRISK remains a disclosed reference-only adapter. Live sources require both
+deployment permission and explicit source authorization. See integration notes.
+
+## Offline and media
+
+Only the Warga app shell is precached. API responses, Posko pages, contacts, GPS
+and photos are never service-worker cached. Residents explicitly save a published
+plan in IndexedDB; cached views expose saved timestamps and stale/expiry notices.
+Checklist progress is device-local. Consented non-sensitive text drafts use stable
+keys, explicit pending states, a multi-tab navigator lock and at most five automatic
+attempts. Receipts are persisted only after server acknowledgement. Offline drafts
+expire after seven days. Private-contact/GPS online submissions use memory-only
+retries; closing before acknowledgement has a disclosed recovery limitation.
+
+JPEG/PNG uploads are bounded, signature checked and decoded with a pixel limit.
+Sharp rotates/resizes and re-encodes JPEG without EXIF. Up to three processed
+photos per report are private database bytes, fetched only through scoped,
+audited access. For larger deployments, move bytes behind a private object-storage
+adapter without changing receipt/authorization policy.
+
+See [security](security/model.md), [operations](operations/runbook.md),
+[offline specification](features/offline-sync.md), and
+[API reference](api/openapi.json) for operating details.
