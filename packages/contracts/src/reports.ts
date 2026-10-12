@@ -16,12 +16,12 @@ export const reportReviewStateSchema = z.enum([
   'under_review',
   'clarification_requested',
   'reviewed',
+  'rejected',
   'closed',
 ]);
 
 export const reportVisibilitySchema = z.enum(['private', 'restricted', 'public']);
 
-// This is a proposed input contract; the report endpoint is not implemented yet.
 export const createReportSchema = z.strictObject({
   regionId: z.uuid(),
   category: reportCategorySchema,
@@ -37,6 +37,12 @@ export const createReportSchema = z.strictObject({
     .optional(),
   followUpRequested: z.boolean(),
   contactPermission: z.boolean(),
+  contactDetails: z.string().trim().max(200).optional(),
+  trackingToken: z
+    .string()
+    .regex(/^[a-f0-9-]{72}$/)
+    .optional(),
+  privacyConsent: z.literal(true).optional(),
 });
 
 export type CreateReport = z.infer<typeof createReportSchema>;

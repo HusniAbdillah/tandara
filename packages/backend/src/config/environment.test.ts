@@ -7,6 +7,14 @@ const input = {
 };
 
 describe('server configuration', () => {
+  it('requires valid model configuration and strict permission flags', () => {
+    expect(() => parseEnvironment({ ...input, AI_MODE: 'compatible' })).toThrow('AI_BASE_URL');
+    expect(() => parseEnvironment({ ...input, AI_MODE: 'pretend-live' })).toThrow('AI_MODE');
+    expect(() => parseEnvironment({ ...input, ALLOW_LIVE_SOURCES: 'yes' })).toThrow(
+      'ALLOW_LIVE_SOURCES',
+    );
+    expect(parseEnvironment({ ...input, AI_MODE: 'disabled' }).AI_MODE).toBe('disabled');
+  });
   it('does not interpret the string false as true', () => {
     expect(parseEnvironment({ ...input, WORKER_ENABLED: 'false' }).WORKER_ENABLED).toBe(false);
   });

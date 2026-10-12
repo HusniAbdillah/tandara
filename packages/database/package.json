@@ -16,7 +16,8 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
-    "migrate": "node --env-file=../../.env dist/migrate.js"
+    "migrate": "node --env-file-if-exists=../../.env dist/migrate.js",
+    "seed": "node --env-file-if-exists=../../.env dist/seed.js"
   },
   "dependencies": {
     "kysely": "0.29.6",
