@@ -20,7 +20,16 @@ services:
 
   redis:
     image: redis:7.4.2-alpine
-    command: ['redis-server', '--appendonly', 'yes', '--maxmemory', '128mb', '--maxmemory-policy', 'noeviction']
+    command:
+      [
+        'redis-server',
+        '--appendonly',
+        'yes',
+        '--maxmemory',
+        '128mb',
+        '--maxmemory-policy',
+        'noeviction',
+      ]
     ports:
       - '127.0.0.1:${REDIS_PORT:-56379}:6379'
     volumes:

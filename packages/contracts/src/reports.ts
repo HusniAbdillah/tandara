@@ -28,11 +28,13 @@ export const createReportSchema = z.strictObject({
   description: z.string().trim().min(10).max(2000),
   observationTime: z.iso.datetime({ offset: true }).nullable(),
   landmarkText: z.string().trim().max(300).optional(),
-  location: z.strictObject({
-    latitude: z.number().min(-90).max(90),
-    longitude: z.number().min(-180).max(180),
-    accuracyMeters: z.number().nonnegative().optional(),
-  }).optional(),
+  location: z
+    .strictObject({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      accuracyMeters: z.number().nonnegative().optional(),
+    })
+    .optional(),
   followUpRequested: z.boolean(),
   contactPermission: z.boolean(),
 });

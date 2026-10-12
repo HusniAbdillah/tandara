@@ -8,12 +8,20 @@ import { router } from './app/router.js';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Application root is missing.');
-createRoot(root).render(<StrictMode><Providers><RouterProvider router={router} /></Providers></StrictMode>);
+createRoot(root).render(
+  <StrictMode>
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
+  </StrictMode>,
+);
 
 registerSW({
   onNeedRefresh() {
     // Never force-reload a page that may contain an unsent draft.
     window.dispatchEvent(new Event('tandara:update-available'));
   },
-  onRegisterError() { console.error('Offline app shell registration failed.'); },
+  onRegisterError() {
+    console.error('Offline app shell registration failed.');
+  },
 });

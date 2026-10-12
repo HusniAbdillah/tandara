@@ -8,16 +8,28 @@ import { configureHttp, createHttpAdapter } from '../dist/bootstrap.js';
 
 let app;
 let databaseReady = true;
-before(async () => {
-  const environment = parseEnvironment({ DATABASE_URL: 'postgres://test:test@localhost/test', REDIS_URL: 'redis://localhost:6379', NODE_ENV: 'test', LOG_LEVEL: 'silent' });
-  const module = await Test.createTestingModule({ imports: [AppModule.register(environment)] })
-    .overrideProvider(DatabaseService).useValue({ isReady: async () => databaseReady }).compile();
-  app = module.createNestApplication(createHttpAdapter(), { logger: false });
-  await configureHttp(app);
-  await app.init();
-  await app.getHttpAdapter().getInstance().ready();
+before(
+  async () => {
+    const environment = parseEnvironment({
+      DATABASE_URL: 'postgres://test:test@localhost/test',
+      REDIS_URL: 'redis://localhost:6379',
+      NODE_ENV: 'test',
+      LOG_LEVEL: 'silent',
+    });
+    const module = await Test.createTestingModule({ imports: [AppModule.register(environment)] })
+      .overrideProvider(DatabaseService)
+      .useValue({ isReady: async () => databaseReady })
+      .compile();
+    app = module.createNestApplication(createHttpAdapter(), { logger: false });
+    await configureHttp(app);
+    await app.init();
+    await app.getHttpAdapter().getInstance().ready();
+  },
+  { timeout: 15000 },
+);
+after(async () => {
+  await app?.close();
 });
-after(async () => { await app?.close(); });
 
 test('health is independent of database readiness and includes security headers', async () => {
   databaseReady = false;

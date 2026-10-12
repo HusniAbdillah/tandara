@@ -6,10 +6,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE EXTENSION IF NOT EXISTS postgis`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS citext`.execute(db);
-  await db.schema.createTable('app_metadata')
-    .addColumn('key', 'text', column => column.primaryKey())
-    .addColumn('value', 'jsonb', column => column.notNull())
-    .addColumn('updated_at', 'timestamptz', column => column.notNull().defaultTo(sql`now()`))
+  await db.schema
+    .createTable('app_metadata')
+    .addColumn('key', 'text', (column) => column.primaryKey())
+    .addColumn('value', 'jsonb', (column) => column.notNull())
+    .addColumn('updated_at', 'timestamptz', (column) => column.notNull().defaultTo(sql`now()`))
     .execute();
 }
 

@@ -6,7 +6,14 @@ export function createLogger(environment: Environment, service: 'api' | 'worker'
   const logger = pino({
     level: environment.LOG_LEVEL,
     base: { service, environment: environment.NODE_ENV },
-    redact: ['password', 'token', 'cookie', 'authorization', 'req.headers.cookie', 'req.headers.authorization'],
+    redact: [
+      'password',
+      'token',
+      'cookie',
+      'authorization',
+      'req.headers.cookie',
+      'req.headers.authorization',
+    ],
   });
   return {
     log: (message: unknown) => logger.info(String(message)),

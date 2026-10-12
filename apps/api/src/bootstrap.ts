@@ -22,16 +22,21 @@ export async function configureHttp(app: NestFastifyApplication): Promise<void> 
   await app.register(helmet);
   await app.register(cookie);
   app.useGlobalFilters(new ApiErrorFilter());
-  app.getHttpAdapter().getInstance().addHook('onRequest', async (request, reply) => {
-    reply.header('X-Request-Id', request.id);
-    reply.header('Cache-Control', 'no-store');
-  });
+  app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onRequest', async (request, reply) => {
+      reply.header('X-Request-Id', request.id);
+      reply.header('Cache-Control', 'no-store');
+    });
   app.enableShutdownHooks();
 }
 
 export async function createApp(environment: Environment): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule.register(environment), createHttpAdapter(), { logger: createLogger(environment, 'api') },
+    AppModule.register(environment),
+    createHttpAdapter(),
+    { logger: createLogger(environment, 'api') },
   );
   await configureHttp(app);
   return app;

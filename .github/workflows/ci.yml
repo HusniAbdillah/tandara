@@ -46,3 +46,5 @@ jobs:
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
       - run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e

@@ -21,7 +21,15 @@ describe('resident report input boundary', () => {
   });
 
   it('rejects invalid coordinates and unexpected nested fields', () => {
-    expect(createReportSchema.safeParse({ ...report, location: { latitude: 95, longitude: 110 } }).success).toBe(false);
-    expect(createReportSchema.safeParse({ ...report, location: { latitude: -7, longitude: 110, privateNotes: 'x' } }).success).toBe(false);
+    expect(
+      createReportSchema.safeParse({ ...report, location: { latitude: 95, longitude: 110 } })
+        .success,
+    ).toBe(false);
+    expect(
+      createReportSchema.safeParse({
+        ...report,
+        location: { latitude: -7, longitude: 110, privateNotes: 'x' },
+      }).success,
+    ).toBe(false);
   });
 });

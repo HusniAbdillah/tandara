@@ -1,6 +1,8 @@
-# TDD — Technical Design Document  
-# **TANDARA**  
-## *From Local Signals to Shared Readiness.*
+# TDD — Technical Design Document
+
+# **TANDARA**
+
+## _From Local Signals to Shared Readiness._
 
 **Document status:** Foundation implemented; feature designs require the gates in ARCHITECTURE.md  
 **Version:** 1.1  
@@ -44,35 +46,35 @@ This TDD is deliberately designed for a small student team building a hackathon 
 
 # 2. Technical Goals
 
-| ID | Technical goal |
-|---|---|
+| ID    | Technical goal                                                                                          |
+| ----- | ------------------------------------------------------------------------------------------------------- |
 | TG-01 | Build a lightweight resident-facing PWA that works on mobile devices and unstable internet connections. |
-| TG-02 | Provide offline access to saved local preparedness plans and report drafts. |
-| TG-03 | Build a secure coordinator dashboard with role-based access control. |
-| TG-04 | Store reports, plans, locations, and boundaries in a relational geospatial database. |
-| TG-05 | Ensure all AI processing is asynchronous, auditable, and human-reviewed. |
-| TG-06 | Avoid vendor lock-in from Backend-as-a-Service platforms. |
-| TG-07 | Allow deployment to a standard VPS using Docker Compose. |
-| TG-08 | Support a clean path from prototype to closed community pilot. |
-| TG-09 | Minimize exposure of sensitive personal data and exact locations. |
-| TG-10 | Make system behavior observable through logs, health checks, metrics, and audit trails. |
+| TG-02 | Provide offline access to saved local preparedness plans and report drafts.                             |
+| TG-03 | Build a secure coordinator dashboard with role-based access control.                                    |
+| TG-04 | Store reports, plans, locations, and boundaries in a relational geospatial database.                    |
+| TG-05 | Ensure all AI processing is asynchronous, auditable, and human-reviewed.                                |
+| TG-06 | Avoid vendor lock-in from Backend-as-a-Service platforms.                                               |
+| TG-07 | Allow deployment to a standard VPS using Docker Compose.                                                |
+| TG-08 | Support a clean path from prototype to closed community pilot.                                          |
+| TG-09 | Minimize exposure of sensitive personal data and exact locations.                                       |
+| TG-10 | Make system behavior observable through logs, health checks, metrics, and audit trails.                 |
 
 ---
 
 # 3. Technical Non-Goals
 
-| ID | Non-goal |
-|---|---|
-| TNG-01 | Do not build Kubernetes infrastructure for MVP or first pilot. |
-| TNG-02 | Do not build native Android or iOS applications in the initial release. |
-| TNG-03 | Do not build an in-house machine-learning flood prediction model. |
-| TNG-04 | Do not implement real-time route optimization or “safe route” scoring. |
-| TNG-05 | Do not use client-side API keys for AI, storage, or privileged services. |
+| ID     | Non-goal                                                                             |
+| ------ | ------------------------------------------------------------------------------------ |
+| TNG-01 | Do not build Kubernetes infrastructure for MVP or first pilot.                       |
+| TNG-02 | Do not build native Android or iOS applications in the initial release.              |
+| TNG-03 | Do not build an in-house machine-learning flood prediction model.                    |
+| TNG-04 | Do not implement real-time route optimization or “safe route” scoring.               |
+| TNG-05 | Do not use client-side API keys for AI, storage, or privileged services.             |
 | TNG-06 | Do not expose PostgreSQL, Redis, S3-compatible storage, or worker services publicly. |
-| TNG-07 | Do not depend on a live third-party disaster API for the hackathon demo. |
-| TNG-08 | Do not store report images directly as binary data inside PostgreSQL. |
-| TNG-09 | Do not allow AI output to change a report status automatically. |
-| TNG-10 | Do not use public OpenStreetMap tile servers as production infrastructure. |
+| TNG-07 | Do not depend on a live third-party disaster API for the hackathon demo.             |
+| TNG-08 | Do not store report images directly as binary data inside PostgreSQL.                |
+| TNG-09 | Do not allow AI output to change a report status automatically.                      |
+| TNG-10 | Do not use public OpenStreetMap tile servers as production infrastructure.           |
 
 ---
 
@@ -80,21 +82,21 @@ This TDD is deliberately designed for a small student team building a hackathon 
 
 ## 4.1 Decision Summary
 
-| Area | Chosen approach | Reason |
-|---|---|---|
-| Frontend | React + Vite + TypeScript | Lightweight, fast development, excellent PWA support, easy static deployment. |
-| Backend | NestJS + Fastify + TypeScript | Modular structure, strong conventions, efficient HTTP handling, shared language across stack. |
-| Database | PostgreSQL + PostGIS | Strong relational consistency, auditing, workflows, and geospatial capability. |
-| Query layer | Kysely + parameterized SQL | Type-safe SQL while preserving full PostGIS flexibility. |
-| Async tasks | Redis + BullMQ | Reliable background processing for AI, media, notifications, and external sync. |
-| Media storage | S3-compatible storage, S3-compatible interface | Private object storage controlled by the team, without storing files in the database. |
-| Reverse proxy | Caddy | Simple HTTPS, reverse proxy, automated certificate renewal. |
-| PWA/offline | Workbox + IndexedDB + Dexie | Reliable caching, local plans, offline report queue, and drafts. |
-| Maps | MapLibre GL JS | Open-source map rendering, flexible tile-provider support. |
-| Deployment | Docker Compose on Ubuntu VPS | Production-oriented but manageable for a small team. |
-| CI/CD | GitHub Actions + GHCR | Familiar source control, reproducible builds, automated tests and deployment. |
-| AI | Server-side provider adapter with strict JSON schema | Keeps secrets private, supports provider changes, prevents invalid output. |
-| Observability | Pino, Sentry, Uptime Kuma; Prometheus/Grafana later | Appropriate staged observability without overengineering MVP. |
+| Area          | Chosen approach                                      | Reason                                                                                        |
+| ------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Frontend      | React + Vite + TypeScript                            | Lightweight, fast development, excellent PWA support, easy static deployment.                 |
+| Backend       | NestJS + Fastify + TypeScript                        | Modular structure, strong conventions, efficient HTTP handling, shared language across stack. |
+| Database      | PostgreSQL + PostGIS                                 | Strong relational consistency, auditing, workflows, and geospatial capability.                |
+| Query layer   | Kysely + parameterized SQL                           | Type-safe SQL while preserving full PostGIS flexibility.                                      |
+| Async tasks   | Redis + BullMQ                                       | Reliable background processing for AI, media, notifications, and external sync.               |
+| Media storage | S3-compatible storage, S3-compatible interface       | Private object storage controlled by the team, without storing files in the database.         |
+| Reverse proxy | Caddy                                                | Simple HTTPS, reverse proxy, automated certificate renewal.                                   |
+| PWA/offline   | Workbox + IndexedDB + Dexie                          | Reliable caching, local plans, offline report queue, and drafts.                              |
+| Maps          | MapLibre GL JS                                       | Open-source map rendering, flexible tile-provider support.                                    |
+| Deployment    | Docker Compose on Ubuntu VPS                         | Production-oriented but manageable for a small team.                                          |
+| CI/CD         | GitHub Actions + GHCR                                | Familiar source control, reproducible builds, automated tests and deployment.                 |
+| AI            | Server-side provider adapter with strict JSON schema | Keeps secrets private, supports provider changes, prevents invalid output.                    |
+| Observability | Pino, Sentry, Uptime Kuma; Prometheus/Grafana later  | Appropriate staged observability without overengineering MVP.                                 |
 
 ---
 
@@ -263,9 +265,9 @@ patched Node 22 for deployed environments. Secrets never enter VITE-prefixed con
 
 Tandara uses two web applications.
 
-| Application | Domain example | Users | Main purpose |
-|---|---|---|---|
-| Tandara Warga | `tandara.id` | Residents and public visitors | Preparedness plans, checklists, reports, offline access |
+| Application   | Domain example     | Users                           | Main purpose                                                 |
+| ------------- | ------------------ | ------------------------------- | ------------------------------------------------------------ |
+| Tandara Warga | `tandara.id`       | Residents and public visitors   | Preparedness plans, checklists, reports, offline access      |
 | Tandara Posko | `posko.tandara.id` | Coordinators and administrators | Review reports, manage plans, drills, and follow-up requests |
 
 ---
@@ -298,14 +300,14 @@ axe-core
 
 # 7.3 State Management Strategy
 
-| State type | Tool | Example |
-|---|---|---|
-| Server state | TanStack Query | Plans, reports, coordinator inbox |
-| Form state | React Hook Form | Report form, plan editor |
-| Validation | Zod | API payload and frontend validation |
-| Local UI state | Zustand | Sidebar, selected region, map layer toggles |
-| Offline persisted state | Dexie / IndexedDB | Saved plans, report drafts, offline queue |
-| Authentication state | HTTP-only cookie + `/auth/me` query | User session and permissions |
+| State type              | Tool                                | Example                                     |
+| ----------------------- | ----------------------------------- | ------------------------------------------- |
+| Server state            | TanStack Query                      | Plans, reports, coordinator inbox           |
+| Form state              | React Hook Form                     | Report form, plan editor                    |
+| Validation              | Zod                                 | API payload and frontend validation         |
+| Local UI state          | Zustand                             | Sidebar, selected region, map layer toggles |
+| Offline persisted state | Dexie / IndexedDB                   | Saved plans, report drafts, offline queue   |
+| Authentication state    | HTTP-only cookie + `/auth/me` query | User session and permissions                |
 
 Avoid storing sensitive server data in `localStorage`.
 
@@ -353,16 +355,16 @@ Avoid storing sensitive server data in `localStorage`.
 
 # 7.6 PWA Caching Strategy
 
-| Resource | Strategy | Reason |
-|---|---|---|
-| App shell | Cache First | Application should open even when offline |
-| JavaScript/CSS assets | Cache First with versioned assets | Safe because builds are hashed |
-| Published plan API | Stale While Revalidate | Serve cached plan quickly but fetch newer version |
-| Contacts | Stale While Revalidate | Useful offline but must show timestamp |
-| Map tiles | Limited Cache First | Only if provider policy permits |
-| Report submission | Explicit network send + single Dexie queue | No Cache API mutation handling or duplicate Workbox queue; acknowledge only committed writes |
-| Coordinator dashboard data | Network Only, no-store | No persistent API cache; clear in-memory query data on logout/membership change |
-| Help requests | Network Only | Sensitive information should not be offline cached |
+| Resource                   | Strategy                                   | Reason                                                                                       |
+| -------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| App shell                  | Cache First                                | Application should open even when offline                                                    |
+| JavaScript/CSS assets      | Cache First with versioned assets          | Safe because builds are hashed                                                               |
+| Published plan API         | Stale While Revalidate                     | Serve cached plan quickly but fetch newer version                                            |
+| Contacts                   | Stale While Revalidate                     | Useful offline but must show timestamp                                                       |
+| Map tiles                  | Limited Cache First                        | Only if provider policy permits                                                              |
+| Report submission          | Explicit network send + single Dexie queue | No Cache API mutation handling or duplicate Workbox queue; acknowledge only committed writes |
+| Coordinator dashboard data | Network Only, no-store                     | No persistent API cache; clear in-memory query data on logout/membership change              |
+| Help requests              | Network Only                               | Sensitive information should not be offline cached                                           |
 
 ---
 
@@ -387,7 +389,7 @@ interface OfflineReportDraft {
   idempotencyKey: string;
   reportPayload: unknown;
   mediaLocalReferences: string[];
-  state: "draft" | "queued" | "sync_failed";
+  state: 'draft' | 'queued' | 'sync_failed';
   retryCount: number;
   createdAt: string;
   updatedAt: string;
@@ -464,9 +466,7 @@ Minimum technical implementation:
 Example:
 
 ```tsx
-<span aria-label="Community report awaiting coordinator review">
-  Awaiting Review
-</span>
+<span aria-label="Community report awaiting coordinator review">Awaiting Review</span>
 ```
 
 ---
@@ -710,12 +710,12 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE EXTENSION IF NOT EXISTS citext;
 ```
 
-| Extension | Purpose |
-|---|---|
-| `postgis` | Geospatial storage and queries |
-| `pgcrypto` | UUID generation and cryptographic utilities |
-| `pg_trgm` | Text similarity for duplicate-candidate search |
-| `citext` | Case-insensitive email fields |
+| Extension  | Purpose                                        |
+| ---------- | ---------------------------------------------- |
+| `postgis`  | Geospatial storage and queries                 |
+| `pgcrypto` | UUID generation and cryptographic utilities    |
+| `pg_trgm`  | Text similarity for duplicate-candidate search |
+| `citext`   | Case-insensitive email fields                  |
 
 ---
 
@@ -1140,18 +1140,18 @@ under_review
 
 ## Allowed Transitions
 
-| From | To | Actor |
-|---|---|---|
-| Draft offline | Submitted | Resident application after sync |
-| Submitted | Under Review | Reviewer or coordinator |
-| Submitted | Clarification Requested | Reviewer or coordinator |
-| Under Review | Reviewed | Reviewer or coordinator |
-| Reviewed | Published | Coordinator or organization admin |
-| Submitted | Closed | Coordinator with reason |
-| Under Review | Closed | Coordinator with reason |
-| Published | Closed | Coordinator with reason |
-| Any active state | Restricted | Coordinator or admin |
-| Clarification Requested | Submitted | Resident submits update |
+| From                    | To                      | Actor                             |
+| ----------------------- | ----------------------- | --------------------------------- |
+| Draft offline           | Submitted               | Resident application after sync   |
+| Submitted               | Under Review            | Reviewer or coordinator           |
+| Submitted               | Clarification Requested | Reviewer or coordinator           |
+| Under Review            | Reviewed                | Reviewer or coordinator           |
+| Reviewed                | Published               | Coordinator or organization admin |
+| Submitted               | Closed                  | Coordinator with reason           |
+| Under Review            | Closed                  | Coordinator with reason           |
+| Published               | Closed                  | Coordinator with reason           |
+| Any active state        | Restricted              | Coordinator or admin              |
+| Clarification Requested | Submitted               | Resident submits update           |
 
 The backend must enforce allowed transitions. Frontend buttons alone are not sufficient.
 
@@ -1161,13 +1161,13 @@ The backend must enforce allowed transitions. Frontend buttons alone are not suf
 
 # 12.1 Coordinate Policy
 
-| Data | Storage | Visibility |
-|---|---|---|
-| Exact resident location | `private_location` | Restricted coordinators only |
-| Public report location | `public_location` | Generalized or snapped |
-| Help request location | Private geometry | Assigned coordinators only |
-| Region boundary | Polygon | Public if appropriate |
-| Plan meeting points | Point | Public only after plan approval |
+| Data                    | Storage            | Visibility                      |
+| ----------------------- | ------------------ | ------------------------------- |
+| Exact resident location | `private_location` | Restricted coordinators only    |
+| Public report location  | `public_location`  | Generalized or snapped          |
+| Help request location   | Private geometry   | Assigned coordinators only      |
+| Region boundary         | Polygon            | Public if appropriate           |
+| Plan meeting points     | Point              | Public only after plan approval |
 
 ---
 
@@ -1459,14 +1459,14 @@ This provides more reliable asynchronous processing than calling BullMQ directly
 
 # 14.3 Retry Policy
 
-| Queue | Retry count | Backoff | Dead-letter behavior |
-|---|---:|---|---|
-| AI triage | 3 | Exponential | Mark unavailable; manual review remains possible |
-| Media processing | 3 | Exponential | Quarantine media, notify coordinator |
-| Notification | 5 | Exponential | Record delivery failure |
-| External sync | 5 | Exponential | Keep stale data label, raise alert |
-| Duplicate detection | 3 | Exponential | Report remains usable without result |
-| Cleanup | 3 | Daily retry | Escalate administrative alert |
+| Queue               | Retry count | Backoff     | Dead-letter behavior                             |
+| ------------------- | ----------: | ----------- | ------------------------------------------------ |
+| AI triage           |           3 | Exponential | Mark unavailable; manual review remains possible |
+| Media processing    |           3 | Exponential | Quarantine media, notify coordinator             |
+| Notification        |           5 | Exponential | Record delivery failure                          |
+| External sync       |           5 | Exponential | Keep stale data label, raise alert               |
+| Duplicate detection |           3 | Exponential | Report remains usable without result             |
+| Cleanup             |           3 | Daily retry | Escalate administrative alert                    |
 
 ---
 
@@ -1551,25 +1551,25 @@ Example schema:
 ```ts
 const triageSchema = z.object({
   suggestedCategory: z.enum([
-    "road_flooding",
-    "water_entering_homes",
-    "blocked_access",
-    "debris",
-    "damaged_facility",
-    "follow_up_needed",
-    "other",
-    "unknown"
+    'road_flooding',
+    'water_entering_homes',
+    'blocked_access',
+    'debris',
+    'damaged_facility',
+    'follow_up_needed',
+    'other',
+    'unknown',
   ]),
-  confidenceBand: z.enum(["low", "medium", "high"]),
+  confidenceBand: z.enum(['low', 'medium', 'high']),
   explicitFacts: z.object({
     locationText: z.string().nullable(),
     observationTimeText: z.string().nullable(),
     conditionText: z.string().nullable(),
-    assistanceRequested: z.boolean().nullable()
+    assistanceRequested: z.boolean().nullable(),
   }),
   missingInformation: z.array(z.string()),
   summary: z.string(),
-  safetyNote: z.string()
+  safetyNote: z.string(),
 });
 ```
 
@@ -1675,18 +1675,18 @@ For larger uploads or higher traffic, use signed direct uploads:
 
 # 16.3 Media Security Controls
 
-| Control | Requirement |
-|---|---|
-| File size | Maximum 5 MB for MVP |
-| Allowed types | JPG, PNG, WebP only |
+| Control         | Requirement                                         |
+| --------------- | --------------------------------------------------- |
+| File size       | Maximum 5 MB for MVP                                |
+| Allowed types   | JPG, PNG, WebP only                                 |
 | MIME validation | Validate both declared MIME type and file signature |
-| Storage | Private bucket only |
-| Public URLs | Never permanent |
-| Access | Short-lived signed URLs |
-| EXIF | Strip GPS and metadata before sharing |
-| Virus scan | Required before public pilot |
-| Logs | Log sensitive media access |
-| Retention | Delete according to data retention policy |
+| Storage         | Private bucket only                                 |
+| Public URLs     | Never permanent                                     |
+| Access          | Short-lived signed URLs                             |
+| EXIF            | Strip GPS and metadata before sharing               |
+| Virus scan      | Required before public pilot                        |
+| Logs            | Log sensitive media access                          |
+| Retention       | Delete according to data retention policy           |
 
 ---
 
@@ -1747,13 +1747,13 @@ services:
 
 # 17.4 Environment Separation
 
-| Environment | Purpose |
-|---|---|
-| Local | Developer machine, local Docker services |
-| Development | Shared integration environment |
-| Staging | Production-like pre-release environment |
-| Production | Pilot/public environment |
-| Demo | Stable hackathon demo environment with simulation data |
+| Environment | Purpose                                                |
+| ----------- | ------------------------------------------------------ |
+| Local       | Developer machine, local Docker services               |
+| Development | Shared integration environment                         |
+| Staging     | Production-like pre-release environment                |
+| Production  | Pilot/public environment                               |
+| Demo        | Stable hackathon demo environment with simulation data |
 
 Production data must never be copied to development environments.
 
@@ -1813,13 +1813,13 @@ A single VPS is acceptable for a demo but insufficient for disaster-critical pro
 
 For pilot readiness:
 
-| Data | Backup method | Frequency | Storage |
-|---|---|---|---|
-| PostgreSQL database | `pg_dump` initially; WAL/PITR later | Daily + continuous WAL for pilot | Encrypted offsite storage |
-| S3-compatible storage media | `restic` or `rclone` encrypted backup | Daily | Separate provider/region |
-| Environment configuration | Encrypted secret store | On changes | Restricted repository or secret manager |
-| Docker Compose configuration | Git repository | Every change | GitHub |
-| Audit logs | Included in PostgreSQL backup | Daily | Offsite encrypted storage |
+| Data                         | Backup method                         | Frequency                        | Storage                                 |
+| ---------------------------- | ------------------------------------- | -------------------------------- | --------------------------------------- |
+| PostgreSQL database          | `pg_dump` initially; WAL/PITR later   | Daily + continuous WAL for pilot | Encrypted offsite storage               |
+| S3-compatible storage media  | `restic` or `rclone` encrypted backup | Daily                            | Separate provider/region                |
+| Environment configuration    | Encrypted secret store                | On changes                       | Restricted repository or secret manager |
+| Docker Compose configuration | Git repository                        | Every change                     | GitHub                                  |
+| Audit logs                   | Included in PostgreSQL backup         | Daily                            | Offsite encrypted storage               |
 
 ---
 
@@ -1928,25 +1928,25 @@ Example:
 
 # 20.1 Security Baseline
 
-| Area | Requirement |
-|---|---|
-| Transport security | HTTPS only |
-| Password storage | Argon2id |
-| Sessions | HTTP-only secure cookies |
-| Authorization | Server-side role and organization checks |
-| API input | Zod validation |
-| SQL injection | Parameterized queries only |
-| XSS | Output sanitization and Content Security Policy |
-| CSRF | Token or same-site strategy for cookie authentication |
-| Uploads | Type, size, signature validation |
-| Secrets | Server environment only |
-| Rate limits | Redis-backed controls |
-| Logging | No raw sensitive content by default |
-| Auditability | Append-only audit events |
-| Backups | Encrypted and offsite |
-| Dependency risk | Automated scanning |
-| Admin access | MFA before pilot |
-| VPS access | SSH keys, firewall, fail2ban |
+| Area               | Requirement                                           |
+| ------------------ | ----------------------------------------------------- |
+| Transport security | HTTPS only                                            |
+| Password storage   | Argon2id                                              |
+| Sessions           | HTTP-only secure cookies                              |
+| Authorization      | Server-side role and organization checks              |
+| API input          | Zod validation                                        |
+| SQL injection      | Parameterized queries only                            |
+| XSS                | Output sanitization and Content Security Policy       |
+| CSRF               | Token or same-site strategy for cookie authentication |
+| Uploads            | Type, size, signature validation                      |
+| Secrets            | Server environment only                               |
+| Rate limits        | Redis-backed controls                                 |
+| Logging            | No raw sensitive content by default                   |
+| Auditability       | Append-only audit events                              |
+| Backups            | Encrypted and offsite                                 |
+| Dependency risk    | Automated scanning                                    |
+| Admin access       | MFA before pilot                                      |
+| VPS access         | SSH keys, firewall, fail2ban                          |
 
 ---
 
@@ -1954,14 +1954,14 @@ Example:
 
 Suggested initial rules:
 
-| Endpoint type | Suggested limit |
-|---|---|
-| Login | 5 attempts per 15 minutes per IP/account |
-| Password reset | 3 requests per hour per account |
+| Endpoint type           | Suggested limit                                                    |
+| ----------------------- | ------------------------------------------------------------------ |
+| Login                   | 5 attempts per 15 minutes per IP/account                           |
+| Password reset          | 3 requests per hour per account                                    |
 | Guest report submission | Configurable per IP/device; avoid overly strict emergency blocking |
-| Media upload | 10 uploads per hour per guest/device |
-| AI operations | Internal queue limits |
-| Admin endpoints | Lower limits plus authentication |
+| Media upload            | 10 uploads per hour per guest/device                               |
+| AI operations           | Internal queue limits                                              |
+| Admin endpoints         | Lower limits plus authentication                                   |
 
 Rate limits must be monitored. If limits block legitimate community activity during a drill or event, coordinators need a controlled override mechanism.
 
@@ -1969,16 +1969,16 @@ Rate limits must be monitored. If limits block legitimate community activity dur
 
 # 20.3 Data Access Rules
 
-| Data | Public | Resident | Coordinator | Admin |
-|---|---:|---:|---:|---:|
-| Published plan | Yes | Yes | Yes | Yes |
-| Unreviewed report | No | Own only | Assigned region | Yes |
-| Reviewed public report | Yes | Yes | Yes | Yes |
-| Exact report location | No | Own only where allowed | Assigned region | Yes |
-| Contact information | No | Own only | Assigned only | Yes |
-| Help request | No | Own only | Assigned only | Yes |
-| Audit logs | No | No | Limited | Yes |
-| Private media | No | Own only | Authorized only | Yes |
+| Data                   | Public |               Resident |     Coordinator | Admin |
+| ---------------------- | -----: | ---------------------: | --------------: | ----: |
+| Published plan         |    Yes |                    Yes |             Yes |   Yes |
+| Unreviewed report      |     No |               Own only | Assigned region |   Yes |
+| Reviewed public report |    Yes |                    Yes |             Yes |   Yes |
+| Exact report location  |     No | Own only where allowed | Assigned region |   Yes |
+| Contact information    |     No |               Own only |   Assigned only |   Yes |
+| Help request           |     No |               Own only |   Assigned only |   Yes |
+| Audit logs             |     No |                     No |         Limited |   Yes |
+| Private media          |     No |               Own only | Authorized only |   Yes |
 
 ---
 
@@ -2071,18 +2071,18 @@ Redis Exporter
 
 # 21.3 Required Alerts
 
-| Alert | Severity |
-|---|---|
-| API unavailable | Critical |
-| Database unavailable | Critical |
-| Disk usage > 85% | High |
-| Backup failed | High |
-| Worker queue stuck | High |
-| AI failure rate spike | Medium |
-| Unusual login failures | Medium |
-| High report submission failure rate | High |
-| S3-compatible storage storage nearing capacity | Medium |
-| External source sync failure | Medium |
+| Alert                                          | Severity |
+| ---------------------------------------------- | -------- |
+| API unavailable                                | Critical |
+| Database unavailable                           | Critical |
+| Disk usage > 85%                               | High     |
+| Backup failed                                  | High     |
+| Worker queue stuck                             | High     |
+| AI failure rate spike                          | Medium   |
+| Unusual login failures                         | Medium   |
+| High report submission failure rate            | High     |
+| S3-compatible storage storage nearing capacity | Medium   |
+| External source sync failure                   | Medium   |
 
 ---
 
@@ -2090,17 +2090,17 @@ Redis Exporter
 
 # 22.1 Test Layers
 
-| Layer | Tooling | Purpose |
-|---|---|---|
-| Unit tests | Vitest | Business rules, state transitions, utilities |
-| Component tests | React Testing Library | Forms, status labels, accessibility |
-| API integration tests | Vitest + temporary PostgreSQL | Endpoints, permissions, validation |
-| E2E tests | Playwright | Critical resident and coordinator journeys |
-| Accessibility tests | axe-core + manual testing | WCAG-related verification |
-| Load tests | k6 or Artillery | API behavior under traffic |
-| Security tests | Dependency scanning, secret scanning, RBAC tests | Basic vulnerability prevention |
-| AI evaluation | Labeled fixture dataset | Quality and hallucination evaluation |
-| Backup restore tests | Restore runbook | Recovery readiness |
+| Layer                 | Tooling                                          | Purpose                                      |
+| --------------------- | ------------------------------------------------ | -------------------------------------------- |
+| Unit tests            | Vitest                                           | Business rules, state transitions, utilities |
+| Component tests       | React Testing Library                            | Forms, status labels, accessibility          |
+| API integration tests | Vitest + temporary PostgreSQL                    | Endpoints, permissions, validation           |
+| E2E tests             | Playwright                                       | Critical resident and coordinator journeys   |
+| Accessibility tests   | axe-core + manual testing                        | WCAG-related verification                    |
+| Load tests            | k6 or Artillery                                  | API behavior under traffic                   |
+| Security tests        | Dependency scanning, secret scanning, RBAC tests | Basic vulnerability prevention               |
+| AI evaluation         | Labeled fixture dataset                          | Quality and hallucination evaluation         |
+| Backup restore tests  | Restore runbook                                  | Recovery readiness                           |
 
 ---
 
@@ -2151,30 +2151,30 @@ Redis Exporter
 
 ## 23.1 MVP Assumptions
 
-| Metric | Assumption |
-|---|---|
-| Active pilot regions | 1–3 |
-| Coordinators per region | 5–20 |
-| Daily reports | Under 500 |
-| Concurrent residents | Under 500 |
-| Report media size | Maximum 5 MB |
-| Plans per region | Under 20 active versions |
-| AI jobs | Under 1,000/day |
-| Storage growth | Low initially; monitor media carefully |
+| Metric                  | Assumption                             |
+| ----------------------- | -------------------------------------- |
+| Active pilot regions    | 1–3                                    |
+| Coordinators per region | 5–20                                   |
+| Daily reports           | Under 500                              |
+| Concurrent residents    | Under 500                              |
+| Report media size       | Maximum 5 MB                           |
+| Plans per region        | Under 20 active versions               |
+| AI jobs                 | Under 1,000/day                        |
+| Storage growth          | Low initially; monitor media carefully |
 
 ---
 
 ## 23.2 Performance Targets
 
-| Area | Target |
-|---|---|
-| Public plan first load | Under 3 seconds on normal mobile connection |
-| Cached plan load | Under 1 second |
-| Standard API p95 | Under 500 ms |
-| Report creation acknowledgement | Under 2 seconds excluding media |
-| Coordinator report-list p95 | Under 1 second with pagination |
-| Offline queue retry | Begins within 30 seconds after app regains connectivity |
-| AI triage | Asynchronous; not part of resident submit latency |
+| Area                            | Target                                                  |
+| ------------------------------- | ------------------------------------------------------- |
+| Public plan first load          | Under 3 seconds on normal mobile connection             |
+| Cached plan load                | Under 1 second                                          |
+| Standard API p95                | Under 500 ms                                            |
+| Report creation acknowledgement | Under 2 seconds excluding media                         |
+| Coordinator report-list p95     | Under 1 second with pagination                          |
+| Offline queue retry             | Begins within 30 seconds after app regains connectivity |
+| AI triage                       | Asynchronous; not part of resident submit latency       |
 
 ---
 

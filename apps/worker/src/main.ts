@@ -6,7 +6,9 @@ import { WorkerModule } from './worker.module.js';
 try {
   const environment = parseEnvironment(process.env);
   if (environment.WORKER_ENABLED) {
-    throw new Error('Consumers are not implemented. Keep WORKER_ENABLED=false until job handlers exist.');
+    throw new Error(
+      'Consumers are not implemented. Keep WORKER_ENABLED=false until job handlers exist.',
+    );
   }
   const app = await NestFactory.createApplicationContext(WorkerModule.register(environment), {
     logger: createLogger(environment, 'worker'),

@@ -14,11 +14,11 @@ and CI. It does **not** implement the full MVP.
 
 ## 2. Ownership
 
-| Developer | Primary scope | Shared responsibilities |
-|---|---|---|
-| 1 — Warga | apps/resident-web, offline records/queue, shared UI | UX/copy, resident demo, accessibility |
-| 2 — Core | apps/api, database/migrations, auth/policies, backend core | Integration, local infrastructure, deployment |
-| 3 — Posko/Async | apps/coordinator-web, apps/worker, backend triage/duplicates | Test automation, AI provenance, pitch |
+| Developer       | Primary scope                                                | Shared responsibilities                       |
+| --------------- | ------------------------------------------------------------ | --------------------------------------------- |
+| 1 — Warga       | apps/resident-web, offline records/queue, shared UI          | UX/copy, resident demo, accessibility         |
+| 2 — Core        | apps/api, database/migrations, auth/policies, backend core   | Integration, local infrastructure, deployment |
+| 3 — Posko/Async | apps/coordinator-web, apps/worker, backend triage/duplicates | Test automation, AI provenance, pitch         |
 
 All three perform QA and review. Developer 2 owns migrations, not every backend
 file. Developer 3 can add triage operations inside its owned backend module without
@@ -32,16 +32,16 @@ finished API to build forms/inbox against fixtures.
 
 ## 3. Required MVP slices
 
-| Slice | Deliverable | Gate |
-|---|---|---|
-| Foundation | Reproducible install, four apps, strict build, Compose/CI | lint, typecheck, tests, builds pass |
-| Public plan | One simulation region and immutable plan snapshot | owner/version/review date/disclaimer; printable |
-| Resident report | Validated create request and secure receipt | atomic write/audit/outbox; idempotency replay |
-| Coordinator | Seeded login, inbox/detail, review and publication | server authorization; public projection contains no private fields |
-| Offline | Saved plan, one Dexie queue, visible failure/retry | refresh offline, lost-response retry, no duplicate record |
-| Async/triage | Outbox dispatcher, consumer, explicit mock/live provenance | AI unavailable does not block manual review |
-| Duplicate | Deterministic candidate and human confirmation | no auto-close; audited and reversible decision |
-| Privacy | Restricted synthetic follow-up | unauthorized read denied in API; no persistent private cache |
+| Slice           | Deliverable                                                | Gate                                                               |
+| --------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
+| Foundation      | Reproducible install, four apps, strict build, Compose/CI  | lint, typecheck, tests, builds pass                                |
+| Public plan     | One simulation region and immutable plan snapshot          | owner/version/review date/disclaimer; printable                    |
+| Resident report | Validated create request and secure receipt                | atomic write/audit/outbox; idempotency replay                      |
+| Coordinator     | Seeded login, inbox/detail, review and publication         | server authorization; public projection contains no private fields |
+| Offline         | Saved plan, one Dexie queue, visible failure/retry         | refresh offline, lost-response retry, no duplicate record          |
+| Async/triage    | Outbox dispatcher, consumer, explicit mock/live provenance | AI unavailable does not block manual review                        |
+| Duplicate       | Deterministic candidate and human confirmation             | no auto-close; audited and reversible decision                     |
+| Privacy         | Restricted synthetic follow-up                             | unauthorized read denied in API; no persistent private cache       |
 
 Use one seeded region. Display simulation labels; server decides simulation context.
 Only synthetic data is permitted in this three-day demo. Mock triage is explicitly
@@ -84,11 +84,11 @@ and app_metadata only. Retain UUID resource IDs, UTC timestamps, and strict sche
 
 ## 6. Day 1 — Complete the online report path
 
-| Developer | Work |
-|---|---|
-| 1 | Warga plan/form UI, tokens/copy, contract fixtures; coordinate offline payload model |
-| 2 | Business migrations, seeded coordinator session, report create/receipt, list/detail |
-| 3 | Posko login/inbox/detail against fixtures; worker/job input contracts and triage adapter |
+| Developer | Work                                                                                     |
+| --------- | ---------------------------------------------------------------------------------------- |
+| 1         | Warga plan/form UI, tokens/copy, contract fixtures; coordinate offline payload model     |
+| 2         | Business migrations, seeded coordinator session, report create/receipt, list/detail      |
+| 3         | Posko login/inbox/detail against fixtures; worker/job input contracts and triage adapter |
 
 Integrate small slices during the day, not one large branch per developer. First
 deploy the foundation early so HTTPS/proxy/env problems are discovered before Day 3.
@@ -99,11 +99,11 @@ If the gate fails, freeze all optional UI/map/live-AI work and fix this flow.
 
 ## 7. Day 2 — Review, offline, and async reliability
 
-| Developer | Work |
-|---|---|
-| 1 | Immutable offline plan, checklist, Dexie queue, retry and draft preservation |
-| 2 | Review/publish policy, concurrency/audit, public projection, restricted follow-up |
-| 3 | Leased dispatcher/consumer, mock triage provenance, duplicate candidate and review UI |
+| Developer | Work                                                                                  |
+| --------- | ------------------------------------------------------------------------------------- |
+| 1         | Immutable offline plan, checklist, Dexie queue, retry and draft preservation          |
+| 2         | Review/publish policy, concurrency/audit, public projection, restricted follow-up     |
+| 3         | Leased dispatcher/consumer, mock triage provenance, duplicate candidate and review UI |
 
 Share integration tests: lost acknowledgement/retry, cross-region denial,
 restricted fields absent publicly, Redis/provider outage, and malformed AI output.
@@ -115,11 +115,11 @@ private follow-up remains private. Optional live AI requires a clear failure lab
 
 ## 8. Day 3 — Verification and demo
 
-| Developer | Work |
-|---|---|
-| 1 | Mobile/accessibility/error states, resident/offline rehearsal, demo copy |
-| 2 | Deployment/migration/health smoke tests, demo reset, local fallback |
-| 3 | Integrated workflow tests, mock/provider failure rehearsal, pitch/video |
+| Developer | Work                                                                     |
+| --------- | ------------------------------------------------------------------------ |
+| 1         | Mobile/accessibility/error states, resident/offline rehearsal, demo copy |
+| 2         | Deployment/migration/health smoke tests, demo reset, local fallback      |
+| 3         | Integrated workflow tests, mock/provider failure rehearsal, pitch/video  |
 
 Freeze features at midday; complete fixes and rehearsals afterward. Keep roughly
 the final quarter of the available effort for integration, verification, and demo,

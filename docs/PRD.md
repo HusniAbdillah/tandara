@@ -1,6 +1,8 @@
-# PRD — Product Requirements Document  
-# **TANDARA**  
-## *From Local Signals to Shared Readiness.*
+# PRD — Product Requirements Document
+
+# **TANDARA**
+
+## _From Local Signals to Shared Readiness._
 
 **Document status:** Comprehensive Product Requirements Document  
 **Version:** 1.1  
@@ -17,20 +19,20 @@
 
 # 1. Document Control
 
-| Field | Value |
-|---|---|
-| Product name | Tandara |
-| Internal codename | Tandara Community Readiness Platform |
-| Product owner | To be assigned |
-| Technical owner | To be assigned |
-| Security owner | To be assigned before pilot |
-| Pilot organization owner | To be assigned before real-world deployment |
-| Target users | Residents, community coordinators, volunteers, local organizations |
-| Primary use case | Community flood preparedness and local information coordination |
-| Initial market | Indonesian flood-prone communities |
-| Release strategy | Prototype → closed pilot → limited public pilot → multi-region |
-| Last updated | 2026 |
-| Name availability | Must be checked through trademark, domain, app-store, and social-media searches before public launch |
+| Field                    | Value                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| Product name             | Tandara                                                                                              |
+| Internal codename        | Tandara Community Readiness Platform                                                                 |
+| Product owner            | To be assigned                                                                                       |
+| Technical owner          | To be assigned                                                                                       |
+| Security owner           | To be assigned before pilot                                                                          |
+| Pilot organization owner | To be assigned before real-world deployment                                                          |
+| Target users             | Residents, community coordinators, volunteers, local organizations                                   |
+| Primary use case         | Community flood preparedness and local information coordination                                      |
+| Initial market           | Indonesian flood-prone communities                                                                   |
+| Release strategy         | Prototype → closed pilot → limited public pilot → multi-region                                       |
+| Last updated             | 2026                                                                                                 |
+| Name availability        | Must be checked through trademark, domain, app-store, and social-media searches before public launch |
 
 ---
 
@@ -233,23 +235,23 @@ Tandara must not assume that all residents:
 
 Tandara supports sustainability through community resilience, inclusive access to preparedness information, and long-term local capacity building.
 
-| Sustainability dimension | Tandara contribution |
-|---|---|
-| Social sustainability | Helps residents, including vulnerable groups, access local preparedness information and participate in community readiness. |
-| Climate resilience | Supports adaptation to climate-related flooding through planning, drills, local reporting, and preparedness knowledge. |
-| Institutional sustainability | Preserves local plans, ownership, review schedules, and community knowledge beyond individual volunteers. |
-| Digital sustainability | Uses a lightweight web-first architecture, self-hosted deployment, modular services, and offline-friendly design. |
-| Operational sustainability | Supports phased rollout, local configuration, local ownership, and reusable regional templates. |
+| Sustainability dimension     | Tandara contribution                                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Social sustainability        | Helps residents, including vulnerable groups, access local preparedness information and participate in community readiness. |
+| Climate resilience           | Supports adaptation to climate-related flooding through planning, drills, local reporting, and preparedness knowledge.      |
+| Institutional sustainability | Preserves local plans, ownership, review schedules, and community knowledge beyond individual volunteers.                   |
+| Digital sustainability       | Uses a lightweight web-first architecture, self-hosted deployment, modular services, and offline-friendly design.           |
+| Operational sustainability   | Supports phased rollout, local configuration, local ownership, and reusable regional templates.                             |
 
 ### Relevant Sustainable Development Goals
 
-| SDG | Contribution |
-|---|---|
-| SDG 11 — Sustainable Cities and Communities | Supports disaster resilience and inclusive local preparedness. |
-| SDG 13 — Climate Action | Supports adaptation and community capacity for climate-related flood risk. |
-| SDG 3 — Good Health and Well-being | Improves access to preparedness guidance and safer coordination. |
-| SDG 10 — Reduced Inequalities | Includes accessibility, low-bandwidth, and low-literacy design considerations. |
-| SDG 17 — Partnerships for the Goals | Requires collaboration among communities, local organizations, and public institutions. |
+| SDG                                         | Contribution                                                                            |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| SDG 11 — Sustainable Cities and Communities | Supports disaster resilience and inclusive local preparedness.                          |
+| SDG 13 — Climate Action                     | Supports adaptation and community capacity for climate-related flood risk.              |
+| SDG 3 — Good Health and Well-being          | Improves access to preparedness guidance and safer coordination.                        |
+| SDG 10 — Reduced Inequalities               | Includes accessibility, low-bandwidth, and low-literacy design considerations.          |
+| SDG 17 — Partnerships for the Goals         | Requires collaboration among communities, local organizations, and public institutions. |
 
 ---
 
@@ -257,35 +259,35 @@ Tandara supports sustainability through community resilience, inclusive access t
 
 ## 5.1 Product Goals
 
-| ID | Goal |
-|---|---|
-| G-01 | Help residents access and understand local preparedness plans. |
-| G-02 | Allow residents to save essential preparedness information for offline use. |
-| G-03 | Enable structured, source-labeled community condition reporting. |
-| G-04 | Help coordinators review, categorize, and manage reports efficiently. |
-| G-05 | Make uncertainty visible instead of hiding it behind automated conclusions. |
-| G-06 | Maintain local plan ownership, versioning, and review dates. |
-| G-07 | Support community drills and preparedness learning. |
-| G-08 | Protect sensitive data through role-based access and privacy-by-design practices. |
-| G-09 | Provide an architecture that can be self-hosted on a VPS and expanded gradually. |
+| ID   | Goal                                                                               |
+| ---- | ---------------------------------------------------------------------------------- |
+| G-01 | Help residents access and understand local preparedness plans.                     |
+| G-02 | Allow residents to save essential preparedness information for offline use.        |
+| G-03 | Enable structured, source-labeled community condition reporting.                   |
+| G-04 | Help coordinators review, categorize, and manage reports efficiently.              |
+| G-05 | Make uncertainty visible instead of hiding it behind automated conclusions.        |
+| G-06 | Maintain local plan ownership, versioning, and review dates.                       |
+| G-07 | Support community drills and preparedness learning.                                |
+| G-08 | Protect sensitive data through role-based access and privacy-by-design practices.  |
+| G-09 | Provide an architecture that can be self-hosted on a VPS and expanded gradually.   |
 | G-10 | Deliver a polished, credible hackathon prototype with realistic safety boundaries. |
 
 ---
 
 ## 5.2 Non-Goals
 
-| ID | Non-goal |
-|---|---|
-| NG-01 | Tandara will not predict floods using its own AI model. |
+| ID    | Non-goal                                                                                                    |
+| ----- | ----------------------------------------------------------------------------------------------------------- |
+| NG-01 | Tandara will not predict floods using its own AI model.                                                     |
 | NG-02 | Tandara will not replace BMKG, BNPB, BPBD, emergency services, sirens, radio, or official warning channels. |
-| NG-03 | Tandara will not issue evacuation orders. |
-| NG-04 | Tandara will not label routes as universally safe. |
-| NG-05 | Tandara will not provide real-time emergency dispatch guarantees. |
-| NG-06 | Tandara will not track residents continuously. |
-| NG-07 | Tandara will not make automated aid-priority decisions. |
-| NG-08 | Tandara will not support every disaster type in the initial release. |
-| NG-09 | Tandara will not claim nationwide emergency readiness after a hackathon prototype. |
-| NG-10 | Tandara will not use AI output as verified fact without human review. |
+| NG-03 | Tandara will not issue evacuation orders.                                                                   |
+| NG-04 | Tandara will not label routes as universally safe.                                                          |
+| NG-05 | Tandara will not provide real-time emergency dispatch guarantees.                                           |
+| NG-06 | Tandara will not track residents continuously.                                                              |
+| NG-07 | Tandara will not make automated aid-priority decisions.                                                     |
+| NG-08 | Tandara will not support every disaster type in the initial release.                                        |
+| NG-09 | Tandara will not claim nationwide emergency readiness after a hackathon prototype.                          |
+| NG-10 | Tandara will not use AI output as verified fact without human review.                                       |
 
 ---
 
@@ -293,14 +295,14 @@ Tandara supports sustainability through community resilience, inclusive access t
 
 ## 6.1 Release Phases
 
-| Phase | Name | Scope | Success Gate |
-|---|---|---|---|
-| Phase 0 | Discovery | User interviews, workflow mapping, data source review, pilot partner identification | A real community need and operating partner are identified |
-| Phase 1 | Hackathon Prototype | Simulated neighborhood, end-to-end report flow, AI triage, offline plan | Demo works reliably using simulation data |
-| Phase 2 | Closed Pilot | One community, selected coordinators, real plan validation, limited users | Governance, privacy, and moderation workflows work |
-| Phase 3 | Limited Public Pilot | Community drills, controlled resident access, usage evaluation | Measurable preparedness and usability improvement |
-| Phase 4 | Multi-Region Pilot | Multiple local configurations and partner organizations | Multi-tenant governance and support model validated |
-| Phase 5 | Scale Readiness | Operational model, backups, monitoring, support, legal review | Sustainable ownership and infrastructure exist |
+| Phase   | Name                 | Scope                                                                               | Success Gate                                               |
+| ------- | -------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Phase 0 | Discovery            | User interviews, workflow mapping, data source review, pilot partner identification | A real community need and operating partner are identified |
+| Phase 1 | Hackathon Prototype  | Simulated neighborhood, end-to-end report flow, AI triage, offline plan             | Demo works reliably using simulation data                  |
+| Phase 2 | Closed Pilot         | One community, selected coordinators, real plan validation, limited users           | Governance, privacy, and moderation workflows work         |
+| Phase 3 | Limited Public Pilot | Community drills, controlled resident access, usage evaluation                      | Measurable preparedness and usability improvement          |
+| Phase 4 | Multi-Region Pilot   | Multiple local configurations and partner organizations                             | Multi-tenant governance and support model validated        |
+| Phase 5 | Scale Readiness      | Operational model, backups, monitoring, support, legal review                       | Sustainable ownership and infrastructure exist             |
 
 ---
 
@@ -428,15 +430,15 @@ The hackathon MVP must prioritize depth over breadth.
 
 # 8. Jobs To Be Done
 
-| User | Job to be done |
-|---|---|
-| Resident | When flooding risk increases, help me understand what I should prepare and where to find the latest local plan. |
-| Resident | When I see a local problem, help me report it without requiring complex forms or constant connectivity. |
-| Resident | When internet access is unavailable, help me still access essential local preparedness information. |
-| Coordinator | When reports arrive, help me quickly understand what is being reported, what is uncertain, and what requires review. |
-| Coordinator | When local plans change, help me update them with ownership, version history, and review dates. |
-| Organization administrator | When managing several coordinators, help me control access to sensitive information and maintain accountability. |
-| Drill facilitator | When running a preparedness simulation, help me measure whether participants understand plans and information labels. |
+| User                       | Job to be done                                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Resident                   | When flooding risk increases, help me understand what I should prepare and where to find the latest local plan.       |
+| Resident                   | When I see a local problem, help me report it without requiring complex forms or constant connectivity.               |
+| Resident                   | When internet access is unavailable, help me still access essential local preparedness information.                   |
+| Coordinator                | When reports arrive, help me quickly understand what is being reported, what is uncertain, and what requires review.  |
+| Coordinator                | When local plans change, help me update them with ownership, version history, and review dates.                       |
+| Organization administrator | When managing several coordinators, help me control access to sensitive information and maintain accountability.      |
+| Drill facilitator          | When running a preparedness simulation, help me measure whether participants understand plans and information labels. |
 
 ---
 
@@ -479,34 +481,34 @@ The hackathon MVP must prioritize depth over breadth.
 
 ## 10.1 Roles
 
-| Role | Description |
-|---|---|
-| Public Visitor | Can view published public preparedness information. |
-| Resident | Can save plans, manage local checklist, submit reports, and view own submission status. |
-| Reviewer | Can view assigned reports and add review decisions. |
-| Coordinator | Can review reports, manage local plans, see restricted help requests for assigned regions, and manage drills. |
-| Organization Administrator | Can manage organization members, roles, region configuration, and plan publication workflows. |
-| Platform Administrator | Can manage all organizations, regions, infrastructure configuration, data retention, and platform-level audit access. |
-| System Worker | Non-human service account for background jobs; has minimum required permissions. |
+| Role                       | Description                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Public Visitor             | Can view published public preparedness information.                                                                   |
+| Resident                   | Can save plans, manage local checklist, submit reports, and view own submission status.                               |
+| Reviewer                   | Can view assigned reports and add review decisions.                                                                   |
+| Coordinator                | Can review reports, manage local plans, see restricted help requests for assigned regions, and manage drills.         |
+| Organization Administrator | Can manage organization members, roles, region configuration, and plan publication workflows.                         |
+| Platform Administrator     | Can manage all organizations, regions, infrastructure configuration, data retention, and platform-level audit access. |
+| System Worker              | Non-human service account for background jobs; has minimum required permissions.                                      |
 
 ---
 
 ## 10.2 Permission Matrix
 
-| Capability | Public | Resident | Reviewer | Coordinator | Org Admin | Platform Admin |
-|---|---:|---:|---:|---:|---:|---:|
-| View published plans | Yes | Yes | Yes | Yes | Yes | Yes |
-| Save offline plan | Yes | Yes | Yes | Yes | Yes | Yes |
-| Submit report | Guest submission with receipt | Yes | Yes | Yes | Yes | Yes |
-| View own report | No | Yes | Yes | Yes | Yes | Yes |
-| View all reports in region | Limited public only | Limited public only | Assigned only | Yes | Yes | Yes |
-| Review report | No | No | Yes | Yes | Yes | Yes |
-| View help-request details | No | Own only | Assigned only | Assigned only | Yes | Yes |
-| Manage plans | No | No | No | Yes | Yes | Yes |
-| Publish plan | No | No | No | Limited | Yes | Yes |
-| Manage roles | No | No | No | No | Yes | Yes |
-| View audit logs | No | No | Limited | Limited | Yes | Yes |
-| Manage system configuration | No | No | No | No | No | Yes |
+| Capability                  |                        Public |            Resident |      Reviewer |   Coordinator | Org Admin | Platform Admin |
+| --------------------------- | ----------------------------: | ------------------: | ------------: | ------------: | --------: | -------------: |
+| View published plans        |                           Yes |                 Yes |           Yes |           Yes |       Yes |            Yes |
+| Save offline plan           |                           Yes |                 Yes |           Yes |           Yes |       Yes |            Yes |
+| Submit report               | Guest submission with receipt |                 Yes |           Yes |           Yes |       Yes |            Yes |
+| View own report             |                            No |                 Yes |           Yes |           Yes |       Yes |            Yes |
+| View all reports in region  |           Limited public only | Limited public only | Assigned only |           Yes |       Yes |            Yes |
+| Review report               |                            No |                  No |           Yes |           Yes |       Yes |            Yes |
+| View help-request details   |                            No |            Own only | Assigned only | Assigned only |       Yes |            Yes |
+| Manage plans                |                            No |                  No |            No |           Yes |       Yes |            Yes |
+| Publish plan                |                            No |                  No |            No |       Limited |       Yes |            Yes |
+| Manage roles                |                            No |                  No |            No |            No |       Yes |            Yes |
+| View audit logs             |                            No |                  No |       Limited |       Limited |       Yes |            Yes |
+| Manage system configuration |                            No |                  No |            No |            No |        No |            Yes |
 
 ---
 
@@ -554,18 +556,18 @@ The resident home screen must display:
 
 ### Required Information Labels
 
-| Type | Required label |
-|---|---|
-| Official-source content | Official Information |
-| Local approved plan | Published Local Plan |
-| Community submission | Community Report |
-| Unreviewed content | Awaiting Review |
-| Reviewed community content | Reviewed by Local Coordinator |
-| AI output | AI Suggestion — Not Verified |
-| Drill content | Simulation / Drill |
-| Cached content | Saved Offline |
-| Stale content | Last Updated: [timestamp] |
-| Missing information | No Recent Information Available |
+| Type                       | Required label                  |
+| -------------------------- | ------------------------------- |
+| Official-source content    | Official Information            |
+| Local approved plan        | Published Local Plan            |
+| Community submission       | Community Report                |
+| Unreviewed content         | Awaiting Review                 |
+| Reviewed community content | Reviewed by Local Coordinator   |
+| AI output                  | AI Suggestion — Not Verified    |
+| Drill content              | Simulation / Drill              |
+| Cached content             | Saved Offline                   |
+| Stale content              | Last Updated: [timestamp]       |
+| Missing information        | No Recent Information Available |
 
 ---
 
@@ -639,16 +641,16 @@ Residents must be able to submit structured reports.
 
 ### Required Fields
 
-| Field | Required | Description |
-|---|---:|---|
-| Report category | Yes | Selected from configured categories |
-| Short description | Yes | Free text with character limit |
-| Observation time | Optional | “Unknown” allowed |
-| Location | Optional | GPS, map pin, landmark, or text |
-| Photo | Optional | Image attachment |
-| Follow-up request | Optional | Can request coordinator follow-up |
-| Contact permission | Optional | Separate consent for follow-up |
-| Accessibility/assistance flag | Optional | Generic support category only |
+| Field                         | Required | Description                         |
+| ----------------------------- | -------: | ----------------------------------- |
+| Report category               |      Yes | Selected from configured categories |
+| Short description             |      Yes | Free text with character limit      |
+| Observation time              | Optional | “Unknown” allowed                   |
+| Location                      | Optional | GPS, map pin, landmark, or text     |
+| Photo                         | Optional | Image attachment                    |
+| Follow-up request             | Optional | Can request coordinator follow-up   |
+| Contact permission            | Optional | Separate consent for follow-up      |
+| Accessibility/assistance flag | Optional | Generic support category only       |
 
 ### Initial Report Categories
 
@@ -709,17 +711,17 @@ The PWA must support offline access to selected critical information.
 
 ### Offline Content
 
-| Content | Offline availability |
-|---|---|
-| Application shell | Yes |
-| Saved preparedness plan | Yes |
-| Household checklist | Yes |
-| Local contact list | Yes |
-| Report drafts | Yes |
-| Queued reports | Yes |
-| Latest live reports | No guarantee |
-| Full interactive map | Not required for MVP |
-| Sensitive help-request data | No |
+| Content                     | Offline availability |
+| --------------------------- | -------------------- |
+| Application shell           | Yes                  |
+| Saved preparedness plan     | Yes                  |
+| Household checklist         | Yes                  |
+| Local contact list          | Yes                  |
+| Report drafts               | Yes                  |
+| Queued reports              | Yes                  |
+| Latest live reports         | No guarantee         |
+| Full interactive map        | Not required for MVP |
+| Sensitive help-request data | No                   |
 
 ### Offline Requirements
 
@@ -1021,15 +1023,15 @@ It does not exist to make autonomous emergency decisions.
 
 ## 12.2 Allowed AI Features
 
-| Feature | Input | Output | Required human review |
-|---|---|---|---|
-| Category suggestion | Report text | Suggested category | Yes |
-| Fact extraction | Report text | Explicitly mentioned location, time, condition, request | Yes |
-| Ambiguity detection | Report text | Missing or unclear details | Yes |
-| Duplicate suggestion | Text, time, approximate location | Possible similar reports | Yes |
-| Report summarization | One or more reports | Short traceable summary | Yes |
-| Translation suggestion | Report text | Suggested translation | Yes |
-| Drill feedback clustering | Participant feedback | Common themes | Yes |
+| Feature                   | Input                            | Output                                                  | Required human review |
+| ------------------------- | -------------------------------- | ------------------------------------------------------- | --------------------- |
+| Category suggestion       | Report text                      | Suggested category                                      | Yes                   |
+| Fact extraction           | Report text                      | Explicitly mentioned location, time, condition, request | Yes                   |
+| Ambiguity detection       | Report text                      | Missing or unclear details                              | Yes                   |
+| Duplicate suggestion      | Text, time, approximate location | Possible similar reports                                | Yes                   |
+| Report summarization      | One or more reports              | Short traceable summary                                 | Yes                   |
+| Translation suggestion    | Report text                      | Suggested translation                                   | Yes                   |
+| Drill feedback clustering | Participant feedback             | Common themes                                           | Yes                   |
 
 ---
 
@@ -1066,10 +1068,7 @@ All model output must conform to a strict schema.
     "access_disruption": true,
     "assistance_request": false
   },
-  "missing_information": [
-    "exact location",
-    "observation time"
-  ],
+  "missing_information": ["exact location", "observation time"],
   "possible_duplicate_report_ids": [],
   "summary": "A resident reports road flooding near the community hall. The exact location and observation time are unclear.",
   "safety_note": "This is an AI suggestion and requires coordinator review."
@@ -1121,27 +1120,27 @@ If AI is unavailable:
 
 ## 13.1 Main Entities
 
-| Entity | Description |
-|---|---|
-| `users` | Registered accounts. |
-| `organizations` | Community organizations or operational partners. |
-| `organization_memberships` | Role assignments within an organization. |
-| `regions` | Configurable service regions. |
-| `preparedness_plans` | Main local plan records. |
-| `preparedness_plan_versions` | Version history for plans. |
-| `plan_locations` | Meeting points, facilities, landmarks, and local plan places. |
-| `reports` | Resident-submitted condition reports. |
-| `report_media` | Attached images or files. |
-| `report_reviews` | Human review records. |
-| `ai_triage_results` | AI output and metadata. |
-| `duplicate_candidates` | AI or rule-generated duplicate suggestions. |
-| `help_requests` | Restricted follow-up requests. |
-| `drills` | Preparedness simulation records. |
-| `drill_responses` | Drill participation and comprehension data. |
-| `external_source_items` | Authorized imported data. |
-| `notifications` | Notification events and delivery records. |
-| `audit_logs` | Immutable activity records. |
-| `data_retention_rules` | Configurable lifecycle rules. |
+| Entity                       | Description                                                   |
+| ---------------------------- | ------------------------------------------------------------- |
+| `users`                      | Registered accounts.                                          |
+| `organizations`              | Community organizations or operational partners.              |
+| `organization_memberships`   | Role assignments within an organization.                      |
+| `regions`                    | Configurable service regions.                                 |
+| `preparedness_plans`         | Main local plan records.                                      |
+| `preparedness_plan_versions` | Version history for plans.                                    |
+| `plan_locations`             | Meeting points, facilities, landmarks, and local plan places. |
+| `reports`                    | Resident-submitted condition reports.                         |
+| `report_media`               | Attached images or files.                                     |
+| `report_reviews`             | Human review records.                                         |
+| `ai_triage_results`          | AI output and metadata.                                       |
+| `duplicate_candidates`       | AI or rule-generated duplicate suggestions.                   |
+| `help_requests`              | Restricted follow-up requests.                                |
+| `drills`                     | Preparedness simulation records.                              |
+| `drill_responses`            | Drill participation and comprehension data.                   |
+| `external_source_items`      | Authorized imported data.                                     |
+| `notifications`              | Notification events and delivery records.                     |
+| `audit_logs`                 | Immutable activity records.                                   |
+| `data_retention_rules`       | Configurable lifecycle rules.                                 |
 
 ---
 
@@ -1201,13 +1200,13 @@ USING GIST (location);
 
 ## 13.4 Data Privacy Levels
 
-| Privacy level | Visibility |
-|---|---|
-| Public | May be displayed to all users after review. |
-| Community | Visible to authenticated residents in the same region. |
-| Restricted | Visible only to assigned coordinators. |
-| Private | Visible only to specific user and authorized administrators. |
-| Internal | Visible only to coordinators and administrators. |
+| Privacy level | Visibility                                                   |
+| ------------- | ------------------------------------------------------------ |
+| Public        | May be displayed to all users after review.                  |
+| Community     | Visible to authenticated residents in the same region.       |
+| Restricted    | Visible only to assigned coordinators.                       |
+| Private       | Visible only to specific user and authorized administrators. |
+| Internal      | Visible only to coordinators and administrators.             |
 
 ---
 
@@ -1320,73 +1319,73 @@ GET    /metrics
 
 # 15.1 Frontend Stack
 
-| Category | Technology | Purpose |
-|---|---|---|
-| Language | TypeScript | Type safety across frontend and backend |
-| Framework | React | Component-based user interface |
-| Build tool | Vite | Fast local development and optimized static builds |
-| Routing | React Router | Resident and coordinator route management |
-| State management | Zustand | Lightweight local client state |
-| Data fetching | TanStack Query | Caching, retries, request state, mutation handling |
-| Form handling | React Hook Form | Accessible, performant forms |
-| Validation | Zod | Shared frontend/backend schemas |
-| Styling | Tailwind CSS | Consistent responsive UI development |
-| UI primitives | Radix UI or shadcn/ui | Accessible UI components |
-| Maps | MapLibre GL JS | Open-source map rendering |
-| PWA | vite-plugin-pwa + Workbox | Service worker and cache management |
-| Offline data | IndexedDB + Dexie.js | Local plans, drafts, and offline queues |
-| Testing | Vitest, Testing Library, Playwright | Unit, component, and end-to-end tests |
+| Category         | Technology                          | Purpose                                            |
+| ---------------- | ----------------------------------- | -------------------------------------------------- |
+| Language         | TypeScript                          | Type safety across frontend and backend            |
+| Framework        | React                               | Component-based user interface                     |
+| Build tool       | Vite                                | Fast local development and optimized static builds |
+| Routing          | React Router                        | Resident and coordinator route management          |
+| State management | Zustand                             | Lightweight local client state                     |
+| Data fetching    | TanStack Query                      | Caching, retries, request state, mutation handling |
+| Form handling    | React Hook Form                     | Accessible, performant forms                       |
+| Validation       | Zod                                 | Shared frontend/backend schemas                    |
+| Styling          | Tailwind CSS                        | Consistent responsive UI development               |
+| UI primitives    | Radix UI or shadcn/ui               | Accessible UI components                           |
+| Maps             | MapLibre GL JS                      | Open-source map rendering                          |
+| PWA              | vite-plugin-pwa + Workbox           | Service worker and cache management                |
+| Offline data     | IndexedDB + Dexie.js                | Local plans, drafts, and offline queues            |
+| Testing          | Vitest, Testing Library, Playwright | Unit, component, and end-to-end tests              |
 
 ---
 
 # 15.2 Backend Stack
 
-| Category | Technology | Purpose |
-|---|---|---|
-| Language | TypeScript | Shared language with frontend |
-| Backend framework | NestJS | Structured modular backend |
-| HTTP adapter | Fastify | Efficient API handling |
-| API style | REST + OpenAPI | Clear documented integration |
-| Validation | Zod | Schema validation for API payloads |
-| Password hashing | Argon2id | Strong password security |
-| Authentication | JWT/session cookies | Secure user authentication |
-| Query builder | Kysely | Typed SQL with flexibility for PostGIS |
-| Database driver | `pg` | PostgreSQL connectivity |
-| Background jobs | BullMQ | AI processing, notifications, sync tasks |
-| Cache / queue backend | Redis | Queue, rate limit, temporary cache |
-| Logging | Pino | Structured JSON logs |
-| API documentation | Swagger/OpenAPI | Developer and QA documentation |
+| Category              | Technology          | Purpose                                  |
+| --------------------- | ------------------- | ---------------------------------------- |
+| Language              | TypeScript          | Shared language with frontend            |
+| Backend framework     | NestJS              | Structured modular backend               |
+| HTTP adapter          | Fastify             | Efficient API handling                   |
+| API style             | REST + OpenAPI      | Clear documented integration             |
+| Validation            | Zod                 | Schema validation for API payloads       |
+| Password hashing      | Argon2id            | Strong password security                 |
+| Authentication        | JWT/session cookies | Secure user authentication               |
+| Query builder         | Kysely              | Typed SQL with flexibility for PostGIS   |
+| Database driver       | `pg`                | PostgreSQL connectivity                  |
+| Background jobs       | BullMQ              | AI processing, notifications, sync tasks |
+| Cache / queue backend | Redis               | Queue, rate limit, temporary cache       |
+| Logging               | Pino                | Structured JSON logs                     |
+| API documentation     | Swagger/OpenAPI     | Developer and QA documentation           |
 
 ---
 
 # 15.3 Database Stack
 
-| Component | Technology | Purpose |
-|---|---|---|
-| Database | PostgreSQL 16+ | Primary relational database |
-| Spatial extension | PostGIS | Geographic regions, report locations, spatial search |
-| Text search | `pg_trgm` | Similarity search and duplicate candidates |
-| Cryptography | `pgcrypto` | UUIDs and cryptographic utility |
-| Migration approach | SQL migrations | Transparent and auditable schema changes |
-| Backup | `pg_dump` / WAL backup strategy | Database recovery |
+| Component          | Technology                      | Purpose                                              |
+| ------------------ | ------------------------------- | ---------------------------------------------------- |
+| Database           | PostgreSQL 16+                  | Primary relational database                          |
+| Spatial extension  | PostGIS                         | Geographic regions, report locations, spatial search |
+| Text search        | `pg_trgm`                       | Similarity search and duplicate candidates           |
+| Cryptography       | `pgcrypto`                      | UUIDs and cryptographic utility                      |
+| Migration approach | SQL migrations                  | Transparent and auditable schema changes             |
+| Backup             | `pg_dump` / WAL backup strategy | Database recovery                                    |
 
 ---
 
 # 15.4 Infrastructure Stack
 
-| Category | Technology | Purpose |
-|---|---|---|
-| Operating system | Ubuntu LTS | Stable VPS operating system |
-| Container runtime | Docker Engine | Containerized deployment |
-| Orchestration | Docker Compose | MVP and pilot multi-service deployment |
-| Reverse proxy | Caddy | HTTPS, reverse proxy, automatic certificate renewal |
-| Object storage | S3-compatible storage | Private S3-compatible media storage |
-| Container registry | GitHub Container Registry | Store versioned deployment images |
-| CI/CD | GitHub Actions | Testing, image build, deployment automation |
-| DNS/WAF | Cloudflare optional | DNS, DDoS protection, caching, firewall controls |
-| Error tracking | Sentry | Frontend/backend exception monitoring |
-| Uptime monitoring | Uptime Kuma | Health endpoint monitoring |
-| Metrics later | Prometheus + Grafana + Loki | Infrastructure and application observability |
+| Category           | Technology                  | Purpose                                             |
+| ------------------ | --------------------------- | --------------------------------------------------- |
+| Operating system   | Ubuntu LTS                  | Stable VPS operating system                         |
+| Container runtime  | Docker Engine               | Containerized deployment                            |
+| Orchestration      | Docker Compose              | MVP and pilot multi-service deployment              |
+| Reverse proxy      | Caddy                       | HTTPS, reverse proxy, automatic certificate renewal |
+| Object storage     | S3-compatible storage       | Private S3-compatible media storage                 |
+| Container registry | GitHub Container Registry   | Store versioned deployment images                   |
+| CI/CD              | GitHub Actions              | Testing, image build, deployment automation         |
+| DNS/WAF            | Cloudflare optional         | DNS, DDoS protection, caching, firewall controls    |
+| Error tracking     | Sentry                      | Frontend/backend exception monitoring               |
+| Uptime monitoring  | Uptime Kuma                 | Health endpoint monitoring                          |
+| Metrics later      | Prometheus + Grafana + Loki | Infrastructure and application observability        |
 
 ---
 
@@ -1479,23 +1478,23 @@ data-network
 
 ### Hackathon / Demo Environment
 
-| Resource | Minimum | Recommended |
-|---|---:|---:|
-| CPU | 2 vCPU | 4 vCPU |
-| RAM | 4 GB | 8 GB |
-| Storage | 80 GB NVMe | 160 GB NVMe |
-| Operating system | Ubuntu LTS | Ubuntu LTS |
-| Region | Singapore/Jakarta | Singapore/Jakarta |
+| Resource         |           Minimum |       Recommended |
+| ---------------- | ----------------: | ----------------: |
+| CPU              |            2 vCPU |            4 vCPU |
+| RAM              |              4 GB |              8 GB |
+| Storage          |        80 GB NVMe |       160 GB NVMe |
+| Operating system |        Ubuntu LTS |        Ubuntu LTS |
+| Region           | Singapore/Jakarta | Singapore/Jakarta |
 
 ### Closed Pilot
 
-| Service | Recommendation |
-|---|---|
-| Application VPS | 4 vCPU, 8 GB RAM |
-| Database VPS | 4 vCPU, 16 GB RAM |
-| Object storage | Separate storage or managed object storage |
-| Backup storage | Separate provider or separate region |
-| Monitoring | External uptime monitoring and error tracking |
+| Service         | Recommendation                                |
+| --------------- | --------------------------------------------- |
+| Application VPS | 4 vCPU, 8 GB RAM                              |
+| Database VPS    | 4 vCPU, 16 GB RAM                             |
+| Object storage  | Separate storage or managed object storage    |
+| Backup storage  | Separate provider or separate region          |
+| Monitoring      | External uptime monitoring and error tracking |
 
 ---
 
@@ -1503,17 +1502,17 @@ data-network
 
 ## 17.1 Offline Strategy
 
-| Data type | Storage method | Offline support |
-|---|---|---|
-| App shell | Service worker cache | Yes |
-| Published local plan | IndexedDB | Yes |
-| Local contacts | IndexedDB | Yes |
-| Household checklist | IndexedDB | Yes |
-| Report drafts | IndexedDB | Yes |
-| Report queue | IndexedDB | Yes |
-| Recent map tiles | Cache only if policy permits | Limited |
-| Sensitive request details | Not cached publicly | No |
-| Live reports | Not guaranteed | No |
+| Data type                 | Storage method               | Offline support |
+| ------------------------- | ---------------------------- | --------------- |
+| App shell                 | Service worker cache         | Yes             |
+| Published local plan      | IndexedDB                    | Yes             |
+| Local contacts            | IndexedDB                    | Yes             |
+| Household checklist       | IndexedDB                    | Yes             |
+| Report drafts             | IndexedDB                    | Yes             |
+| Report queue              | IndexedDB                    | Yes             |
+| Recent map tiles          | Cache only if policy permits | Limited         |
+| Sensitive request details | Not cached publicly          | No              |
+| Live reports              | Not guaranteed               | No              |
 
 ---
 
@@ -1543,13 +1542,13 @@ User sees confirmation
 
 ## 17.3 Conflict Handling
 
-| Scenario | Handling |
-|---|---|
+| Scenario                                     | Handling                                                                            |
+| -------------------------------------------- | ----------------------------------------------------------------------------------- |
 | Plan changed on server while user is offline | Display newer version when sync returns; retain local saved copy until user updates |
-| Report uploaded twice after retry | Use idempotency key to prevent duplicate creation |
-| Draft edited on two devices | Treat drafts as device-local unless user account sync is enabled |
-| Cached plan expired | Show expired/stale label and recommend sync |
-| Upload fails repeatedly | Keep local draft and show retry action |
+| Report uploaded twice after retry            | Use idempotency key to prevent duplicate creation                                   |
+| Draft edited on two devices                  | Treat drafts as device-local unless user account sync is enabled                    |
+| Cached plan expired                          | Show expired/stale label and recommend sync                                         |
+| Upload fails repeatedly                      | Keep local draft and show retry action                                              |
 
 ---
 
@@ -1574,15 +1573,15 @@ User sees confirmation
 
 ## 18.2 Map Layers
 
-| Layer | Description | Visibility |
-|---|---|---|
-| Region boundary | Supported service area | Public |
-| Preparedness locations | Meeting points, facilities, landmarks | Public only if approved |
-| Community reports | Generalized location reports | Public after review |
-| Restricted help requests | Exact or sensitive locations | Authorized coordinators only |
-| Coverage gap zones | Areas without recent information | Coordinators, optional public summary |
-| Risk context layer | Static contextual risk information | Only with valid source and metadata |
-| Simulation layer | Drill content | Clearly marked |
+| Layer                    | Description                           | Visibility                            |
+| ------------------------ | ------------------------------------- | ------------------------------------- |
+| Region boundary          | Supported service area                | Public                                |
+| Preparedness locations   | Meeting points, facilities, landmarks | Public only if approved               |
+| Community reports        | Generalized location reports          | Public after review                   |
+| Restricted help requests | Exact or sensitive locations          | Authorized coordinators only          |
+| Coverage gap zones       | Areas without recent information      | Coordinators, optional public summary |
+| Risk context layer       | Static contextual risk information    | Only with valid source and metadata   |
+| Simulation layer         | Drill content                         | Clearly marked                        |
 
 ---
 
@@ -1674,16 +1673,16 @@ Tandara should not collect:
 
 This policy must be validated with pilot partners and legal review.
 
-| Data type | Suggested retention |
-|---|---|
-| Public reviewed community reports | 12–24 months, then archive/anonymize |
-| Unreviewed reports | 90–180 days unless operationally required |
-| Help requests with contact details | Delete or anonymize after closure + defined retention window |
-| Uploaded media | Delete after report retention period unless required for audit |
-| Audit logs | 24–36 months |
-| Drill responses | Aggregate long-term; delete identifiable data sooner |
-| Authentication logs | 6–12 months |
-| Backups | Rolling encrypted retention schedule |
+| Data type                          | Suggested retention                                            |
+| ---------------------------------- | -------------------------------------------------------------- |
+| Public reviewed community reports  | 12–24 months, then archive/anonymize                           |
+| Unreviewed reports                 | 90–180 days unless operationally required                      |
+| Help requests with contact details | Delete or anonymize after closure + defined retention window   |
+| Uploaded media                     | Delete after report retention period unless required for audit |
+| Audit logs                         | 24–36 months                                                   |
+| Drill responses                    | Aggregate long-term; delete identifiable data sooner           |
+| Authentication logs                | 6–12 months                                                    |
+| Backups                            | Rolling encrypted retention schedule                           |
 
 ---
 
@@ -1704,28 +1703,28 @@ Residents should be able to:
 
 ## 21.1 Performance Targets
 
-| Area | Initial target |
-|---|---|
-| Resident home-page first load | Under 3 seconds on standard mobile connection where possible |
-| Core API response | p95 under 500 ms for non-AI endpoints |
-| Plan loading from offline cache | Under 1 second on average device |
-| Report submission response | Under 2 seconds excluding media upload |
-| AI triage | Async; should not block report submission |
-| Coordinator report list | p95 under 1 second for paginated queries |
-| Map initial render | Under 3 seconds for pilot-scale data |
+| Area                            | Initial target                                               |
+| ------------------------------- | ------------------------------------------------------------ |
+| Resident home-page first load   | Under 3 seconds on standard mobile connection where possible |
+| Core API response               | p95 under 500 ms for non-AI endpoints                        |
+| Plan loading from offline cache | Under 1 second on average device                             |
+| Report submission response      | Under 2 seconds excluding media upload                       |
+| AI triage                       | Async; should not block report submission                    |
+| Coordinator report list         | p95 under 1 second for paginated queries                     |
+| Map initial render              | Under 3 seconds for pilot-scale data                         |
 
 ---
 
 ## 21.2 Reliability Targets
 
-| Metric | Prototype target | Pilot target |
-|---|---:|---:|
-| Application availability | Best effort | 99.5% monthly target |
-| API availability | Best effort | 99.5% monthly target |
+| Metric                         |     Prototype target |                          Pilot target |
+| ------------------------------ | -------------------: | ------------------------------------: |
+| Application availability       |          Best effort |                  99.5% monthly target |
+| API availability               |          Best effort |                  99.5% monthly target |
 | Successful offline report sync | Demonstrated in test | >95% under normal recovery conditions |
-| Backup success | Manual verification | Daily automated verification |
-| Restore test | Manual once | Scheduled periodic testing |
-| AI availability | Non-blocking | Non-blocking with fallback |
+| Backup success                 |  Manual verification |          Daily automated verification |
+| Restore test                   |          Manual once |            Scheduled periodic testing |
+| AI availability                |         Non-blocking |            Non-blocking with fallback |
 
 ---
 
@@ -1750,16 +1749,16 @@ Residents should be able to:
 
 ## 22.1 Required Monitoring
 
-| Layer | Monitoring requirement |
-|---|---|
-| Frontend | JavaScript errors, page-load performance, failed API requests |
-| API | Request rate, error rate, latency, authentication failures |
-| Database | Connections, slow queries, disk usage, backup status |
-| Redis | Queue depth, failed jobs, memory usage |
-| Worker | AI failures, retry count, job processing time |
-| S3-compatible storage | Storage usage, failed upload/download, signed URL errors |
-| VPS | CPU, RAM, disk, network, container health |
-| External APIs | Availability, latency, parse failures, authorization failures |
+| Layer                 | Monitoring requirement                                        |
+| --------------------- | ------------------------------------------------------------- |
+| Frontend              | JavaScript errors, page-load performance, failed API requests |
+| API                   | Request rate, error rate, latency, authentication failures    |
+| Database              | Connections, slow queries, disk usage, backup status          |
+| Redis                 | Queue depth, failed jobs, memory usage                        |
+| Worker                | AI failures, retry count, job processing time                 |
+| S3-compatible storage | Storage usage, failed upload/download, signed URL errors      |
+| VPS                   | CPU, RAM, disk, network, container health                     |
+| External APIs         | Availability, latency, parse failures, authorization failures |
 
 ---
 
@@ -1773,11 +1772,11 @@ GET /metrics
 
 ### Health Endpoint Expectations
 
-| Endpoint | Purpose |
-|---|---|
-| `/health` | Confirms the application process is running |
-| `/ready` | Confirms PostgreSQL is available for API operations; async Redis health is checked separately |
-| `/metrics` | Exposes Prometheus-compatible metrics in pilot or production environments |
+| Endpoint   | Purpose                                                                                       |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| `/health`  | Confirms the application process is running                                                   |
+| `/ready`   | Confirms PostgreSQL is available for API operations; async Redis health is checked separately |
+| `/metrics` | Exposes Prometheus-compatible metrics in pilot or production environments                     |
 
 ---
 
@@ -1838,17 +1837,17 @@ RETENTION_RULE_UPDATED
 
 ## 24.1 Testing Layers
 
-| Layer | Tools | Scope |
-|---|---|---|
-| Unit tests | Vitest | Utilities, validation schemas, status transitions |
-| Component tests | React Testing Library | Forms, labels, accessibility states |
-| API integration tests | Vitest + test database | Authentication, permissions, report workflow |
-| End-to-end tests | Playwright | Resident and coordinator critical journeys |
-| Accessibility tests | axe-core + manual testing | Keyboard, screen reader, contrast |
-| Security tests | Dependency scan, secret scan, permission tests | Common vulnerabilities |
-| Load tests | k6 or Artillery | API and report submission capacity |
-| Backup restore test | Manual then automated runbook | Recovery confidence |
-| AI evaluation tests | Labeled test set | Hallucination, extraction, category quality |
+| Layer                 | Tools                                          | Scope                                             |
+| --------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| Unit tests            | Vitest                                         | Utilities, validation schemas, status transitions |
+| Component tests       | React Testing Library                          | Forms, labels, accessibility states               |
+| API integration tests | Vitest + test database                         | Authentication, permissions, report workflow      |
+| End-to-end tests      | Playwright                                     | Resident and coordinator critical journeys        |
+| Accessibility tests   | axe-core + manual testing                      | Keyboard, screen reader, contrast                 |
+| Security tests        | Dependency scan, secret scan, permission tests | Common vulnerabilities                            |
+| Load tests            | k6 or Artillery                                | API and report submission capacity                |
+| Backup restore test   | Manual then automated runbook                  | Recovery confidence                               |
+| AI evaluation tests   | Labeled test set                               | Hallucination, extraction, category quality       |
 
 ---
 
@@ -1883,20 +1882,20 @@ RETENTION_RULE_UPDATED
 
 ## 25.2 Key Metrics
 
-| Area | Metric |
-|---|---|
-| Preparedness | Percentage of users saving local plans for offline use |
-| Preparedness | Checklist completion during drills |
-| Understanding | Percentage of users distinguishing official information from community reports |
-| Reporting | Report submission completion rate |
-| Reliability | Offline report synchronization success rate |
-| Coordinator operations | Median time to first report review |
-| AI utility | Percentage of AI suggestions accepted or edited |
-| AI safety | Unsupported-fact rate in AI summaries |
-| Duplicate handling | False-positive duplicate suggestion rate |
-| Governance | Percentage of published plans with active owners and review dates |
-| Accessibility | Accessibility issues identified and resolved |
-| Retention | Percentage of data lifecycle tasks completed on time |
+| Area                   | Metric                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| Preparedness           | Percentage of users saving local plans for offline use                         |
+| Preparedness           | Checklist completion during drills                                             |
+| Understanding          | Percentage of users distinguishing official information from community reports |
+| Reporting              | Report submission completion rate                                              |
+| Reliability            | Offline report synchronization success rate                                    |
+| Coordinator operations | Median time to first report review                                             |
+| AI utility             | Percentage of AI suggestions accepted or edited                                |
+| AI safety              | Unsupported-fact rate in AI summaries                                          |
+| Duplicate handling     | False-positive duplicate suggestion rate                                       |
+| Governance             | Percentage of published plans with active owners and review dates              |
+| Accessibility          | Accessibility issues identified and resolved                                   |
+| Retention              | Percentage of data lifecycle tasks completed on time                           |
 
 ---
 
@@ -1932,23 +1931,23 @@ No analytics event should include raw report content, phone numbers, exact coord
 
 # 26. Risk Register
 
-| Risk | Severity | Mitigation |
-|---|---|---|
-| Users mistake community reports for official warnings | High | Distinct labels, visual styles, disclaimers, source metadata |
-| AI invents details | High | Structured schema, `unknown` field, server validation, human review |
-| Report abuse or misinformation | High | Rate limiting, moderation workflow, audit logs, abuse reporting |
-| Local plans become outdated | High | Mandatory plan owner, review dates, expiration status |
-| Offline information is mistaken for live data | High | Persistent timestamp and offline banner |
-| Help-request data leaks | High | Restricted access, encryption, audit logs, private media |
-| VPS is compromised | High | Firewall, SSH keys, patching, backups, monitoring, secret management |
-| One VPS failure causes outage | High | Offsite backups, phased infrastructure separation for pilot |
-| External API changes | Medium | Adapter pattern, contract tests, independent connector shutdown |
-| Team over-engineers infrastructure | High | Use Docker Compose, not Kubernetes, for MVP |
-| Lack of operational owner after hackathon | High | Pilot only with named organization and SOP |
-| Users rely entirely on Tandara | High | Clear official-channel guidance and safety disclaimer |
-| AI provider unavailable | Medium | Async AI, manual workflow remains available |
-| Map is interpreted as route safety proof | High | Avoid “safe route” claims; add plan disclaimers |
-| Low digital literacy reduces adoption | Medium | Plain language, visual guidance, drill facilitation, text alternatives |
+| Risk                                                  | Severity | Mitigation                                                             |
+| ----------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
+| Users mistake community reports for official warnings | High     | Distinct labels, visual styles, disclaimers, source metadata           |
+| AI invents details                                    | High     | Structured schema, `unknown` field, server validation, human review    |
+| Report abuse or misinformation                        | High     | Rate limiting, moderation workflow, audit logs, abuse reporting        |
+| Local plans become outdated                           | High     | Mandatory plan owner, review dates, expiration status                  |
+| Offline information is mistaken for live data         | High     | Persistent timestamp and offline banner                                |
+| Help-request data leaks                               | High     | Restricted access, encryption, audit logs, private media               |
+| VPS is compromised                                    | High     | Firewall, SSH keys, patching, backups, monitoring, secret management   |
+| One VPS failure causes outage                         | High     | Offsite backups, phased infrastructure separation for pilot            |
+| External API changes                                  | Medium   | Adapter pattern, contract tests, independent connector shutdown        |
+| Team over-engineers infrastructure                    | High     | Use Docker Compose, not Kubernetes, for MVP                            |
+| Lack of operational owner after hackathon             | High     | Pilot only with named organization and SOP                             |
+| Users rely entirely on Tandara                        | High     | Clear official-channel guidance and safety disclaimer                  |
+| AI provider unavailable                               | Medium   | Async AI, manual workflow remains available                            |
+| Map is interpreted as route safety proof              | High     | Avoid “safe route” claims; add plan disclaimers                        |
+| Low digital literacy reduces adoption                 | Medium   | Plain language, visual guidance, drill facilitation, text alternatives |
 
 ---
 
@@ -1960,12 +1959,12 @@ No analytics event should include raw report content, phone numbers, exact coord
 
 ### Seed Reports
 
-| Report | Content | Expected behavior |
-|---|---|---|
-| A | “Water is knee-high near Jalan Melati, close to the community hall. Cars cannot pass.” | AI suggests road flooding; coordinator reviews |
-| B | “The road near the hall is flooded and motorcycles are turning back.” | AI flags potential duplicate with Report A |
-| C | “Flooding is happening nearby. Please check.” | AI flags ambiguous location and unknown time |
-| D | “An elderly resident may need follow-up near the health post.” | Restricted follow-up request; coordinator-only visibility |
+| Report | Content                                                                                | Expected behavior                                         |
+| ------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| A      | “Water is knee-high near Jalan Melati, close to the community hall. Cars cannot pass.” | AI suggests road flooding; coordinator reviews            |
+| B      | “The road near the hall is flooded and motorcycles are turning back.”                  | AI flags potential duplicate with Report A                |
+| C      | “Flooding is happening nearby. Please check.”                                          | AI flags ambiguous location and unknown time              |
+| D      | “An elderly resident may need follow-up near the health post.”                         | Restricted follow-up request; coordinator-only visibility |
 
 ---
 
@@ -1998,10 +1997,10 @@ No analytics event should include raw report content, phone numbers, exact coord
 
 # 28. Team Allocation — Three Developers
 
-| Developer | Primary ownership | Shared product responsibility |
-|---|---|---|
-| Developer 1 | Resident PWA, offline persistence/sync, shared UI | UX, Bahasa Indonesia copy, resident demo |
-| Developer 2 | API, auth/policies, database/migrations, infrastructure | Integration coordination, schema review |
+| Developer   | Primary ownership                                                | Shared product responsibility              |
+| ----------- | ---------------------------------------------------------------- | ------------------------------------------ |
+| Developer 1 | Resident PWA, offline persistence/sync, shared UI                | UX, Bahasa Indonesia copy, resident demo   |
+| Developer 2 | API, auth/policies, database/migrations, infrastructure          | Integration coordination, schema review    |
 | Developer 3 | Coordinator dashboard, worker/AI adapters, duplicate suggestions | Test automation, AI provenance, pitch/demo |
 
 All three own QA and scope decisions. Contracts changes are reviewed by their

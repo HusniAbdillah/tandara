@@ -7,4 +7,10 @@ import { router } from './app/router.js';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Application root is missing.');
-createRoot(root).render(<StrictMode><Providers><RouterProvider router={router} /></Providers></StrictMode>);
+createRoot(root).render(
+  <StrictMode>
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
+  </StrictMode>,
+);

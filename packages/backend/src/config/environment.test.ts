@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { parseEnvironment } from './environment.js';
 
-const input = { DATABASE_URL: 'postgres://test:test@localhost/tandara', REDIS_URL: 'redis://localhost:6379' };
+const input = {
+  DATABASE_URL: 'postgres://test:test@localhost/tandara',
+  REDIS_URL: 'redis://localhost:6379',
+};
 
 describe('server configuration', () => {
   it('does not interpret the string false as true', () => {
@@ -9,7 +12,9 @@ describe('server configuration', () => {
   });
 
   it('fails closed on invalid URLs without leaking credentials', () => {
-    expect(() => parseEnvironment({ ...input, DATABASE_URL: 'https://user:private-password@example.com' })).toThrow('DATABASE_URL');
+    expect(() =>
+      parseEnvironment({ ...input, DATABASE_URL: 'https://user:private-password@example.com' }),
+    ).toThrow('DATABASE_URL');
     try {
       parseEnvironment({ ...input, DATABASE_URL: 'https://user:private-password@example.com' });
     } catch (error) {

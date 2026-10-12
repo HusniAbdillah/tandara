@@ -21,15 +21,15 @@ pnpm dev
 Jangan timpa `.env` yang sudah dikonfigurasi. Perintah yang sama dapat dipakai pada
 Linux/macOS dengan `cp .env.example .env`.
 
-| Layanan | Alamat |
-|---|---|
-| Warga | http://127.0.0.1:5173 |
-| Posko | http://127.0.0.1:5174 |
-| API liveness | http://127.0.0.1:3000/health |
-| API readiness | http://127.0.0.1:3000/ready |
-| OpenAPI | http://127.0.0.1:3000/api/v1/system/openapi.json |
-| PostgreSQL lokal | 127.0.0.1:55432 |
-| Redis lokal | 127.0.0.1:56379 |
+| Layanan          | Alamat                                           |
+| ---------------- | ------------------------------------------------ |
+| Warga            | http://127.0.0.1:5173                            |
+| Posko            | http://127.0.0.1:5174                            |
+| API liveness     | http://127.0.0.1:3000/health                     |
+| API readiness    | http://127.0.0.1:3000/ready                      |
+| OpenAPI          | http://127.0.0.1:3000/api/v1/system/openapi.json |
+| PostgreSQL lokal | 127.0.0.1:55432                                  |
+| Redis lokal      | 127.0.0.1:56379                                  |
 
 API bisa boot tanpa database, tetapi `/ready` mengembalikan 503 sampai database
 tersedia. Worker hidup tanpa HTTP listener, dalam mode idle; `WORKER_ENABLED=true`
