@@ -4,7 +4,7 @@ assert.equal((await fetch(base + '/ready')).status, 200);
 assert.equal((await fetch(base + '/api/v1/auth/me')).status, 401);
 const headers = {
   'X-Tandara-Client': 'web',
-  Origin: 'https://posko.tandora.my.id',
+  Origin: 'https://posko.tandara.my.id',
 };
 const login = await fetch(base + '/api/v1/auth/login', {
   method: 'POST',

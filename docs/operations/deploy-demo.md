@@ -1,6 +1,6 @@
 # Deployment otomatis demo Tandara: Vercel + Tencent
 
-Target demo tiga minggu, domain `tandora.my.id`, VPS `43.129.33.176`.
+Target demo tiga minggu, domain `tandara.my.id`, VPS `43.129.33.176`.
 Ini persiapan deployment; konfigurasi belum dipasang pada akun/server pengguna.
 Tidak memerlukan Heroku, Redis, object-storage service, atau public container registry.
 
@@ -8,9 +8,9 @@ Tidak memerlukan Heroku, Redis, object-storage service, atau public container re
 
 | Alamat                      | Layanan                               |
 | --------------------------- | ------------------------------------- |
-| https://tandora.my.id       | Warga, project Vercel `tandara-warga` |
-| https://posko.tandora.my.id | Posko, project Vercel `tandara-posko` |
-| https://api.tandora.my.id   | Caddy/API di Tencent                  |
+| https://tandara.my.id       | Warga, project Vercel `tandara-warga` |
+| https://posko.tandara.my.id | Posko, project Vercel `tandara-posko` |
+| https://api.tandara.my.id   | Caddy/API di Tencent                  |
 
 GitHub Actions membangun frontend dan backend. Sesudah CI berhasil pada commit
 main yang sama, workflow menguji production image, mengirim image privat lewat
@@ -158,8 +158,8 @@ key tersebut dan batasi siapa yang bisa mengubah main/secrets.
 Isi `.env`:
 
 ```dotenv
-API_DOMAIN=api.tandora.my.id
-WEB_ORIGINS=https://tandora.my.id,https://posko.tandora.my.id
+API_DOMAIN=api.tandara.my.id
+WEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id
 POSTGRES_PASSWORD=<hasil openssl rand -hex 24>
 DEMO_PASSWORD=<password unik minimal 12 karakter>
 SEED_DEMO_ON_FIRST_DEPLOY=true
@@ -255,8 +255,8 @@ menambahkan paid team seats untuk teman yang membantu mengatur DNS.
 
 Pada Settings → Domains masing-masing project:
 
-- Warga: tambah `tandora.my.id`.
-- Posko: tambah `posko.tandora.my.id`.
+- Warga: tambah `tandara.my.id`.
+- Posko: tambah `posko.tandara.my.id`.
 
 Pastikan production domain tidak memaksa juri login ke Vercel. Login aplikasi
 Posko tetap berlaku. Uji akses dalam incognito sebelum membagikan link.
@@ -366,7 +366,7 @@ Pada server sebagai tandara-deploy:
 ```bash
 cd /opt/tandara
 docker compose -p tandara-demo --env-file .env --env-file current/release.env -f current/backend.compose.yml ps
-curl --fail https://api.tandora.my.id/ready
+curl --fail https://api.tandara.my.id/ready
 docker compose -p tandara-demo --env-file .env --env-file current/release.env -f current/backend.compose.yml logs --tail 50 api worker
 docker stats --no-stream
 ```

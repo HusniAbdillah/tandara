@@ -38,7 +38,7 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       RESIDENT_PROJECT_ID: ${{ secrets.VERCEL_RESIDENT_PROJECT_ID }}
       COORDINATOR_PROJECT_ID: ${{ secrets.VERCEL_COORDINATOR_PROJECT_ID }}
-      TANDARA_API_ORIGIN: https://api.tandora.my.id
+      TANDARA_API_ORIGIN: https://api.tandara.my.id
     steps:
       - uses: actions/checkout@v4
         with:
@@ -117,10 +117,10 @@ jobs:
           pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/coordinator-web --token "$VERCEL_TOKEN"
       - name: Verify final domain routes
         run: |
-          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandora.my.id/ >/dev/null
-          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandora.my.id/ >/dev/null
-          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandora.my.id/api/v1/regions >/dev/null
-          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandora.my.id/api/v1/regions >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandara.my.id/ >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandara.my.id/ >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandara.my.id/api/v1/regions >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandara.my.id/api/v1/regions >/dev/null
           printf 'Released commit %s to Tencent and both Vercel projects.\n' "$RELEASE_SHA" >> "$GITHUB_STEP_SUMMARY"
       - name: Remove runner SSH credentials
         if: always()

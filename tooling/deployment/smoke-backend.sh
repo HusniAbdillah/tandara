@@ -5,7 +5,7 @@ image=${1:?Pass the already built deployment image}
 mkdir -p .local
 temp=$(mktemp -d "$PWD/.local/deploy-smoke.XXXXXX")
 project="tandara-smoke-$$"
-printf 'APP_IMAGE=%s\nPOSTGRES_PASSWORD=0123456789abcdef0123456789abcdef\nDEMO_PASSWORD=synthetic-smoke-only\nAPI_DOMAIN=smoke.invalid\nWEB_ORIGINS=https://tandora.my.id,https://posko.tandora.my.id\n' "$image" > "$temp/smoke.env"
+printf 'APP_IMAGE=%s\nPOSTGRES_PASSWORD=0123456789abcdef0123456789abcdef\nDEMO_PASSWORD=synthetic-smoke-only\nAPI_DOMAIN=smoke.invalid\nWEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id\n' "$image" > "$temp/smoke.env"
 dc=(docker compose --project-name "$project" --env-file "$temp/smoke.env" -f infrastructure/deployment/backend.compose.yml)
 cleanup() {
   [[ "$project" =~ ^tandara-smoke-[0-9]+$ ]] || return 1

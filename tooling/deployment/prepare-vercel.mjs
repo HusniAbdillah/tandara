@@ -91,7 +91,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   try {
     const destination = await prepare(
       process.argv[2],
-      process.env.TANDARA_API_ORIGIN ?? 'https://api.tandora.my.id',
+      process.env.TANDARA_API_ORIGIN ?? 'https://api.tandara.my.id',
       process.env.VERCEL_ORG_ID,
       process.env.VERCEL_PROJECT_ID,
     );
