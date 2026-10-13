@@ -1,5 +1,8 @@
 # Complete simulation walkthrough
 
+For a timed presentation with exact inputs and presenter lines, use the
+[10–12 minute demo flow](demo-flow.md).
+
 Start the full Compose stack using README. Use two browser contexts (normal and
 private window) so Warga and coordinator decisions can be observed independently.
 All people, regions, report content, source feeds and plans are fictional.
@@ -14,7 +17,7 @@ All people, regions, report content, source feeds and plans are fictional.
    permission; photos are optional. Retain the receipt in Laporan saya.
 4. Sign into Posko as the Ciliwung coordinator. Search Kotak laporan, open the
    report. Original text stays separate from the provisional suggestion. Inspect
-   missing location/time, quoted facts, source IDs and deterministic provenance.
+   missing location/time, quoted facts, source IDs and displayed model provenance.
    Accept, correct or reject a suggestion with a reason; the report is still
    awaiting human review.
 5. Review seeded nearby reports and duplicate hints. Link, dismiss or undo a link
