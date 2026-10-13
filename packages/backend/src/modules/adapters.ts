@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { triageSchema, informationSchema } from '@tandara/contracts';
 import type { Information, Triage } from '@tandara/contracts';
 import { readAiSettings } from '../config/ai.js';
+import { BmkgNowcastSource } from './bmkg-nowcast.js';
 
 export interface TriageInput {
   id: string;
@@ -97,11 +98,11 @@ export class HeuristicAdapter implements AiAdapter {
     });
   }
 }
-export async function fetchJson(
+export async function fetchText(
   url: string,
   options: RequestInit = {},
   timeout = 10000,
-): Promise<unknown> {
+): Promise<string> {
   const response = await fetch(url, {
     ...options,
     signal: AbortSignal.timeout(timeout),
@@ -130,7 +131,14 @@ export async function fetchJson(
   } finally {
     await reader.cancel();
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
+  return Buffer.concat(chunks).toString('utf8');
+}
+export async function fetchJson(
+  url: string,
+  options: RequestInit = {},
+  timeout = 10000,
+): Promise<unknown> {
+  return JSON.parse(await fetchText(url, options, timeout)) as unknown;
 }
 export class CompatibleAdapter implements AiAdapter {
   usage: { prompt_tokens: number; completion_tokens: number } | null = null;
@@ -280,9 +288,21 @@ export interface SourceInput {
   config: Record<string, unknown>;
 }
 export interface SourceAdapter {
-  ingest(input: SourceInput): Promise<Information[]>;
+  ingest(input: SourceInput): Promise<SourceRecord[]>;
 }
-const base = (s: SourceInput) => ({
+export type SourceRecord = Information & {
+  scopeGeometry?:
+    | { type: 'Point'; coordinates: number[] }
+    | { type: 'GeometryCollection'; geometries: { type: 'Polygon'; coordinates: number[][][] }[] };
+};
+export function utcTimestamp(value: string): string {
+  const normalized = value.trim().replace(' ', 'T');
+  const iso = /(?:Z|[+-]\d\d:\d\d)$/i.test(normalized) ? normalized : normalized + 'Z';
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(iso) || !Number.isFinite(Date.parse(iso)))
+    throw new Error('Invalid source timestamp');
+  return new Date(iso).toISOString();
+}
+export const sourceBase = (s: SourceInput) => ({
   id: crypto.randomUUID(),
   sourceId: s.id,
   regionId: s.regionId,
@@ -290,6 +310,7 @@ const base = (s: SourceInput) => ({
   sourceUrl: s.sourceUrl,
   fetchedAt: new Date().toISOString(),
   observedAt: null,
+  issuedAt: null,
   verificationStatus: 'source_record',
   version: '1',
   simulation: false,
@@ -299,7 +320,7 @@ export class FixtureSource implements SourceAdapter {
     if (s.config['fail'] === true) throw new Error('Simulated provider outage');
     return [
       informationSchema.parse({
-        ...base(s),
+        ...sourceBase(s),
         title: 'Latihan kesiapsiagaan komunitas',
         body: 'Informasi contoh: baca rencana lokal dan periksa kebutuhan keluarga. Bukan peringatan atau kejadian nyata.',
         sourceType: 'simulation',
@@ -326,33 +347,43 @@ export class BmkgSource implements SourceAdapter {
       hu: z.number(),
     });
     const response = z
-      .object({ data: z.array(z.object({ cuaca: z.array(z.array(record)) })) })
+      .object({
+        lokasi: z.object({ adm4: z.string(), desa: z.string(), kecamatan: z.string() }),
+        data: z.array(z.object({ cuaca: z.array(z.array(record)) })),
+      })
       .parse(raw);
+    if (response.lokasi.adm4 !== adm4) throw new Error('Forecast location mismatch');
     return response.data
       .flatMap((d) => d.cuaca.flat())
       .slice(0, 24)
       .map((r) =>
         informationSchema.parse({
-          ...base(s),
+          ...sourceBase(s),
+          sourceName: 'BMKG · ' + response.lokasi.desa,
+          sourceUrl: 'https://data.bmkg.go.id/prakiraan-cuaca/',
           title: 'Prakiraan BMKG: ' + r.weather_desc,
           body:
-            'Suhu ' +
+            response.lokasi.desa +
+            ', ' +
+            response.lokasi.kecamatan +
+            ' (' +
+            adm4 +
+            '). Suhu ' +
             r.t +
             '°C, kelembapan ' +
             r.hu +
             '%. Prakiraan cuaca; bukan peringatan banjir atau instruksi evakuasi.',
           sourceType: 'official_weather',
           version: r.analysis_date,
-          effectiveAt: new Date(r.utc_datetime.replace(' ', 'T') + 'Z').toISOString(),
-          expiresAt: new Date(
-            Date.parse(r.utc_datetime.replace(' ', 'T') + 'Z') + 10800000,
-          ).toISOString(),
+          issuedAt: utcTimestamp(r.analysis_date),
+          effectiveAt: utcTimestamp(r.utc_datetime),
+          expiresAt: new Date(Date.parse(utcTimestamp(r.utc_datetime)) + 10800000).toISOString(),
         }),
       );
   }
 }
 export class PetaBencanaSource implements SourceAdapter {
-  async ingest(s: SourceInput): Promise<Information[]> {
+  async ingest(s: SourceInput): Promise<SourceRecord[]> {
     const admin = z
       .string()
       .regex(/^ID-[A-Z]{2}$/)
@@ -374,9 +405,15 @@ export class PetaBencanaSource implements SourceAdapter {
           features: z
             .array(
               z.object({
+                geometry: z.object({
+                  type: z.literal('Point'),
+                  coordinates: z.tuple([
+                    z.number().min(-180).max(180),
+                    z.number().min(-90).max(90),
+                  ]),
+                }),
                 properties: z.object({
                   pkey: z.union([z.string(), z.number()]),
-                  text: z.string().max(2000),
                   created_at: z.string(),
                 }),
               }),
@@ -385,22 +422,30 @@ export class PetaBencanaSource implements SourceAdapter {
         }),
       })
       .parse(raw);
-    return response.result.features.slice(0, 100).map((f) =>
-      informationSchema.parse({
-        ...base(s),
+    if (response.result.features.length > 100)
+      throw new Error('Community feed exceeds bounded regional import');
+    return response.result.features.map((f) => ({
+      ...informationSchema.parse({
+        ...sourceBase(s),
+        sourceName: 'PetaBencana.id · CC BY 4.0',
+        sourceUrl: 'https://petabencana.id/',
         title: 'Laporan urun daya PetaBencana',
-        body: f.properties.text,
+        body: 'Laporan banjir publik dari PetaBencana.id. Belum ditinjau pengelola Tandara; bukan peringatan resmi atau bukti akses aman. Teks dan kontak unggahan tidak disalin. Lihat sumber untuk detail.',
         sourceType: 'external_community',
         observedAt: null,
         effectiveAt: null,
-        expiresAt: new Date(Date.now() + 3600000).toISOString(),
+        issuedAt: utcTimestamp(f.properties.created_at),
+        expiresAt: new Date(
+          Date.parse(utcTimestamp(f.properties.created_at)) + 3600000,
+        ).toISOString(),
         version: String(f.properties.pkey),
         verificationStatus: 'external_community_unreviewed',
       }),
-    );
+      scopeGeometry: f.geometry,
+    }));
   }
 }
-export async function ingestSource(s: SourceInput): Promise<Information[]> {
+export async function ingestSource(s: SourceInput): Promise<SourceRecord[]> {
   if (s.provider === 'fixture' && s.mode === 'simulation') return new FixtureSource().ingest(s);
   if (
     s.mode !== 'live' ||
@@ -409,6 +454,7 @@ export async function ingestSource(s: SourceInput): Promise<Information[]> {
   )
     throw new Error('Source authorization or live capability missing');
   if (s.provider === 'bmkg') return new BmkgSource().ingest(s);
+  if (s.provider === 'bmkg_nowcast') return new BmkgNowcastSource().ingest(s);
   if (s.provider === 'petabencana') return new PetaBencanaSource().ingest(s);
   throw new Error('Source adapter unavailable; reference link only');
 }
