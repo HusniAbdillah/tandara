@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { sql } from 'kysely';
 import { z } from 'zod';
-import { regionConfigSchema } from '@tandara/contracts';
+import { regionConfigSchema, sourceProviderSchema } from '@tandara/contracts';
 import type { User, Source } from '@tandara/contracts';
 import { IdentityService, passwordHash } from './identity.js';
 import { audit, conflict, found, parse, sourceProjection } from './shared.js';
@@ -208,7 +208,7 @@ export class AdministrationService {
       z.strictObject({
         id: z.uuid().optional(),
         name: z.string().min(3).max(150),
-        provider: z.enum(['fixture', 'bmkg', 'petabencana', 'inarisk']),
+        provider: sourceProviderSchema,
         enabled: z.boolean(),
         mode: z.enum(['simulation', 'live', 'disabled']),
         sourceUrl: z.url().refine((v) => new URL(v).protocol === 'https:'),
@@ -224,6 +224,7 @@ export class AdministrationService {
             .regex(/^ID-[A-Z]{2}$/)
             .optional(),
           fail: z.boolean().optional(),
+          province: z.string().trim().min(3).max(100).optional(),
         }),
       }),
       input,
@@ -236,11 +237,36 @@ export class AdministrationService {
       throw new BadRequestException('Fixture harus berlabel simulasi.');
     if (
       d.enabled &&
+      ((d.provider === 'bmkg' && !d.config.adm4) ||
+        (d.provider === 'petabencana' && !d.config.admin) ||
+        (d.provider === 'bmkg_nowcast' && !d.config.province))
+    )
+      throw new BadRequestException('Lengkapi cakupan lokasi untuk provider ini.');
+    if (
+      d.enabled &&
       d.provider !== 'fixture' &&
       (d.mode !== 'live' || !d.config.authorized || process.env['ALLOW_LIVE_SOURCES'] !== 'true')
     )
       throw new BadRequestException('Aktivasi memerlukan izin sumber dan ALLOW_LIVE_SOURCES=true.');
     return this.db.transaction().execute(async (tx) => {
+      if (d.id) {
+        // A new location/provider cannot inherit old warnings or a previous successful check.
+        const changed = (
+          await sql<{
+            changed: boolean;
+          }>`SELECT provider<>${d.provider} OR mode<>${d.mode} OR source_url<>${d.sourceUrl} OR COALESCE(config->>'province','')<>${d.config.province ?? ''} OR COALESCE(config->>'adm4','')<>${d.config.adm4 ?? ''} OR COALESCE(config->>'admin','')<>${d.config.admin ?? ''} AS changed FROM information_sources WHERE id=${d.id}::uuid AND region_id=${regionId}::uuid FOR UPDATE`.execute(
+            tx,
+          )
+        ).rows[0]?.changed;
+        if (changed) {
+          await sql`UPDATE information_records SET expires_at=LEAST(COALESCE(expires_at,now()),now()),verification_status='source_configuration_changed' WHERE source_id=${d.id}::uuid`.execute(
+            tx,
+          );
+          await sql`UPDATE information_sources SET last_attempt_at=NULL,last_success_at=NULL,last_error=NULL WHERE id=${d.id}::uuid`.execute(
+            tx,
+          );
+        }
+      }
       const row = d.id
         ? found(
             (

@@ -44,7 +44,7 @@ export class PreparednessService {
     const information = (
       await sql<{
         data: PublicData['information'][number];
-      }>`SELECT ${informationProjection} data FROM information_records i JOIN information_sources s ON s.id=i.source_id WHERE i.region_id=${regionId}::uuid AND s.enabled ORDER BY i.fetched_at DESC LIMIT 30`.execute(
+      }>`SELECT ${informationProjection} data FROM information_records i JOIN information_sources s ON s.id=i.source_id WHERE i.region_id=${regionId}::uuid AND s.enabled AND (i.expires_at IS NULL OR i.expires_at>now()) ORDER BY (i.source_type='official_alert') DESC, i.effective_at ASC NULLS LAST, i.fetched_at DESC LIMIT 30`.execute(
         this.db,
       )
     ).rows.map((r) => r.data);
@@ -55,10 +55,18 @@ export class PreparednessService {
         this.db,
       )
     ).rows;
+    const sources = (
+      await sql<
+        PublicData['sources'][number]
+      >`SELECT id,name,provider,last_attempt_at::text AS "lastAttemptAt",last_success_at::text AS "lastSuccessAt",(last_error IS NOT NULL) AS failed FROM information_sources WHERE region_id=${regionId}::uuid AND enabled ORDER BY name`.execute(
+        this.db,
+      )
+    ).rows;
     return {
       region,
       information,
       reports,
+      sources,
       plans: await this.plans(regionId),
       fetchedAt: new Date().toISOString(),
     };
