@@ -1,7 +1,36 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError, createApiClient } from './index.js';
+import { z } from 'zod';
+import { ApiError, createApiClient, request } from './index.js';
 
 describe('API client', () => {
+  it('sends bodyless actions without a JSON content type while retaining security headers', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(JSON.stringify({ ok: true })));
+    vi.stubGlobal('fetch', fetcher);
+    try {
+      await expect(
+        request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' }),
+      ).resolves.toEqual({ ok: true });
+      const options = fetcher.mock.calls[0]?.[1];
+      expect(options?.credentials).toBe('include');
+      expect(options?.body).toBeUndefined();
+      expect(options?.headers).not.toHaveProperty('Content-Type');
+      expect(options?.headers).toMatchObject({ 'X-Tandara-Client': 'web', 'X-CSRF-Token': '' });
+      fetcher.mockResolvedValueOnce(new Response(JSON.stringify({ ok: true })));
+      await request('/notifications/preferences', z.object({ ok: z.boolean() }), {
+        method: 'POST',
+        body: { enabled: false },
+      });
+      expect(fetcher.mock.calls[1]?.[1]?.headers).toHaveProperty(
+        'Content-Type',
+        'application/json',
+      );
+      expect(fetcher.mock.calls[1]?.[1]?.body).toBe('{"enabled":false}');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it('includes cookie credentials and validates the public response', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(

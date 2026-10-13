@@ -24,7 +24,7 @@ export async function request<S extends z.ZodType>(
     method: options.method ?? 'GET',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
+      ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       'X-Tandara-Client': 'web',
       'X-CSRF-Token': csrf,
       ...options.headers,
