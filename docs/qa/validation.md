@@ -4,23 +4,26 @@ Validated locally on 2026-10-13 (Asia/Jakarta), Windows, Node 24.20.0,
 pnpm 10.26.2 and Docker Desktop Linux containers. Data is synthetic. Results
 below describe executed checks, not inferred remote CI or production readiness.
 
+The branch has since been rebased onto main. See [post-rebase verification](rebase-validation.md)
+for preservation details and the latest complete regression run.
+
 | Check                                  | Executed command / evidence                                                                      | Result                                                                   |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
 | Formatting                             | `npx --yes pnpm@10.26.2 format:check`                                                            | Pass                                                                     |
 | Boundaries, lint, types, tests, builds | `npx --yes pnpm@10.26.2 check`                                                                   | Pass; nine package builds                                                |
 | Unit and HTTP                          | Included in `check`                                                                              | 23 pass: contracts 3, client 3, backend 12, API 5                        |
 | Database and API integration           | `npx --yes pnpm@10.26.2 test:integration`                                                        | 23 pass, actual PostGIS/database and API                                 |
-| Browser journeys                       | `npx --yes pnpm@10.26.2 test:e2e` against final Docker images                                    | 8 pass; final run 46.6 seconds                                           |
+| Browser journeys                       | `npx --yes pnpm@10.26.2 test:e2e` against final Docker images                                    | 11 pass; post-rebase run 45.7 seconds                                    |
 | OpenAPI generation                     | `npx --yes pnpm@10.26.2 api:openapi`                                                             | Pass; [generated document](../api/openapi.json)                          |
 | Production dependency audit            | `npx --yes pnpm@10.26.2 audit --prod --json`                                                     | Zero known advisories across 189 production dependencies                 |
 | Docker                                 | `docker compose up --build -d --wait`                                                            | Pass; PostGIS, API, worker and web healthy; migration/seed exit 0        |
 | Migration and seed repeatability       | Both commands executed repeatedly on development and Compose databases                           | Existing credentials/reviewed data preserved                             |
 | Backup/restore                         | `pwsh -NoProfile -File tooling/backup.ps1`, then `tooling/verify-restore.ps1 -BackupPath <dump>` | Binary dump restored into separate guarded verification DB               |
-| Performance                            | `node --env-file=.env tooling/measure-performance.mjs`                                           | 500 samples; five endpoints; p95 16–31 ms on seed dataset                |
+| Performance                            | `node --env-file=.env tooling/measure-performance.mjs`                                           | 500 samples; five endpoints; p95 17–29 ms on seed dataset                |
 | Public adapter probe                   | `node tooling/probe-public-sources.mjs`                                                          | BMKG: 18 normalized weather records; PetaBencana: valid empty collection |
 | Repository hygiene                     | `git diff --check`, ignore checks and source scan                                                | No whitespace errors; runtime secrets/backups/build output excluded      |
 
-The final eight browser journeys cover:
+The eight product browser journeys cover:
 
 1. Resident submission → persisted receipt → provisional triage → coordinator
    review → resident status.
@@ -37,6 +40,10 @@ The final eight browser journeys cover:
    headers and a visibility toggle that changes actual canvas pixels.
 8. Tile outages and invalid provider configuration preserve local layers and
    disclose an unavailable basemap.
+
+Three retained main tests additionally verify uncached API data during offline
+shell reload, unauthenticated Posko privacy/no service worker, and mobile keyboard
+focus. The current suite contains eleven browser journeys.
 
 The map follow-up reran `check`, rebuilt/restarted the Docker web image and
 visually confirmed live OpenStreetMap roads/place labels in an in-app browser

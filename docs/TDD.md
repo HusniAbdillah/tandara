@@ -1,5 +1,11 @@
 # TDD — Technical Design Document
 
+This document includes historical foundation-stage designs from main. The actual
+delivered implementation, completed capabilities and current validation are
+described in [architecture](ARCHITECTURE.md), [delivery](DELIVERY.md) and
+[QA validation](qa/validation.md). Future/deferred statements below are design
+history rather than the current feature inventory.
+
 # **TANDARA**
 
 ## _From Local Signals to Shared Readiness._

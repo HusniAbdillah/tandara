@@ -171,6 +171,20 @@ test('receipt is secret, has no private notes, and cannot enumerate reports', as
   assert.ok(!('contactDetails' in r.json()));
 });
 test('triage persists uncertain suggestions without verifying the report', async () => {
+  // Duplicate evidence must come from this run, not the seed's aging timestamp.
+  const peer = await call(
+    'POST',
+    '/reports',
+    {
+      ...base,
+      description: 'Laporan pasangan uji sintetis: genangan di jalan dekat balai latihan.',
+      location: { latitude: -6.218, longitude: 106.86003 },
+      trackingToken: crypto.randomUUID() + crypto.randomUUID(),
+    },
+    undefined,
+    { 'idempotency-key': crypto.randomUUID() },
+  );
+  assert.equal(peer.statusCode, 201, peer.body);
   for (let i = 0; i < 15; i++) await app.get(JobsService).tick();
   const detail = await call('GET', '/reports/' + report.id, undefined, coordinator);
   assert.equal(detail.statusCode, 200, detail.body);
@@ -178,7 +192,7 @@ test('triage persists uncertain suggestions without verifying the report', async
   assert.ok(detail.json().suggestions.length > 0);
   assert.equal(detail.json().suggestions[0].provider, 'deterministic');
   assert.equal(detail.json().suggestions[0].output.needsHumanReview, true);
-  assert.ok(detail.json().duplicates.length > 0);
+  assert.ok(detail.json().duplicates.some((candidate) => candidate.otherId === peer.json().id));
 });
 test('human rejection of AI is separate, audit-backed, and does not mutate original', async () => {
   const detail = (await call('GET', '/reports/' + report.id, undefined, coordinator)).json();

@@ -10,7 +10,7 @@
     "dev": "pnpm build && turbo run dev",
     "build:packages": "turbo run build --filter=@tandara/contracts --filter=@tandara/database --filter=@tandara/backend --filter=@tandara/api-client --filter=@tandara/ui",
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "turbo run typecheck && tsc -p tooling/tsconfig.json",
     "lint": "eslint . && node tooling/check-boundaries.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

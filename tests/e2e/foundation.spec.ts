@@ -1,16 +1,21 @@
 import { expect, test } from '@playwright/test';
 
-test('resident shell connects to API and reloads offline without caching API data', async ({
+// Preserve main's foundational privacy/offline checks against the delivered
+// product and Compose origins rather than the retired foundation placeholders.
+test('resident connects to API and reloads offline without caching API data', async ({
   page,
   context,
 }) => {
-  await page.goto('http://127.0.0.1:5173');
-  await expect(page.getByRole('heading', { name: 'Fondasi Tandara Warga' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('API terhubung');
+  const publicResponse = page.waitForResponse(
+    (response) => response.url().includes('/public') && response.status() === 200,
+  );
+  await page.goto('/');
+  await publicResponse;
+  await expect(page.getByRole('heading', { name: /Kenali wilayah/ })).toBeVisible();
+  await expect(page.getByText('Terhubung', { exact: true })).toBeVisible();
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
-  // A newly installed worker may only control the next navigation.
   await page.reload();
   expect(await page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
   const cachedUrls = await page.evaluate(async () => {
@@ -23,32 +28,36 @@ test('resident shell connects to API and reloads offline without caching API dat
   expect(cachedUrls.some((url) => new URL(url).pathname.startsWith('/api/'))).toBe(false);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Fondasi Tandara Warga' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('Offline');
+  await expect(page.getByRole('navigation', { name: 'Navigasi warga' })).toBeVisible();
+  await expect(page.getByText('Offline · data tersimpan', { exact: true })).toBeVisible();
+  await expect(page.getByText(/Simpan rencana saat online/)).toBeVisible();
 });
 
-test('coordinator shell has no service worker and does not contain resident data', async ({
+test('unauthenticated Posko exposes no private reports and has no service worker', async ({
   page,
 }) => {
-  await page.goto('http://127.0.0.1:5174');
-  await expect(page.getByRole('heading', { name: 'Fondasi Tandara Posko' })).toBeVisible();
-  await expect(page.getByRole('status')).toContainText('API terhubung');
+  await page.goto('http://127.0.0.1:8081');
+  await expect(page.getByRole('heading', { name: 'Masuk ke Posko' })).toBeVisible();
   expect(
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
   ).toBe(0);
+  await expect(page.getByRole('navigation', { name: 'Navigasi Posko' })).toHaveCount(0);
+  const privateInbox = await page.request.get(
+    'http://127.0.0.1:8081/api/v1/regions/20000000-0000-4000-8000-000000000001/reports',
+  );
+  expect(privateInbox.status()).toBe(401);
   await page.screenshot({ path: 'test-results/posko-desktop.png', fullPage: true });
-  await expect(
-    page.getByText('Halaman ini belum memuat data warga.', { exact: false }),
-  ).toBeVisible();
 });
 
 test('resident remains usable at mobile width and provides a keyboard skip link', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto('http://127.0.0.1:5173');
+  await page.goto('/');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Lewati ke konten' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main')).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );

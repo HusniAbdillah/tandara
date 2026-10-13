@@ -19,6 +19,9 @@ a runnable simulation, not a claim of an operational emergency service.
   neither checked out nor merged/pushed to main.
 - No pull request was created; compare the implementation branch to main for review.
   The final chat records the exact pushed delivery SHA.
+- At the owner's request, the implementation branch was rebased onto `20b006f`,
+  retaining its versions in every conflict. [Post-rebase verification](qa/rebase-validation.md)
+  records the final regression results; main itself was not modified.
 
 ## Implemented capabilities
 
@@ -66,7 +69,7 @@ unit/HTTP tests and all nine builds), `pnpm test:integration`, `pnpm test:e2e`,
 The evidence summary is in [validation](qa/validation.md).
 
 The suites contain **23 unit/HTTP tests, 23 actual DB/API integration tests and
-8 Chromium journeys**. They exercise cross-region/role denials, CSRF/hostile
+11 Chromium journeys**. They exercise cross-region/role denials, CSRF/hostile
 origins, concurrent retries, human-only decisions, upload metadata privacy, source
 outages, plan independence/immutability, private training feedback, notifications,
 retention and actual disconnected browsing. Final rendering waits for real map
