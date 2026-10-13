@@ -57,6 +57,11 @@ reference-only. The default triage is labelled **deterministic**, not live infer
 
 ## Development and tests
 
+Routine CI checks code, builds, real database/API integration and deployment
+configuration. Full Docker/browser tests are available through **Actions → CI →
+Run workflow → full_e2e**; run them before the jury rehearsal. See the
+[CI coverage policy](docs/operations/ci-policy.md).
+
 Use Node 22.22.0–24.x and pnpm 10.26.2. Docker uses Node 24; CI and local
 validation use Node 24.20.0 from `.node-version`.
 

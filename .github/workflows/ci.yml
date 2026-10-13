@@ -4,6 +4,12 @@ on:
   push:
     branches: [main, bulk/everything]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      full_e2e:
+        description: 'Run the full Docker/browser suite (offline, auth, maps and product flows)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -15,6 +21,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
       APP_MODE: simulation
       DEMO_PASSWORD: ci-only-synthetic-password
@@ -40,34 +47,70 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: cp .env.example .env
-      - run: pnpm format:check
-      - run: pnpm check
-      - run: pnpm test:deployment
-      - run: python3 -m unittest discover -s tooling/deployment -p '*_test.py'
+      - name: Check formatting
+        run: pnpm format:check
+      - name: Lint and enforce architecture boundaries
+        run: pnpm lint
+      - name: Test deployment routing and packaging
+        run: pnpm test:deployment
+      - name: Test portable image verification
+        run: python3 -m unittest discover -s tooling/deployment -p '*_test.py'
       - name: Validate deployment shell scripts
         run: |
           for script in infrastructure/deployment/*.sh tooling/deployment/*.sh; do
             bash -n "$script"
             shellcheck "$script"
           done
-      - run: pnpm db:migrate && pnpm db:migrate
+      - name: Typecheck all workspaces and tooling
+        run: pnpm typecheck
+      - name: Run unit and HTTP tests
+        run: pnpm test
+      - name: Build all application packages
+        run: pnpm build
+      - name: Verify migrations are repeatable
+        run: pnpm db:migrate && pnpm db:migrate
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
-      - run: pnpm db:seed && pnpm db:seed
+      - name: Verify demo seed is repeatable
+        run: pnpm db:seed && pnpm db:seed
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
-      - run: pnpm test:integration
+      - name: Test real PostGIS and API product contracts
+        run: node --env-file=.env --test tests/integration/*.test.mjs
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
-      - run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: docker compose up --build -d --wait
-      - run: pnpm test:e2e
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Verify OpenAPI matches the implementation
+        run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
+      - name: Install Chromium for full E2E
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build and start full browser stack
+        id: browser_stack
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
+        run: docker compose up --build -d --wait
+      - name: Test full browser product flows
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
+        run: pnpm test:e2e
+      - name: Upload full browser evidence
+        uses: actions/upload-artifact@v4
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.full_e2e
         with:
           name: browser-evidence
+          retention-days: 3
+          if-no-files-found: ignore
           path: |
             playwright-report/
             test-results/
             docs/qa/screenshots/
+      - name: Stop full browser stack
+        if: always() && (steps.browser_stack.outcome == 'success' || steps.browser_stack.outcome == 'failure')
+        run: docker compose down --volumes --remove-orphans
+      - name: Summarize CI coverage
+        if: always()
+        env:
+          FULL_E2E: ${{ github.event_name == 'workflow_dispatch' && inputs.full_e2e }}
+          CHECK_STATUS: ${{ job.status }}
+        run: |
+          printf 'CI status: %s\n\n' "$CHECK_STATUS" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Routine gate: formatting, lint/boundaries, typecheck, unit/HTTP tests, all builds, real PostGIS/API integration, repeatable migrations/seed, OpenAPI and deployment validation.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          printf 'Full Docker/browser E2E requested: %s. Enable full_e2e on a manual CI run before the jury rehearsal.\n' "$FULL_E2E" >> "$GITHUB_STEP_SUMMARY"
