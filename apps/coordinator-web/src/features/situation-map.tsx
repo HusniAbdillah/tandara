@@ -8,17 +8,27 @@ import type { Map, GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { categories, statuses } from './reports-ui.js';
+import { basemapStyle, loadBasemap } from './basemap.js';
 
 export function SituationMap({ region, user }: { region: Region; user: User }) {
   const element = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
+  const [basemapFailed, setBasemapFailed] = useState(false);
+  const [basemapLoaded, setBasemapLoaded] = useState(false);
   const [layers, setLayers] = useState({
+    basemap: true,
     reports: true,
     plans: true,
     coverage: true,
     sources: true,
+  });
+  const basemap = useQuery({
+    queryKey: ['basemap-config'],
+    queryFn: loadBasemap,
+    retry: false,
+    staleTime: 60000,
   });
   const coverage = useQuery({
     queryKey: ['coverage', user.id, region.id],
@@ -33,7 +43,14 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
     queryFn: () => request('/regions/' + region.id + '/public', publicDataSchema),
   });
   useEffect(() => {
-    if (!element.current || !coverage.data || !reports.data || !publicData.data) return;
+    if (
+      !element.current ||
+      !coverage.data ||
+      !reports.data ||
+      !publicData.data ||
+      basemap.isPending
+    )
+      return;
     let disposed = false;
     let map: Map | undefined;
     void import('maplibre-gl')
@@ -44,30 +61,36 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
           const ring = region.boundary.coordinates[0]!;
           const xs = ring.map((p) => p[0]!);
           const ys = ring.map((p) => p[1]!);
-          const config = import.meta.env['VITE_MAP_STYLE_URL'] as string | undefined;
           map = new lib.Map({
             container: element.current,
-            style: config ?? {
-              version: 8,
-              sources: {},
-              layers: [
-                { id: 'background', type: 'background', paint: { 'background-color': '#ecf0e6' } },
-              ],
-            },
+            style: basemapStyle(basemap.data),
             center: [
               (Math.min(...xs) + Math.max(...xs)) / 2,
               (Math.min(...ys) + Math.max(...ys)) / 2,
             ],
             zoom: 13,
-            attributionControl: { compact: true },
+            maxZoom: basemap.data?.maxZoom ?? 19,
+            renderWorldCopies: false,
+            attributionControl: { compact: false },
             canvasContextAttributes: { preserveDrawingBuffer: true },
           });
           mapRef.current = map;
           setReady(false);
-          map.on('error', () => {
-            if (!disposed) setFailed(true);
+          setFailed(false);
+          setBasemapFailed(false);
+          setBasemapLoaded(false);
+          element.current.removeAttribute('data-map-ready');
+          map.on('error', (event) => {
+            if (disposed) return;
+            if ('sourceId' in event && event.sourceId === 'basemap') setBasemapFailed(true);
+            else setFailed(true);
+          });
+          map.on('sourcedata', (event) => {
+            if (!disposed && event.sourceId === 'basemap' && event.sourceDataType === 'content')
+              setBasemapLoaded(true);
           });
           map.addControl(new lib.NavigationControl(), 'top-right');
+          map.addControl(new lib.ScaleControl({ unit: 'metric' }), 'bottom-left');
           map.on('load', () => {
             if (!map) return;
             map.addSource('boundary', {
@@ -106,7 +129,7 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
                   '#cfb877',
                   '#c4d9c3',
                 ],
-                'fill-opacity': 0.35,
+                'fill-opacity': 0.18,
                 'fill-outline-color': '#b6bea9',
               },
             });
@@ -232,16 +255,18 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
               }
             });
             for (const [key, id] of Object.entries({
+              basemap: 'basemap-raster',
               reports: 'reports-circle',
               plans: 'plans-circle',
               coverage: 'coverage-fill',
               sources: 'sources-fill',
             }))
-              map.setLayoutProperty(
-                id,
-                'visibility',
-                layers[key as keyof typeof layers] ? 'visible' : 'none',
-              );
+              if (map.getLayer(id))
+                map.setLayoutProperty(
+                  id,
+                  'visibility',
+                  layers[key as keyof typeof layers] ? 'visible' : 'none',
+                );
           });
         } catch {
           setFailed(true);
@@ -255,11 +280,12 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
     };
     // Layer visibility is changed separately without rebuilding the map.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, coverage.data, reports.data, publicData.data]);
+  }, [region, coverage.data, reports.data, publicData.data, basemap.data, basemap.isPending]);
   useEffect(() => {
     const map = mapRef.current;
     if (!map?.isStyleLoaded()) return;
     for (const [key, id] of Object.entries({
+      basemap: 'basemap-raster',
       reports: 'reports-circle',
       plans: 'plans-circle',
       coverage: 'coverage-fill',
@@ -281,6 +307,7 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
       />
       <div className="layer-controls">
         {Object.entries({
+          basemap: 'Peta dasar',
           reports: 'Laporan warga',
           plans: 'Titik rencana',
           coverage: 'Cakupan informasi',
@@ -290,18 +317,34 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
             <input
               type="checkbox"
               checked={layers[key as keyof typeof layers]}
+              disabled={key === 'basemap' && !basemap.data?.enabled}
               onChange={(e) => setLayers({ ...layers, [key]: e.target.checked })}
             />
             {label}
           </label>
         ))}
       </div>
+      {(basemapFailed || basemap.isError) && (
+        <Notice tone="warning">
+          Peta dasar tidak dapat dimuat. Batas wilayah dan lapisan lokal tetap tersedia; gunakan
+          alternatif teks di bawah atau muat ulang setelah koneksi pulih.
+        </Notice>
+      )}
       {!ready && !failed && <p role="status">Memuat lapisan peta…</p>}
       <div
         className="map-panel"
         ref={element}
         role="region"
         aria-label="Peta situasi; alternatif teks tersedia di bawah"
+        data-basemap-status={
+          basemapFailed || basemap.isError
+            ? 'unavailable'
+            : !basemap.data?.enabled
+              ? 'disabled'
+              : basemapLoaded
+                ? 'ready'
+                : 'loading'
+        }
       >
         {failed && (
           <div className="map-fallback">
@@ -322,8 +365,16 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
           <i />
           Informasi belum cukup
         </span>
-        <span>Peta skematis tanpa tile eksternal secara default</span>
+        <span>
+          {basemap.data?.enabled
+            ? `${basemap.data.label} · memerlukan internet`
+            : 'Peta dasar dinonaktifkan'}
+        </span>
       </div>
+      <p className="hint">
+        Tile peta diminta langsung ke penyedia sesuai tampilan wilayah. Teks laporan, kontak dan
+        token akses tidak dikirim ke penyedia. Peta jalan bukan panduan jalur aman.
+      </p>
       {coverage.data ? (
         <>
           <Notice tone="warning">

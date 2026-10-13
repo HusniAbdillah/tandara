@@ -30,8 +30,11 @@ requests; secrets are sent in headers rather than URLs.
 
 Images are bounded and decoded/re-encoded to strip metadata. Active SVG/HTML and
 disguised files are rejected. Raw photo bytes never appear in public responses or
-worker/model requests. CSP restricts scripts/connections/workers to the local
-deployment; map popups use text nodes and React escapes user content.
+worker/model requests. CSP restricts scripts/workers to the local deployment;
+Posko permits only the configured default OpenStreetMap tile host for its basemap.
+Tile requests carry an origin-only referrer and no application session/receipt
+headers; Warga retains no-referrer. Providers can see the viewed tile coordinates
+and network metadata. Map popups use text nodes and React escapes user content.
 
 AI input is untrusted data, isolated from system instructions. Valid output needs
 quoted facts, exact source IDs and explicit human review. Invalid JSON, fabricated

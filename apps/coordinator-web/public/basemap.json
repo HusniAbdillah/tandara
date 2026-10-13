@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "label": "OpenStreetMap",
+  "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+  "attributionLabel": "© OpenStreetMap contributors",
+  "attributionUrl": "https://www.openstreetmap.org/copyright",
+  "maxZoom": 19
+}

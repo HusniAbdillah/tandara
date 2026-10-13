@@ -30,3 +30,9 @@ Refinement fixed a 4.35:1 small sidebar label contrast issue, duplicated desktop
 logout, missing first-visit service-worker control, and unnecessarily technical
 plan/suggestion editing. Inspect the final screenshot set alongside the test
 report; no visual claim is based solely on successful compilation.
+
+The map follow-up adds a real OpenStreetMap street basemap, permanent attribution,
+metric scale, independent basemap toggle and lighter coverage opacity to retain
+road/place readability. A visible browser confirmed street tiles at one region
+viewport; `docs/qa/screenshots/posko-map-streets.png` records that view. Automated
+map checks use intercepted fixture tiles and do not present them as live maps.

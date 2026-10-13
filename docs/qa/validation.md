@@ -10,7 +10,7 @@ below describe executed checks, not inferred remote CI or production readiness.
 | Boundaries, lint, types, tests, builds | `npx --yes pnpm@10.26.2 check`                                                                   | Pass; nine package builds                                                |
 | Unit and HTTP                          | Included in `check`                                                                              | 23 pass: contracts 3, client 3, backend 12, API 5                        |
 | Database and API integration           | `npx --yes pnpm@10.26.2 test:integration`                                                        | 23 pass, actual PostGIS/database and API                                 |
-| Browser journeys                       | `npx --yes pnpm@10.26.2 test:e2e` against final Docker images                                    | 6 pass; final run 36.2 seconds                                           |
+| Browser journeys                       | `npx --yes pnpm@10.26.2 test:e2e` against final Docker images                                    | 8 pass; final run 46.6 seconds                                           |
 | OpenAPI generation                     | `npx --yes pnpm@10.26.2 api:openapi`                                                             | Pass; [generated document](../api/openapi.json)                          |
 | Production dependency audit            | `npx --yes pnpm@10.26.2 audit --prod --json`                                                     | Zero known advisories across 189 production dependencies                 |
 | Docker                                 | `docker compose up --build -d --wait`                                                            | Pass; PostGIS, API, worker and web healthy; migration/seed exit 0        |
@@ -20,7 +20,7 @@ below describe executed checks, not inferred remote CI or production readiness.
 | Public adapter probe                   | `node tooling/probe-public-sources.mjs`                                                          | BMKG: 18 normalized weather records; PetaBencana: valid empty collection |
 | Repository hygiene                     | `git diff --check`, ignore checks and source scan                                                | No whitespace errors; runtime secrets/backups/build output excluded      |
 
-The final six browser journeys cover:
+The final eight browser journeys cover:
 
 1. Resident submission → persisted receipt → provisional triage → coordinator
    review → resident status.
@@ -33,6 +33,21 @@ The final six browser journeys cover:
    360/768/1440/1920 and no horizontal overflow.
 6. One coordinator authors a version; an independent administrator approves
    and publishes it; Warga reads the new version.
+7. Street-basemap attribution, origin-only referrer, absence of private request
+   headers and a visibility toggle that changes actual canvas pixels.
+8. Tile outages and invalid provider configuration preserve local layers and
+   disclose an unavailable basemap.
+
+The map follow-up reran `check`, rebuilt/restarted the Docker web image and
+visually confirmed live OpenStreetMap roads/place labels in an in-app browser
+at one region viewport. [Live street screenshot](screenshots/posko-map-streets.png)
+records that view. Automated map tests use intercepted fixture tiles, including
+their real CORS behavior, and never sweep the public provider.
+
+Rapid repeated local runs reached the intentional login throttle. The final
+rerun reset only the simulation accounts' and local test gateway's hashed login
+counters, preserving the application's rate limits. A fresh simulation database
+or the normal throttle-expiry window is needed for repeated high-frequency runs.
 
 Database tests also cover role/region denials, CSRF and hostile origins, consent,
 concurrent idempotency conflicts, location/time bounds, secret receipt access,

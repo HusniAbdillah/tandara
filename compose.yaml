@@ -67,6 +67,11 @@ services:
   web:
     image: tandara-web:local
     build: { context: ., target: web }
+    volumes:
+      - type: bind
+        source: ./apps/coordinator-web/public/basemap.json
+        target: /srv/posko/basemap.json
+        read_only: true
     ports: ['127.0.0.1:8080:8080', '127.0.0.1:8081:8081']
     depends_on: { api: { condition: service_healthy } }
     healthcheck:

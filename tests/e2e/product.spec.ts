@@ -10,6 +10,21 @@ const password =
 const region = '20000000-0000-4000-8000-000000000001';
 const screenshotDir = 'docs/qa/screenshots';
 mkdirSync(screenshotDir, { recursive: true });
+// Automated suites never fetch or sweep the public tile service. Live street
+// rendering is checked separately in a visible browser with one viewport.
+const fixtureTile = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP49esXAAXgAu/NVObIAAAAAElFTkSuQmCC',
+  'base64',
+);
+test.beforeEach(async ({ context }) => {
+  await context.route('https://tile.openstreetmap.org/**', async (route) => {
+    await route.fulfill({
+      contentType: 'image/png',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: fixtureTile,
+    });
+  });
+});
 async function login(page: Page, email = 'ciliwung@demo.tandara.test') {
   await page.goto('http://127.0.0.1:8081');
   await page.getByLabel('Email', { exact: true }).fill(email);
@@ -179,7 +194,10 @@ test('all Posko workflows render, map and admin configuration', async ({ page })
     await expect(page.locator('main h1').first()).toBeVisible();
     if (route === '/map') await expect(page.locator('[data-map-ready="true"]')).toBeVisible();
     await page.screenshot({
-      path: screenshotDir + '/posko-' + (route.slice(1) || 'overview') + '.png',
+      path:
+        route === '/map'
+          ? 'test-results/posko-map-fixture.png'
+          : screenshotDir + '/posko-' + (route.slice(1) || 'overview') + '.png',
       fullPage: true,
     });
     const results = await new AxeBuilder({ page })
@@ -205,6 +223,61 @@ test('all Posko workflows render, map and admin configuration', async ({ page })
     });
   }
 });
+test('street basemap has attribution, privacy headers and a working visibility toggle', async ({
+  page,
+}) => {
+  const headers: Record<string, string>[] = [];
+  await page.route('https://tile.openstreetmap.org/**', async (route) => {
+    headers.push(route.request().headers());
+    await route.fulfill({
+      contentType: 'image/png',
+      headers: { 'Access-Control-Allow-Origin': '*' },
+      body: fixtureTile,
+    });
+  });
+  await login(page);
+  const response = await page.goto('http://127.0.0.1:8081/map');
+  expect(response?.headers()['content-security-policy']).toContain(
+    'https://tile.openstreetmap.org',
+  );
+  expect(response?.headers()['referrer-policy']).toBe('strict-origin');
+  await expect(page.locator('[data-map-ready="true"][data-basemap-status="ready"]')).toBeVisible();
+  await expect(page.getByRole('link', { name: '© OpenStreetMap contributors' })).toBeVisible();
+  expect(headers.length).toBeGreaterThan(0);
+  for (const header of headers) {
+    expect(header['referer']).toBe('http://127.0.0.1:8081/');
+    expect(header['cookie']).toBeUndefined();
+    expect(header['x-csrf-token']).toBeUndefined();
+    expect(header['x-tracking-token']).toBeUndefined();
+  }
+  const canvas = page.locator('.map-panel canvas');
+  const before = await canvas.screenshot();
+  await page.getByRole('checkbox', { name: 'Peta dasar', exact: true }).uncheck();
+  await expect.poll(async () => (await canvas.screenshot()).equals(before)).toBe(false);
+  await page.getByRole('checkbox', { name: 'Peta dasar', exact: true }).check();
+});
+
+test('tile outages and invalid basemap configuration keep local layers available', async ({
+  page,
+}) => {
+  await page.route('https://tile.openstreetmap.org/**', (route) => route.abort('failed'));
+  await login(page);
+  await page.goto('http://127.0.0.1:8081/map');
+  await expect(page.getByText(/Peta dasar tidak dapat dimuat/)).toBeVisible();
+  await expect(
+    page.locator('[data-map-ready="true"][data-basemap-status="unavailable"]'),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Alternatif teks lokasi' })).toBeVisible();
+  await page.route('**/basemap.json', (route) =>
+    route.fulfill({ json: { enabled: true, tiles: ['javascript:alert(1)'] } }),
+  );
+  await page.reload();
+  await expect(
+    page.locator('[data-map-ready="true"][data-basemap-status="unavailable"]'),
+  ).toBeVisible();
+  await expect(page.getByRole('checkbox', { name: 'Peta dasar', exact: true })).toBeDisabled();
+});
+
 test('independent plan review publishes a new citizen version', async ({ page, browser }) => {
   const title = 'Rencana simulasi browser ' + Date.now();
   await login(page);

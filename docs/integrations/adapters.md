@@ -41,6 +41,9 @@ Official references consulted: [BMKG forecast data](https://data.bmkg.go.id/prak
 [PetaBencana report API](https://docs.petabencana.id/routes/laporan-urun-daya),
 [PetaBencana licensing](https://github.com/petabencana/petabencana-meta/blob/master/petabencana.id/LICENSING.md).
 These are integration references, not a claim that this operator has obtained
-production permissions, capacity or legal approval. Tiles are disabled by default;
-approve a tile provider and update CSP/attribution before adding one. No offline
-tile bulk download is implemented.
+production permissions, capacity or legal approval. Posko now uses OpenStreetMap
+street tiles with visible attribution, normal browser caching and origin-only
+referrer. Runtime configuration can disable or replace the provider. Public OSM
+tile capacity is best-effort; choose an appropriate provider for operational use.
+No offline tile bulk download is implemented. See [map configuration](../features/map.md)
+and the [OSM tile policy](https://operations.osmfoundation.org/policies/tiles/).

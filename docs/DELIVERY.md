@@ -66,7 +66,7 @@ unit/HTTP tests and all nine builds), `pnpm test:integration`, `pnpm test:e2e`,
 The evidence summary is in [validation](qa/validation.md).
 
 The suites contain **23 unit/HTTP tests, 23 actual DB/API integration tests and
-6 Chromium journeys**. They exercise cross-region/role denials, CSRF/hostile
+8 Chromium journeys**. They exercise cross-region/role denials, CSRF/hostile
 origins, concurrent retries, human-only decisions, upload metadata privacy, source
 outages, plan independence/immutability, private training feedback, notifications,
 retention and actual disconnected browsing. Final rendering waits for real map
@@ -120,7 +120,9 @@ and [adapter notes](integrations/adapters.md) disclose the boundary. Fixture
 ingestion remains simulation. Live source activation, real regional identifiers,
 terms/attribution/capacity and operator permission are external launch gates.
 InaRISK is reference-only. No approved inference provider/key was supplied.
-External tile requests and offline tile bulk downloads are disabled.
+Posko has an attributed OpenStreetMap street basemap with runtime provider
+configuration and a local-layer fallback on tile failure. No offline tile bulk
+download is supplied. Public tile service capacity remains an operational gate.
 
 ## Security and operational readiness
 
@@ -139,7 +141,7 @@ unique secrets, volume/backup encryption and accountable operations. Inference i
 not live without approved configuration. No official emergency dispatch, safe
 route guarantee or hazard prediction is supplied. Coverage is four explained
 quadrants and the map displays the latest 20 reports; this is not a complete
-hazard model. Map basemap tiles are intentionally absent. Sensitive in-memory
+hazard model. The street basemap requires internet and is not a safe-route service. Sensitive in-memory
 submissions can lose receipt recovery if the page closes before acknowledgement.
 Daily retention handles 200 expired reports per run; larger volumes require
 operator sizing. Audit/backup retention needs owner governance. No MFA/SSO,

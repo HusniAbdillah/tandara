@@ -64,9 +64,11 @@ similarity. Unknown coordinates/timestamps do not satisfy spatial evidence.
 Coverage intersects four extent quadrants with the actual region polygon and
 counts sufficiently recent, located reports. It explicitly represents
 `insufficient_information`; no cell is labelled safe. MapLibre clusters located
-reports and displays boundary, coverage and local points. Initial tiles are
-disabled, avoiding uncontrolled third-party tile requests or offline downloads.
-A textual report list remains available if WebGL fails.
+reports and displays boundary, coverage and local points over an attributed
+OpenStreetMap street basemap. Public runtime configuration selects/disables the
+tile provider; CSP permits the exact default host. Tile outages retain local
+layers and show an explicit warning. A textual report list remains available if
+WebGL fails. There is no offline tile download or background tile sweep.
 
 ## AI and source separation
 

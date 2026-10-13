@@ -37,7 +37,12 @@ Use a verified domain, automatic TLS or an approved ingress, restricted exposed
 ports, unique secrets, backup encryption and reviewed permissions. Do not set a
 wildcard Origin or expose demo accounts. The root Dockerfile builds browser assets
 without importing server secrets. Caddy policy does not permit unapproved remote
-tile/model connections from browsers.
+tile/model connections from browsers. The permitted exception is the Posko
+OpenStreetMap basemap host. Its runtime `basemap.json` is mounted read-only from
+`apps/coordinator-web/public/basemap.json`: edit that file to disable/change
+the provider and reload the map. A new external host also requires an exact CSP
+allowlist update and reviewed provider attribution/terms. [Map notes](../features/map.md)
+describe privacy, failure fallback and public tile-service capacity.
 
 ## Backup and restoration
 
