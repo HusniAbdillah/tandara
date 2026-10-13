@@ -15,7 +15,10 @@ export const regionConfigSchema = z.strictObject({
       }),
     )
     .max(20),
-  languages: z.array(z.literal('id')).min(1),
+  languages: z
+    .array(z.enum(['id', 'jv', 'su']))
+    .min(1)
+    .max(3),
 });
 export const pointSchema = z.strictObject({
   name: z.string().min(3).max(100),
@@ -107,6 +110,20 @@ export const triageSchema = z.strictObject({
   needsHumanReview: z.literal(true),
 });
 export const suggestionSchema = z.object({
+  reviewedOutput: triageSchema.nullable().optional(),
+  legacyProvenance: z.boolean().optional(),
+  reviews: z
+    .array(
+      z.object({
+        id: z.uuid(),
+        action: z.string(),
+        note: z.string(),
+        output: triageSchema.nullable(),
+        reviewerId: z.uuid(),
+        createdAt: z.string(),
+      }),
+    )
+    .optional(),
   id: z.uuid(),
   output: triageSchema.nullable(),
   state: z.enum(['ready', 'failed', 'accepted', 'edited', 'rejected']),

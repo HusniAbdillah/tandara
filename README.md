@@ -74,7 +74,9 @@ output. Tests use mock providers and never need real keys. Placeholder credentia
 cannot be sent: enabling compatible mode before replacing them fails validation.
 See [AI setup](docs/ai/provider-setup.md) for endpoint configuration, limits,
 verification, retries, and switching providers. The full production architecture
-is specified separately in the [production plan](docs/ai/production-delivery-plan.md).
+is implemented as bounded LangGraph workflows, approved-source retrieval,
+immutable reviews and operations controls. See [production operations](docs/ai/operations.md)
+and the [launch readiness report](docs/ai/readiness.md).
 
 ## Development and tests
 

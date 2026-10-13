@@ -56,6 +56,13 @@ async function login(email) {
 before(async () => {
   await db.connect();
   assert.equal(process.env.APP_MODE, 'simulation', 'Integration tests require simulation mode');
+  // This suite uses only a loopback synthetic provider; production limits are tested separately.
+  for (const field of [
+    'AI_DAILY_BUDGET_MICRO_USD',
+    'AI_MONTHLY_BUDGET_MICRO_USD',
+    'AI_ORG_DAILY_BUDGET_MICRO_USD',
+  ])
+    process.env[field] = '1000000000';
   // Reset only this synthetic suite's persistent rate keys so repeated runs exercise the policy.
   const rateKeys = [
     'login-ip:127.0.0.1',
@@ -879,7 +886,8 @@ test('in-app notifications respect preferences and ownership', async () => {
     201,
   );
   const latest = (await call('GET', '/notifications', undefined, coordinator)).json();
-  assert.equal(latest.items.length, start.items.length + 1);
+  assert.equal(latest.items.length, Math.min(100, start.items.length + 1));
+  assert.notEqual(latest.items[0].id, start.items[0]?.id);
   assert.equal(
     (await call('POST', '/notifications/' + latest.items[0].id + '/read', undefined, admin))
       .statusCode,

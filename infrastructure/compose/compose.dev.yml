@@ -2,7 +2,8 @@ name: tandara-dev
 
 services:
   postgres:
-    image: postgis/postgis:16-3.5
+    image: tandara-postgres:local
+    build: { context: ../.., dockerfile: infrastructure/postgres/Dockerfile }
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}

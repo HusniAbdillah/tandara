@@ -1,0 +1,52 @@
+name: tandara-production
+# Managed private database and secret-manager injected environment, no database/demo containers.
+services:
+  migrate:
+    image: ${APP_IMAGE:?Provide reviewed app image digest}
+    env_file: ${MIGRATION_ENV_FILE:?Provide separate private migration env file}
+    command:
+      [
+        sh,
+        -c,
+        'node packages/database/dist/migrate.js && node tooling/ai-checkpoints.mjs && node tooling/provision-service-role.mjs',
+      ]
+    restart: 'no'
+  api:
+    image: ${APP_IMAGE:?Provide reviewed app image digest}
+    env_file: ${PRODUCTION_ENV_FILE:?Provide private production env file}
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    deploy: { replicas: 2, resources: { limits: { cpus: '1', memory: 1024M } } }
+    restart: unless-stopped
+  worker:
+    image: ${APP_IMAGE:?Provide reviewed app image digest}
+    env_file: ${PRODUCTION_ENV_FILE:?Provide private production env file}
+    command: [node, apps/worker/dist/main.js]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    read_only: true
+    tmpfs: [/tmp]
+    deploy: { replicas: 2, resources: { limits: { cpus: '1', memory: 1024M } } }
+    healthcheck:
+      test: [CMD, node, tooling/worker-health.mjs]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+  web:
+    image: ${WEB_IMAGE:?Provide reviewed web image digest}
+    volumes: ['../caddy/Caddyfile.production:/etc/caddy/Caddyfile:ro']
+    ports: ['127.0.0.1:8080:8080', '127.0.0.1:8081:8081']
+    depends_on: { api: { condition: service_healthy } }
+    restart: unless-stopped

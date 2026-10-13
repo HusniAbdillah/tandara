@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  deploymentSchema,
   aiReviewInputSchema,
   assistanceSchema,
   attachmentSchema,
@@ -24,6 +25,12 @@ import {
   trainingContentSchema,
   trainingSchema,
   userSchema,
+  aiRequestSchema,
+  aiRunSchema,
+  aiReviewSchema,
+  aiOperationsSchema,
+  knowledgeResultSchema,
+  aiEvaluationSchema,
 } from '@tandara/contracts';
 const ok = z.object({ ok: z.boolean() });
 const id = z.object({ id: z.uuid() });
@@ -36,12 +43,108 @@ type Route = [
   z.ZodType?,
 ];
 export const productRoutes: Route[] = [
+  ['/admin/ai/releases/{id}/evaluations', 'post', 'admin', id, aiEvaluationSchema],
+  [
+    '/regions/{regionId}/knowledge/references',
+    'get',
+    'coordinator',
+    z.array(
+      z.object({
+        id: z.uuid(),
+        title: z.string(),
+        text: z.string(),
+        sourceUrl: z.string(),
+        licenseNote: z.string(),
+        state: z.string(),
+        version: z.number(),
+        expiresAt: z.string(),
+        authorId: z.uuid(),
+        reviewerId: z.uuid().nullable(),
+      }),
+    ),
+  ],
+  [
+    '/regions/{regionId}/knowledge/references',
+    'post',
+    'coordinator',
+    id,
+    z.strictObject({
+      title: z.string().min(5).max(200),
+      text: z.string().min(20).max(12000),
+      sourceUrl: z.url(),
+      licenseNote: z.string().min(10).max(1000),
+      expiresAt: z.iso.datetime({ offset: true }),
+    }),
+  ],
+  [
+    '/regions/{regionId}/knowledge/references/{id}/review',
+    'post',
+    'coordinator',
+    ok,
+    z.strictObject({
+      action: z.enum(['approved', 'withdrawn']),
+      note: z.string().min(10).max(1000),
+    }),
+  ],
+  ['/regions/{regionId}/knowledge', 'get', 'public', z.array(knowledgeResultSchema)],
+  ['/deployment', 'get', 'public', deploymentSchema],
+  ['/regions/{regionId}/ai/runs', 'post', 'coordinator', id, aiRequestSchema],
+  ['/regions/{regionId}/ai/runs', 'get', 'coordinator', z.array(aiRunSchema)],
+  ['/regions/{regionId}/ai/runs/{id}', 'get', 'coordinator', aiRunSchema],
+  ['/regions/{regionId}/ai/runs/{id}/review', 'post', 'coordinator', ok, aiReviewSchema],
+  ['/regions/{regionId}/ai/runs/{id}/cancel', 'post', 'coordinator', ok],
+  ['/regions/{regionId}/ai/runs/{id}/retry', 'post', 'coordinator', id],
+  ['/admin/ai/operations', 'get', 'admin', aiOperationsSchema],
+  [
+    '/admin/ai/controls',
+    'post',
+    'admin',
+    ok,
+    z.strictObject({
+      scope: z.enum(['global', 'provider', 'task', 'organization', 'release']),
+      scopeId: z.string().min(1).max(200),
+      enabled: z.boolean(),
+      reason,
+    }),
+  ],
+  [
+    '/admin/ai/releases/{id}/approve',
+    'post',
+    'admin',
+    ok,
+    z.strictObject({
+      evaluationHash: z.string().regex(/^[a-f0-9]{64}$/),
+      note: z.string().min(10).max(1000),
+    }),
+  ],
+  ['/admin/ai/releases/{id}/activate', 'post', 'admin', ok],
+  [
+    '/auth/mfa/enroll',
+    'post',
+    'coordinator',
+    z.object({ secret: z.string(), uri: z.string() }),
+    z.strictObject({ password: z.string().min(1).max(200), code: z.string().optional() }),
+  ],
+  [
+    '/auth/mfa/confirm',
+    'post',
+    'coordinator',
+    ok,
+    z.strictObject({ code: z.string().regex(/^\d{6}$/) }),
+  ],
   [
     '/auth/login',
     'post',
     'public',
     z.object({ user: userSchema, csrf: z.string() }),
-    z.strictObject({ email: z.email(), password: z.string().max(200) }),
+    z.strictObject({
+      email: z.email(),
+      password: z.string().max(200),
+      code: z
+        .string()
+        .regex(/^\d{6}$/)
+        .optional(),
+    }),
   ],
   ['/auth/me', 'get', 'coordinator', z.object({ user: userSchema, csrf: z.string() })],
   ['/auth/logout', 'post', 'coordinator', ok],

@@ -25,19 +25,17 @@ jobs:
     env:
       APP_MODE: simulation
       DEMO_PASSWORD: ci-only-synthetic-password
-    services:
-      postgres:
-        image: postgis/postgis:16-3.5
-        env:
-          POSTGRES_USER: tandara
-          POSTGRES_PASSWORD: ci_only_password
-          POSTGRES_DB: tandara
-        ports: ['55432:5432']
-        options: >-
-          --health-cmd "pg_isready -U tandara -d tandara"
-          --health-interval 5s --health-timeout 3s --health-retries 20
     steps:
       - uses: actions/checkout@v4
+      - name: PostgreSQL with PostGIS and pgvector
+        run: |
+          docker build -t tandara-postgres:local -f infrastructure/postgres/Dockerfile .
+          docker run -d --name tandara-ci-db -p 127.0.0.1:55432:5432 -e POSTGRES_USER=tandara -e POSTGRES_PASSWORD=ci_only_password -e POSTGRES_DB=tandara --health-cmd 'pg_isready -U tandara -d tandara' --health-interval 5s --health-retries 20 tandara-postgres:local
+          for attempt in $(seq 1 30); do
+            if [ "$(docker inspect -f '{{.State.Health.Status}}' tandara-ci-db)" = healthy ]; then exit 0; fi
+            sleep 2
+          done
+          exit 1
       - uses: pnpm/action-setup@v4
         with:
           version: 10.26.2
@@ -67,6 +65,8 @@ jobs:
         run: pnpm test
       - name: Build all application packages
         run: pnpm build
+      - name: Test AI evaluation and privacy tooling
+        run: pnpm test:tooling
       - name: Verify migrations are repeatable
         run: pnpm db:migrate && pnpm db:migrate
         env:
@@ -76,9 +76,10 @@ jobs:
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
       - name: Test real PostGIS and API product contracts
-        run: node --env-file=.env --test tests/integration/*.test.mjs
+        run: node --env-file=.env --test --test-concurrency=1 tests/integration/*.test.mjs
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara
+          PG_DRILL_CONTAINER: tandara-ci-db
       - name: Verify OpenAPI matches the implementation
         run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
       - name: Install Chromium for full E2E

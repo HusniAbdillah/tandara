@@ -1,0 +1,63 @@
+name: Protected AI evaluation
+on:
+  workflow_dispatch:
+    inputs:
+      dataset_version:
+        description: Reviewed held-out dataset key (letters, numbers and hyphens)
+        required: true
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  evaluate:
+    runs-on: ubuntu-24.04
+    environment: ai-staging
+    timeout-minutes: 120
+    strategy:
+      max-parallel: 1
+      matrix: { candidate: [primary, challenger] }
+    env:
+      AI_MODE: compatible
+      AI_PROVIDER: vikey
+      AI_BASE_URL: ${{vars.AI_EVALUATION_BASE_URL}}
+      DATABASE_URL: ${{secrets.AI_EVALUATION_DATABASE_URL}}
+      AI_INPUT_MICRO_USD_PER_MILLION_TOKENS: ${{vars.AI_INPUT_MICRO_USD_PER_MILLION_TOKENS}}
+      AI_OUTPUT_MICRO_USD_PER_MILLION_TOKENS: ${{vars.AI_OUTPUT_MICRO_USD_PER_MILLION_TOKENS}}
+      AI_EMBEDDING_MODE: ${{vars.AI_EMBEDDING_MODE || 'disabled'}}
+      AI_EMBEDDING_PROVIDER: ${{vars.AI_EMBEDDING_PROVIDER || 'vikey'}}
+      AI_EMBEDDING_BASE_URL: ${{vars.AI_EMBEDDING_BASE_URL}}
+      AI_EMBEDDING_MODEL: ${{vars.AI_EMBEDDING_MODEL || 'replace-with-embedding-model'}}
+      AI_EMBEDDING_DIMENSIONS: ${{vars.AI_EMBEDDING_DIMENSIONS || '1536'}}
+      AI_EMBEDDING_API_KEY: ${{secrets.AI_EVALUATION_EMBEDDING_API_KEY}}
+      AI_EMBEDDING_MICRO_USD_PER_MILLION_TOKENS: ${{vars.AI_EMBEDDING_MICRO_USD_PER_MILLION_TOKENS}}
+      AI_API_KEY: ${{secrets.AI_EVALUATION_API_KEY}}
+      AI_MODEL: ${{matrix.candidate == 'primary' && vars.AI_PRIMARY_MODEL || vars.AI_CHALLENGER_MODEL}}
+      AI_EVALUATION_ALLOW_PAID: 'true'
+      AI_EVALUATION_APPROVED_DATA: 'true'
+      AI_EVALUATION_MAX_MICRO_USD: ${{vars.AI_EVALUATION_MAX_MICRO_USD}}
+      DATASET_VERSION: ${{inputs.dataset_version}}
+      DATASET_BUCKET: ${{vars.AI_EVALUATION_BUCKET}}
+      LANGSMITH_TRACING: 'false'
+      LANGCHAIN_TRACING_V2: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 10.26.2 }
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .node-version, cache: pnpm }
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{vars.AI_EVALUATION_READ_ROLE_ARN}}
+          aws-region: ${{vars.AWS_REGION}}
+      - run: pnpm install --frozen-lockfile && pnpm build:packages
+      - name: Download approved test data
+        run: |
+          [[ "$DATASET_VERSION" =~ ^[a-zA-Z0-9-]+$ ]] || exit 1
+          test -n "$DATASET_BUCKET" || exit 1
+          aws s3 cp "s3://$DATASET_BUCKET/evaluations/$DATASET_VERSION.jsonl" dataset.jsonl --only-show-errors
+      - run: node tooling/run-ai-evaluation.mjs dataset.jsonl results.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-${{matrix.candidate}}-${{inputs.dataset_version}}
+          path: results.json
+          retention-days: 7

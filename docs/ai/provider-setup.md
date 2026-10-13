@@ -1,9 +1,10 @@
 # Real model inference: Vikey and DeepSeek
 
-This integration connects Tandara's report triage to a server-side model provider.
-All suggestions remain provisional and require coordinator review. The current
-deployment remains a local simulation; this connection does not implement every
-work package in the [production delivery plan](production-delivery-plan.md).
+Tandara's triage and Asisten Posko use server-side provider profiles. The full AI
+software includes durable LangGraph workflows, approved knowledge retrieval,
+briefings, draft assistance, translation review, budget controls and model release
+governance. All generated results require human review. The running installation
+remains a local simulation until the [production launch gates](readiness.md) close.
 
 ## Environment configuration
 
@@ -81,7 +82,8 @@ fabricated quotations or source IDs, and detected prohibited safety claims are
 rejected; JSON validity alone does not establish truth.
 
 Transient transport failures and HTTP 408/429/500/502/503/504 are retried by the
-SQL outbox, up to four total attempts. Provider `Retry-After` is respected up to
+SQL outbox, up to four triage attempts in simulation and three in production or
+assistance workflows. Provider `Retry-After` is respected up to
 five minutes. Authentication, configuration, credit rejection and invalid output
 fail without automatic retry. Failed jobs and suggestions contain sanitized
 errors, never provider response text or keys. Admin manual retry is audited and
@@ -95,8 +97,10 @@ duplicate hints run even if model inference is disabled or unavailable.
 Dedicated contacts, photographs, session/receipt secrets and exact coordinates
 are excluded from model requests. Free-form report text can itself contain personal
 information: use synthetic reports until provider data handling is approved.
-Further redaction, retrieval, LangGraph orchestration, budgets, release governance,
-and the broader production controls remain specified in the production plan.
+The gateway redacts recognizable contacts and quarantines identity-related text;
+this is not complete personal-data detection. Approved retrieval, LangGraph,
+budgets, immutable reviews and release controls are implemented. See the
+[operating runbook](operations.md) for deployment and release procedures.
 
 ## Switch to DeepSeek later
 
@@ -105,4 +109,42 @@ Vikey `AI_BASE_URL` override. Run synthetic verification and quality evaluation,
 then recreate API/worker containers. A provider change applies to subsequent jobs;
 existing suggestions retain their recorded provider/model and human decisions.
 Do not assume a model served through a gateway is equivalent to the direct service.
-Generation configuration is independent of any future embedding/index release.
+Generation and embeddings have independent provider/model/key settings. Changing
+generation provider, endpoint, prices, prompt, output limit or embedding profile
+creates a new release manifest. Production needs a matching evaluated release and
+two independent approvals; in-flight runs with incompatible configuration fail
+closed. Existing outputs retain their provenance. DeepSeek generation does not
+imply an embeddings endpoint is available: retain an independently approved
+embedding provider or use lexical retrieval.
+
+## Embeddings and operational settings
+
+```dotenv
+AI_EMBEDDING_MODE=disabled
+AI_EMBEDDING_PROVIDER=vikey
+AI_EMBEDDING_BASE_URL=
+AI_EMBEDDING_MODEL=replace-with-embedding-model-id
+AI_EMBEDDING_API_KEY=replace-with-embedding-api-key
+AI_EMBEDDING_DIMENSIONS=1536
+```
+
+Enable compatible embeddings only with a supported model, exact dimension and
+reviewed processing policy. Until then, approved-content search uses PostgreSQL
+lexical ranking. Internal assistance combines lexical and exact scoped pgvector
+ranking when an entire source version has compatible embeddings. Public resident
+search never calls a paid model. Reindexing keeps old and partial vectors out of
+semantic ranking; source withdrawal and expiry apply before ranking.
+
+The example files also contain per-run, organization, global daily and monthly
+funding caps, concurrency limits and price settings in micro USD. Prices are
+illustrative placeholders, not provider quotations. Set reviewed upper-bound
+prices and funded caps before activation. Admission reserves the full bounded
+attempt exposure, including byte expansion for multilingual/JSON input. Actual
+reported usage is recorded separately; unreported usage is labelled estimated.
+Reservations remain charged against admission caps after completion or retention
+to avoid overspending through uncertain billing or deleted history.
+
+`.env.production.example` additionally requires verified database TLS, secure
+sessions, two exact HTTPS web origins, an MFA encryption key and independently
+approved data processing. It starts with paid inference disabled. Model and
+embedding keys stay on the server; no client bundle receives them.

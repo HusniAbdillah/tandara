@@ -6,10 +6,14 @@ import type { User, Source } from '@tandara/contracts';
 import { IdentityService, passwordHash } from './identity.js';
 import { audit, conflict, found, parse, sourceProjection } from './shared.js';
 import { eraseReport } from './privacy.js';
+import { AiService } from './ai.js';
 
 @Injectable()
 export class AdministrationService {
-  constructor(@Inject(IdentityService) readonly identity: IdentityService) {}
+  constructor(
+    @Inject(IdentityService) readonly identity: IdentityService,
+    @Inject(AiService) readonly ai: AiService,
+  ) {}
   get db() {
     return this.identity.db;
   }
@@ -175,7 +179,7 @@ export class AdministrationService {
             (
               await sql<{
                 id: string;
-              }>`INSERT INTO regions(name,organization_id,config,boundary,suspended) VALUES(${d.name},${d.organizationId}::uuid,${JSON.stringify(d.config)}::jsonb,${geom},${d.suspended}) RETURNING id`.execute(
+              }>`INSERT INTO regions(name,organization_id,config,boundary,suspended,simulation) VALUES(${d.name},${d.organizationId}::uuid,${JSON.stringify(d.config)}::jsonb,${geom},${d.suspended},${process.env['APP_MODE'] !== 'production'}) RETURNING id`.execute(
                 tx,
               )
             ).rows[0],
@@ -295,7 +299,7 @@ export class AdministrationService {
   async operations(user: User) {
     this.identity.requireAdmin(user);
     const worker = (
-      await sql<{ seen_at: Date }>`SELECT seen_at FROM worker_heartbeat WHERE id='primary'`.execute(
+      await sql<{ seen_at: Date }>`SELECT max(seen_at) seen_at FROM worker_heartbeat`.execute(
         this.db,
       )
     ).rows[0];
@@ -311,7 +315,7 @@ export class AdministrationService {
     ).rows;
     return {
       database: await this.identity.database.isReady(),
-      workerLastSeen: worker?.seen_at.toISOString() ?? null,
+      workerLastSeen: worker?.seen_at?.toISOString() ?? null,
       aiMode: process.env['AI_MODE'] ?? 'heuristic',
       jobs,
       deletions,
@@ -320,6 +324,15 @@ export class AdministrationService {
   async retryJob(user: User, id: string) {
     this.identity.requireAdmin(user);
     parse(z.uuid(), id);
+    const failed = (
+      await sql<{
+        kind: string;
+        entity_id: string;
+      }>`SELECT kind,entity_id FROM outbox_jobs WHERE id=${id}::uuid AND state='failed'`.execute(
+        this.db,
+      )
+    ).rows[0];
+    if (failed?.kind === 'knowledge_index') return this.ai.retryIndex(user, failed.entity_id);
     return this.db.transaction().execute(async (tx) => {
       const row = (
         await sql<{

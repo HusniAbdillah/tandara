@@ -5,6 +5,8 @@ import {
   IdentityService,
   PreparednessService,
   ReportsService,
+  AiService,
+  KnowledgeService,
 } from '@tandara/backend';
 
 @Controller('api/v1')
@@ -14,12 +16,118 @@ export class ProductController {
     @Inject(ReportsService) readonly reports: ReportsService,
     @Inject(PreparednessService) readonly plans: PreparednessService,
     @Inject(AdministrationService) readonly admin: AdministrationService,
+    @Inject(AiService) readonly ai: AiService,
+    @Inject(KnowledgeService) readonly knowledge: KnowledgeService,
   ) {}
   user(req: FastifyRequest) {
     return this.identity.authenticate(
       req.cookies['tandara_session'],
       ['GET', 'HEAD'].includes(req.method) ? undefined : String(req.headers['x-csrf-token'] ?? ''),
     );
+  }
+  @Get('deployment') deployment() {
+    const env = this.identity.database.environment;
+    const origins = env.WEB_ORIGINS.split(',');
+    return {
+      mode: env.APP_MODE,
+      residentOrigin: origins[0] || 'http://127.0.0.1:8080',
+      coordinatorOrigin: origins[1] || 'http://127.0.0.1:8081',
+    };
+  }
+  @Get('regions/:regionId/knowledge') knowledgeSearch(
+    @Param('regionId') region: string,
+    @Query('q') q: string,
+  ) {
+    return this.knowledge.search(region, q);
+  }
+  @Get('regions/:regionId/knowledge/references') async references(
+    @Param('regionId') region: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.knowledge.references(await this.user(req), region);
+  }
+  @Post('regions/:regionId/knowledge/references') async importReference(
+    @Param('regionId') region: string,
+    @Req() req: FastifyRequest,
+    @Body() input: unknown,
+  ) {
+    return this.knowledge.importReference(await this.user(req), region, input);
+  }
+  @Post('regions/:regionId/knowledge/references/:id/review') async reviewReference(
+    @Param('regionId') region: string,
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+    @Body() input: unknown,
+  ) {
+    return this.knowledge.reviewReference(await this.user(req), region, id, input);
+  }
+  @Post('regions/:regionId/ai/runs') async submitAi(
+    @Param('regionId') region: string,
+    @Body() input: unknown,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.submit(await this.user(req), region, input);
+  }
+  @Get('regions/:regionId/ai/runs') async aiRuns(
+    @Param('regionId') region: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.list(await this.user(req), region);
+  }
+  @Get('regions/:regionId/ai/runs/:id') async aiRun(
+    @Param('regionId') region: string,
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.detail(await this.user(req), region, id);
+  }
+  @Post('regions/:regionId/ai/runs/:id/review') async reviewAi(
+    @Param('regionId') region: string,
+    @Param('id') id: string,
+    @Body() input: unknown,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.review(await this.user(req), region, id, input);
+  }
+  @Post('regions/:regionId/ai/runs/:id/cancel') async cancelAi(
+    @Param('regionId') region: string,
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.cancel(await this.user(req), region, id);
+  }
+  @Post('regions/:regionId/ai/runs/:id/retry') async retryAi(
+    @Param('regionId') region: string,
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.retry(await this.user(req), region, id);
+  }
+  @Get('admin/ai/operations') async aiOperations(@Req() req: FastifyRequest) {
+    return this.ai.operations(await this.user(req));
+  }
+  @Post('admin/ai/controls') async aiControl(@Req() req: FastifyRequest, @Body() input: unknown) {
+    return this.ai.control(await this.user(req), input);
+  }
+  @Post('admin/ai/releases/:id/approve') async approveAiRelease(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+    @Body() input: unknown,
+  ) {
+    return this.ai.approveRelease(await this.user(req), id, input);
+  }
+  @Post('admin/ai/releases/:id/evaluations') async registerEvaluation(
+    @Param('id') id: string,
+    @Body() input: unknown,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.registerEvaluation(await this.user(req), id, input);
+  }
+  @Post('admin/ai/releases/:id/activate') async activateAiRelease(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return this.ai.activateRelease(await this.user(req), id);
   }
   @Post('auth/login') async login(
     @Body() body: unknown,
@@ -40,6 +148,12 @@ export class ProductController {
   }
   @Get('auth/me') async me(@Req() req: FastifyRequest) {
     return { user: await this.user(req), csrf: req.cookies['tandara_csrf'] ?? '' };
+  }
+  @Post('auth/mfa/enroll') async beginMfa(@Req() req: FastifyRequest, @Body() body: unknown) {
+    return this.identity.beginMfa(await this.user(req), body);
+  }
+  @Post('auth/mfa/confirm') async confirmMfa(@Req() req: FastifyRequest, @Body() body: unknown) {
+    return this.identity.confirmMfa(await this.user(req), body);
   }
   @Post('auth/logout') async logout(
     @Req() req: FastifyRequest,

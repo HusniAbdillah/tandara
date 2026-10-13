@@ -14,6 +14,3206 @@
     }
   },
   "paths": {
+    "/api/v1/admin/ai/releases/{id}/evaluations": {
+      "post": {
+        "summary": "POST /admin/ai/releases/{id}/evaluations",
+        "description": "Access: admin. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "artifactHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "modelFingerprint": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "datasetHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "caseCount": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 9007199254740991
+                  },
+                  "adversarialCount": {
+                    "type": "integer",
+                    "minimum": 200,
+                    "maximum": 9007199254740991
+                  },
+                  "reviewedCaseCount": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 9007199254740991
+                  },
+                  "candidateModels": {
+                    "minItems": 2,
+                    "maxItems": 10,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  },
+                  "validOutputRate": {
+                    "type": "number",
+                    "minimum": 0.99,
+                    "maximum": 1
+                  },
+                  "macroF1": {
+                    "type": "number",
+                    "minimum": 0.9,
+                    "maximum": 1
+                  },
+                  "followUpRecall": {
+                    "type": "number",
+                    "minimum": 0.95,
+                    "maximum": 1
+                  },
+                  "supportedClaimRate": {
+                    "type": "number",
+                    "minimum": 0.99,
+                    "maximum": 1
+                  },
+                  "retrievalRecallAt10": {
+                    "type": "number",
+                    "minimum": 0.95,
+                    "maximum": 1
+                  },
+                  "correctAbstentionRate": {
+                    "type": "number",
+                    "minimum": 0.95,
+                    "maximum": 1
+                  },
+                  "unsupportedCriticalClaims": {
+                    "type": "number",
+                    "const": 0
+                  },
+                  "crossRegionLeaks": {
+                    "type": "number",
+                    "const": 0
+                  },
+                  "unauthorizedMutations": {
+                    "type": "number",
+                    "const": 0
+                  },
+                  "independentSecurityReviewHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "qualifiedTranslationReviewHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "reviewedBy": {
+                    "minItems": 2,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 200
+                    }
+                  },
+                  "completedAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "artifactHash",
+                  "modelFingerprint",
+                  "datasetHash",
+                  "caseCount",
+                  "adversarialCount",
+                  "reviewedCaseCount",
+                  "candidateModels",
+                  "validOutputRate",
+                  "macroF1",
+                  "followUpRecall",
+                  "supportedClaimRate",
+                  "retrievalRecallAt10",
+                  "correctAbstentionRate",
+                  "unsupportedCriticalClaims",
+                  "crossRegionLeaks",
+                  "unauthorizedMutations",
+                  "independentSecurityReviewHash",
+                  "qualifiedTranslationReviewHash",
+                  "reviewedBy",
+                  "completedAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/knowledge/references": {
+      "get": {
+        "summary": "GET /regions/{regionId}/knowledge/references",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "sourceUrl": {
+                        "type": "string"
+                      },
+                      "licenseNote": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "number"
+                      },
+                      "expiresAt": {
+                        "type": "string"
+                      },
+                      "authorId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "reviewerId": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "title",
+                      "text",
+                      "sourceUrl",
+                      "licenseNote",
+                      "state",
+                      "version",
+                      "expiresAt",
+                      "authorId",
+                      "reviewerId"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /regions/{regionId}/knowledge/references",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 200
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 20,
+                    "maxLength": 12000
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "licenseNote": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  },
+                  "expiresAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  }
+                },
+                "required": [
+                  "title",
+                  "text",
+                  "sourceUrl",
+                  "licenseNote",
+                  "expiresAt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/knowledge/references/{id}/review": {
+      "post": {
+        "summary": "POST /regions/{regionId}/knowledge/references/{id}/review",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "approved",
+                      "withdrawn"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "action",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/knowledge": {
+      "get": {
+        "summary": "GET /regions/{regionId}/knowledge",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sourceUrl": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "kind": {
+                        "default": "plan",
+                        "type": "string",
+                        "enum": [
+                          "plan",
+                          "reference"
+                        ]
+                      },
+                      "id": {
+                        "type": "string"
+                      },
+                      "entityId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "section": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      },
+                      "expiresAt": {
+                        "type": "string"
+                      },
+                      "simulation": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "sourceUrl",
+                      "kind",
+                      "id",
+                      "entityId",
+                      "title",
+                      "section",
+                      "version",
+                      "text",
+                      "expiresAt",
+                      "simulation"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/deployment": {
+      "get": {
+        "summary": "GET /deployment",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "simulation",
+                        "production"
+                      ]
+                    },
+                    "residentOrigin": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "coordinatorOrigin": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "residentOrigin",
+                    "coordinatorOrigin"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/ai/runs": {
+      "post": {
+        "summary": "POST /regions/{regionId}/ai/runs",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "task": {
+                    "type": "string",
+                    "enum": [
+                      "duplicates",
+                      "briefing",
+                      "answer",
+                      "clarification",
+                      "public_summary",
+                      "plan_draft",
+                      "training_draft",
+                      "translation",
+                      "coverage"
+                    ]
+                  },
+                  "requestKey": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "reportId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "question": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 1500
+                  },
+                  "hours": {
+                    "default": 24,
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 168
+                  },
+                  "language": {
+                    "default": "id",
+                    "type": "string",
+                    "enum": [
+                      "id",
+                      "jv",
+                      "su"
+                    ]
+                  }
+                },
+                "required": [
+                  "task",
+                  "requestKey",
+                  "hours",
+                  "language"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      },
+      "get": {
+        "summary": "GET /regions/{regionId}/ai/runs",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "regionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "task": {
+                        "type": "string",
+                        "enum": [
+                          "triage",
+                          "duplicates",
+                          "briefing",
+                          "answer",
+                          "clarification",
+                          "public_summary",
+                          "plan_draft",
+                          "training_draft",
+                          "translation",
+                          "coverage"
+                        ]
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "queued",
+                          "processing",
+                          "ready",
+                          "failed",
+                          "cancelled",
+                          "expired",
+                          "unavailable"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      },
+                      "error": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "releaseId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "output": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 200
+                              },
+                              "claims": {
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "text": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1500
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "explicit",
+                                        "ambiguous",
+                                        "contradicted",
+                                        "insufficient_evidence"
+                                      ]
+                                    },
+                                    "citations": {
+                                      "maxItems": 10,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "sourceId": {
+                                            "type": "string",
+                                            "maxLength": 200
+                                          },
+                                          "quote": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1500
+                                          }
+                                        },
+                                        "required": [
+                                          "sourceId",
+                                          "quote"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "text",
+                                    "state",
+                                    "citations"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "questions": {
+                                "maxItems": 10,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                }
+                              },
+                              "abstained": {
+                                "type": "boolean"
+                              },
+                              "limitation": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1000
+                              },
+                              "translation": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "maxLength": 6000
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "draft": {
+                                "default": null,
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "clarification",
+                                          "public_summary",
+                                          "plan_draft",
+                                          "training_draft"
+                                        ]
+                                      },
+                                      "sections": {
+                                        "minItems": 1,
+                                        "maxItems": 30,
+                                        "type": "array",
+                                        "items": {
+                                          "type": "object",
+                                          "properties": {
+                                            "heading": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 150
+                                            },
+                                            "text": {
+                                              "type": "string",
+                                              "minLength": 1,
+                                              "maxLength": 2000
+                                            },
+                                            "citations": {
+                                              "minItems": 1,
+                                              "maxItems": 10,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "sourceId": {
+                                                    "type": "string",
+                                                    "maxLength": 200
+                                                  },
+                                                  "quote": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 1500
+                                                  }
+                                                },
+                                                "required": [
+                                                  "sourceId",
+                                                  "quote"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "heading",
+                                            "text",
+                                            "citations"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "sections"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "needsHumanReview": {
+                                "type": "boolean",
+                                "const": true
+                              }
+                            },
+                            "required": [
+                              "title",
+                              "claims",
+                              "questions",
+                              "abstained",
+                              "limitation",
+                              "translation",
+                              "draft",
+                              "needsHumanReview"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "sources": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "entityId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "plan",
+                                "reference",
+                                "report",
+                                "counts",
+                                "coverage",
+                                "instruction"
+                              ]
+                            },
+                            "version": {
+                              "type": "string",
+                              "maxLength": 100
+                            },
+                            "title": {
+                              "type": "string",
+                              "maxLength": 300
+                            },
+                            "text": {
+                              "type": "string",
+                              "maxLength": 8000
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "entityId",
+                            "kind",
+                            "version",
+                            "title",
+                            "text"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "reviews": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "action": {
+                              "type": "string"
+                            },
+                            "note": {
+                              "type": "string"
+                            },
+                            "reviewerId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "createdAt": {
+                              "type": "string"
+                            },
+                            "output": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "title": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 200
+                                    },
+                                    "claims": {
+                                      "maxItems": 30,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "text": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1500
+                                          },
+                                          "state": {
+                                            "type": "string",
+                                            "enum": [
+                                              "explicit",
+                                              "ambiguous",
+                                              "contradicted",
+                                              "insufficient_evidence"
+                                            ]
+                                          },
+                                          "citations": {
+                                            "maxItems": 10,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "sourceId": {
+                                                  "type": "string",
+                                                  "maxLength": 200
+                                                },
+                                                "quote": {
+                                                  "type": "string",
+                                                  "minLength": 1,
+                                                  "maxLength": 1500
+                                                }
+                                              },
+                                              "required": [
+                                                "sourceId",
+                                                "quote"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "text",
+                                          "state",
+                                          "citations"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    },
+                                    "questions": {
+                                      "maxItems": 10,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 500
+                                      }
+                                    },
+                                    "abstained": {
+                                      "type": "boolean"
+                                    },
+                                    "limitation": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1000
+                                    },
+                                    "translation": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "maxLength": 6000
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "draft": {
+                                      "default": null,
+                                      "anyOf": [
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "kind": {
+                                              "type": "string",
+                                              "enum": [
+                                                "clarification",
+                                                "public_summary",
+                                                "plan_draft",
+                                                "training_draft"
+                                              ]
+                                            },
+                                            "sections": {
+                                              "minItems": 1,
+                                              "maxItems": 30,
+                                              "type": "array",
+                                              "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                  "heading": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 150
+                                                  },
+                                                  "text": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 2000
+                                                  },
+                                                  "citations": {
+                                                    "minItems": 1,
+                                                    "maxItems": 10,
+                                                    "type": "array",
+                                                    "items": {
+                                                      "type": "object",
+                                                      "properties": {
+                                                        "sourceId": {
+                                                          "type": "string",
+                                                          "maxLength": 200
+                                                        },
+                                                        "quote": {
+                                                          "type": "string",
+                                                          "minLength": 1,
+                                                          "maxLength": 1500
+                                                        }
+                                                      },
+                                                      "required": [
+                                                        "sourceId",
+                                                        "quote"
+                                                      ],
+                                                      "additionalProperties": false
+                                                    }
+                                                  }
+                                                },
+                                                "required": [
+                                                  "heading",
+                                                  "text",
+                                                  "citations"
+                                                ],
+                                                "additionalProperties": false
+                                              }
+                                            }
+                                          },
+                                          "required": [
+                                            "kind",
+                                            "sections"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "needsHumanReview": {
+                                      "type": "boolean",
+                                      "const": true
+                                    }
+                                  },
+                                  "required": [
+                                    "title",
+                                    "claims",
+                                    "questions",
+                                    "abstained",
+                                    "limitation",
+                                    "translation",
+                                    "draft",
+                                    "needsHumanReview"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "action",
+                            "note",
+                            "reviewerId",
+                            "createdAt",
+                            "output"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "provenance": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {}
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "regionId",
+                      "task",
+                      "state",
+                      "createdAt",
+                      "error",
+                      "releaseId",
+                      "output",
+                      "sources",
+                      "reviews",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/ai/runs/{id}": {
+      "get": {
+        "summary": "GET /regions/{regionId}/ai/runs/{id}",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "regionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "task": {
+                      "type": "string",
+                      "enum": [
+                        "triage",
+                        "duplicates",
+                        "briefing",
+                        "answer",
+                        "clarification",
+                        "public_summary",
+                        "plan_draft",
+                        "training_draft",
+                        "translation",
+                        "coverage"
+                      ]
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "processing",
+                        "ready",
+                        "failed",
+                        "cancelled",
+                        "expired",
+                        "unavailable"
+                      ]
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    },
+                    "error": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "releaseId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "output": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 200
+                            },
+                            "claims": {
+                              "maxItems": 30,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1500
+                                  },
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "explicit",
+                                      "ambiguous",
+                                      "contradicted",
+                                      "insufficient_evidence"
+                                    ]
+                                  },
+                                  "citations": {
+                                    "maxItems": 10,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "sourceId": {
+                                          "type": "string",
+                                          "maxLength": 200
+                                        },
+                                        "quote": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 1500
+                                        }
+                                      },
+                                      "required": [
+                                        "sourceId",
+                                        "quote"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "text",
+                                  "state",
+                                  "citations"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "questions": {
+                              "maxItems": 10,
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              }
+                            },
+                            "abstained": {
+                              "type": "boolean"
+                            },
+                            "limitation": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1000
+                            },
+                            "translation": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "maxLength": 6000
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "draft": {
+                              "default": null,
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "clarification",
+                                        "public_summary",
+                                        "plan_draft",
+                                        "training_draft"
+                                      ]
+                                    },
+                                    "sections": {
+                                      "minItems": 1,
+                                      "maxItems": 30,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "heading": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 150
+                                          },
+                                          "text": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 2000
+                                          },
+                                          "citations": {
+                                            "minItems": 1,
+                                            "maxItems": 10,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "sourceId": {
+                                                  "type": "string",
+                                                  "maxLength": 200
+                                                },
+                                                "quote": {
+                                                  "type": "string",
+                                                  "minLength": 1,
+                                                  "maxLength": 1500
+                                                }
+                                              },
+                                              "required": [
+                                                "sourceId",
+                                                "quote"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "heading",
+                                          "text",
+                                          "citations"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "sections"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "needsHumanReview": {
+                              "type": "boolean",
+                              "const": true
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "claims",
+                            "questions",
+                            "abstained",
+                            "limitation",
+                            "translation",
+                            "draft",
+                            "needsHumanReview"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200
+                          },
+                          "entityId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "plan",
+                              "reference",
+                              "report",
+                              "counts",
+                              "coverage",
+                              "instruction"
+                            ]
+                          },
+                          "version": {
+                            "type": "string",
+                            "maxLength": 100
+                          },
+                          "title": {
+                            "type": "string",
+                            "maxLength": 300
+                          },
+                          "text": {
+                            "type": "string",
+                            "maxLength": 8000
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "entityId",
+                          "kind",
+                          "version",
+                          "title",
+                          "text"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "reviews": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "action": {
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": "string"
+                          },
+                          "reviewerId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "output": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200
+                                  },
+                                  "claims": {
+                                    "maxItems": 30,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 1500
+                                        },
+                                        "state": {
+                                          "type": "string",
+                                          "enum": [
+                                            "explicit",
+                                            "ambiguous",
+                                            "contradicted",
+                                            "insufficient_evidence"
+                                          ]
+                                        },
+                                        "citations": {
+                                          "maxItems": 10,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "sourceId": {
+                                                "type": "string",
+                                                "maxLength": 200
+                                              },
+                                              "quote": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 1500
+                                              }
+                                            },
+                                            "required": [
+                                              "sourceId",
+                                              "quote"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "text",
+                                        "state",
+                                        "citations"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "questions": {
+                                    "maxItems": 10,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 500
+                                    }
+                                  },
+                                  "abstained": {
+                                    "type": "boolean"
+                                  },
+                                  "limitation": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1000
+                                  },
+                                  "translation": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "maxLength": 6000
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "draft": {
+                                    "default": null,
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "clarification",
+                                              "public_summary",
+                                              "plan_draft",
+                                              "training_draft"
+                                            ]
+                                          },
+                                          "sections": {
+                                            "minItems": 1,
+                                            "maxItems": 30,
+                                            "type": "array",
+                                            "items": {
+                                              "type": "object",
+                                              "properties": {
+                                                "heading": {
+                                                  "type": "string",
+                                                  "minLength": 1,
+                                                  "maxLength": 150
+                                                },
+                                                "text": {
+                                                  "type": "string",
+                                                  "minLength": 1,
+                                                  "maxLength": 2000
+                                                },
+                                                "citations": {
+                                                  "minItems": 1,
+                                                  "maxItems": 10,
+                                                  "type": "array",
+                                                  "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                      "sourceId": {
+                                                        "type": "string",
+                                                        "maxLength": 200
+                                                      },
+                                                      "quote": {
+                                                        "type": "string",
+                                                        "minLength": 1,
+                                                        "maxLength": 1500
+                                                      }
+                                                    },
+                                                    "required": [
+                                                      "sourceId",
+                                                      "quote"
+                                                    ],
+                                                    "additionalProperties": false
+                                                  }
+                                                }
+                                              },
+                                              "required": [
+                                                "heading",
+                                                "text",
+                                                "citations"
+                                              ],
+                                              "additionalProperties": false
+                                            }
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "sections"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "needsHumanReview": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "claims",
+                                  "questions",
+                                  "abstained",
+                                  "limitation",
+                                  "translation",
+                                  "draft",
+                                  "needsHumanReview"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "action",
+                          "note",
+                          "reviewerId",
+                          "createdAt",
+                          "output"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "provenance": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "regionId",
+                    "task",
+                    "state",
+                    "createdAt",
+                    "error",
+                    "releaseId",
+                    "output",
+                    "sources",
+                    "reviews",
+                    "provenance"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/ai/runs/{id}/review": {
+      "post": {
+        "summary": "POST /regions/{regionId}/ai/runs/{id}/review",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "edited",
+                      "rejected"
+                    ]
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 1000
+                  },
+                  "output": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "claims": {
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1500
+                            },
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "explicit",
+                                "ambiguous",
+                                "contradicted",
+                                "insufficient_evidence"
+                              ]
+                            },
+                            "citations": {
+                              "maxItems": 10,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "sourceId": {
+                                    "type": "string",
+                                    "maxLength": 200
+                                  },
+                                  "quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1500
+                                  }
+                                },
+                                "required": [
+                                  "sourceId",
+                                  "quote"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "text",
+                            "state",
+                            "citations"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "questions": {
+                        "maxItems": 10,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "abstained": {
+                        "type": "boolean"
+                      },
+                      "limitation": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      },
+                      "translation": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "maxLength": 6000
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "draft": {
+                        "default": null,
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "clarification",
+                                  "public_summary",
+                                  "plan_draft",
+                                  "training_draft"
+                                ]
+                              },
+                              "sections": {
+                                "minItems": 1,
+                                "maxItems": 30,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "heading": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 150
+                                    },
+                                    "text": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 2000
+                                    },
+                                    "citations": {
+                                      "minItems": 1,
+                                      "maxItems": 10,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "sourceId": {
+                                            "type": "string",
+                                            "maxLength": 200
+                                          },
+                                          "quote": {
+                                            "type": "string",
+                                            "minLength": 1,
+                                            "maxLength": 1500
+                                          }
+                                        },
+                                        "required": [
+                                          "sourceId",
+                                          "quote"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "heading",
+                                    "text",
+                                    "citations"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "kind",
+                              "sections"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "needsHumanReview": {
+                        "type": "boolean",
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "claims",
+                      "questions",
+                      "abstained",
+                      "limitation",
+                      "translation",
+                      "draft",
+                      "needsHumanReview"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "action",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/ai/runs/{id}/cancel": {
+      "post": {
+        "summary": "POST /regions/{regionId}/ai/runs/{id}/cancel",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/regions/{regionId}/ai/runs/{id}/retry": {
+      "post": {
+        "summary": "POST /regions/{regionId}/ai/runs/{id}/retry",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/operations": {
+      "get": {
+        "summary": "GET /admin/ai/operations",
+        "description": "Access: admin. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "embeddingMode": {
+                      "type": "string",
+                      "enum": [
+                        "disabled",
+                        "compatible"
+                      ]
+                    },
+                    "mode": {
+                      "type": "string"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "model": {
+                      "type": "string"
+                    },
+                    "controls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "scope": {
+                            "type": "string"
+                          },
+                          "scopeId": {
+                            "type": "string"
+                          },
+                          "enabled": {
+                            "type": "boolean"
+                          },
+                          "reason": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "scope",
+                          "scopeId",
+                          "enabled",
+                          "reason"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "task": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "task",
+                          "state",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "budgets": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "organizationId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "day": {
+                            "type": "string"
+                          },
+                          "reserved": {
+                            "type": "number"
+                          },
+                          "limit": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "organizationId",
+                          "day",
+                          "reserved",
+                          "limit"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "releases": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "manifest": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "approved": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "manifest",
+                          "createdAt",
+                          "approved"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "attempts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "number"
+                          },
+                          "estimatedTokens": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "state",
+                          "count",
+                          "estimatedTokens"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "embeddingMode",
+                    "mode",
+                    "provider",
+                    "model",
+                    "controls",
+                    "runs",
+                    "budgets",
+                    "releases",
+                    "attempts"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/controls": {
+      "post": {
+        "summary": "POST /admin/ai/controls",
+        "description": "Access: admin. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "global",
+                      "provider",
+                      "task",
+                      "organization",
+                      "release"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "scope",
+                  "scopeId",
+                  "enabled",
+                  "reason"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/releases/{id}/approve": {
+      "post": {
+        "summary": "POST /admin/ai/releases/{id}/approve",
+        "description": "Access: admin. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "evaluationHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "note": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 1000
+                  }
+                },
+                "required": [
+                  "evaluationHash",
+                  "note"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai/releases/{id}/activate": {
+      "post": {
+        "summary": "POST /admin/ai/releases/{id}/activate",
+        "description": "Access: admin. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/enroll": {
+      "post": {
+        "summary": "POST /auth/mfa/enroll",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "code": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "secret": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "secret",
+                    "uri"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/mfa/confirm": {
+      "post": {
+        "summary": "POST /auth/mfa/confirm",
+        "description": "Access: coordinator. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
+                  }
+                },
+                "required": [
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
     "/api/v1/auth/login": {
       "post": {
         "summary": "POST /auth/login",
@@ -45,6 +3245,10 @@
                   "password": {
                     "type": "string",
                     "maxLength": 200
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^\\d{6}$"
                   }
                 },
                 "required": [
@@ -748,10 +3952,15 @@
                           },
                           "languages": {
                             "minItems": 1,
+                            "maxItems": 3,
                             "type": "array",
                             "items": {
                               "type": "string",
-                              "const": "id"
+                              "enum": [
+                                "id",
+                                "jv",
+                                "su"
+                              ]
                             }
                           }
                         },
@@ -940,10 +4149,15 @@
                             },
                             "languages": {
                               "minItems": 1,
+                              "maxItems": 3,
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "const": "id"
+                                "enum": [
+                                  "id",
+                                  "jv",
+                                  "su"
+                                ]
                               }
                             }
                           },
@@ -2254,6 +5468,239 @@
                       "items": {
                         "type": "object",
                         "properties": {
+                          "reviewedOutput": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "suggestedCategory": {
+                                    "anyOf": [
+                                      {
+                                        "type": "string",
+                                        "enum": [
+                                          "road_flooding",
+                                          "water_entering_homes",
+                                          "blocked_access",
+                                          "debris",
+                                          "damaged_facility",
+                                          "follow_up_needed",
+                                          "other"
+                                        ]
+                                      },
+                                      {
+                                        "type": "null"
+                                      }
+                                    ]
+                                  },
+                                  "facts": {
+                                    "maxItems": 20,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "field": {
+                                          "type": "string",
+                                          "enum": [
+                                            "description",
+                                            "landmark",
+                                            "observed_at"
+                                          ]
+                                        },
+                                        "value": {
+                                          "type": "string",
+                                          "maxLength": 2000
+                                        },
+                                        "evidence": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 2000
+                                        }
+                                      },
+                                      "required": [
+                                        "field",
+                                        "value",
+                                        "evidence"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "missingInformation": {
+                                    "maxItems": 20,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "maxLength": 300
+                                    }
+                                  },
+                                  "summary": {
+                                    "type": "string",
+                                    "maxLength": 2000
+                                  },
+                                  "sourceIds": {
+                                    "maxItems": 100,
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "format": "uuid",
+                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                    }
+                                  },
+                                  "needsHumanReview": {
+                                    "type": "boolean",
+                                    "const": true
+                                  }
+                                },
+                                "required": [
+                                  "suggestedCategory",
+                                  "facts",
+                                  "missingInformation",
+                                  "summary",
+                                  "sourceIds",
+                                  "needsHumanReview"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "legacyProvenance": {
+                            "type": "boolean"
+                          },
+                          "reviews": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "action": {
+                                  "type": "string"
+                                },
+                                "note": {
+                                  "type": "string"
+                                },
+                                "output": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "suggestedCategory": {
+                                          "anyOf": [
+                                            {
+                                              "type": "string",
+                                              "enum": [
+                                                "road_flooding",
+                                                "water_entering_homes",
+                                                "blocked_access",
+                                                "debris",
+                                                "damaged_facility",
+                                                "follow_up_needed",
+                                                "other"
+                                              ]
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "facts": {
+                                          "maxItems": 20,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "field": {
+                                                "type": "string",
+                                                "enum": [
+                                                  "description",
+                                                  "landmark",
+                                                  "observed_at"
+                                                ]
+                                              },
+                                              "value": {
+                                                "type": "string",
+                                                "maxLength": 2000
+                                              },
+                                              "evidence": {
+                                                "type": "string",
+                                                "minLength": 1,
+                                                "maxLength": 2000
+                                              }
+                                            },
+                                            "required": [
+                                              "field",
+                                              "value",
+                                              "evidence"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        },
+                                        "missingInformation": {
+                                          "maxItems": 20,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string",
+                                            "maxLength": 300
+                                          }
+                                        },
+                                        "summary": {
+                                          "type": "string",
+                                          "maxLength": 2000
+                                        },
+                                        "sourceIds": {
+                                          "maxItems": 100,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                          }
+                                        },
+                                        "needsHumanReview": {
+                                          "type": "boolean",
+                                          "const": true
+                                        }
+                                      },
+                                      "required": [
+                                        "suggestedCategory",
+                                        "facts",
+                                        "missingInformation",
+                                        "summary",
+                                        "sourceIds",
+                                        "needsHumanReview"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "reviewerId": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "action",
+                                "note",
+                                "output",
+                                "reviewerId",
+                                "createdAt"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
                           "id": {
                             "type": "string",
                             "format": "uuid",
@@ -5802,10 +9249,15 @@
                           },
                           "languages": {
                             "minItems": 1,
+                            "maxItems": 3,
                             "type": "array",
                             "items": {
                               "type": "string",
-                              "const": "id"
+                              "enum": [
+                                "id",
+                                "jv",
+                                "su"
+                              ]
                             }
                           }
                         },
@@ -5996,10 +9448,15 @@
                       },
                       "languages": {
                         "minItems": 1,
+                        "maxItems": 3,
                         "type": "array",
                         "items": {
                           "type": "string",
-                          "const": "id"
+                          "enum": [
+                            "id",
+                            "jv",
+                            "su"
+                          ]
                         }
                       }
                     },

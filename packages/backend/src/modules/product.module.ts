@@ -5,6 +5,8 @@ import { ReportsService } from './reports.js';
 import { PreparednessService } from './preparedness.js';
 import { AdministrationService } from './administration.js';
 import { JobsService } from './jobs.js';
+import { AiService } from './ai.js';
+import { KnowledgeService } from './knowledge.js';
 
 @Module({
   imports: [DatabaseModule],
@@ -14,6 +16,8 @@ import { JobsService } from './jobs.js';
     PreparednessService,
     AdministrationService,
     JobsService,
+    AiService,
+    KnowledgeService,
   ],
   exports: [
     IdentityService,
@@ -21,6 +25,8 @@ import { JobsService } from './jobs.js';
     PreparednessService,
     AdministrationService,
     JobsService,
+    AiService,
+    KnowledgeService,
   ],
 })
 export class ProductModule {}

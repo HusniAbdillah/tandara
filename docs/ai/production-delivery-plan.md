@@ -253,16 +253,28 @@ The delivery pack includes reproducible source and builds, migrations, infrastru
 
 Externally required inputs are an approved inference provider and quotas, hosting/database/storage/monitoring accounts, domain/TLS, organization onboarding and privileged identity configuration, authorized real plans and source content, qualified evaluation reviewers, and funded operational ownership. Record missing inputs as unresolved launch gates. Code-complete or local-test-complete is not production-ready while those gates remain open.
 
-## 15. Provider integration implementation update
+## 15. Full software implementation update
 
-The Vikey/DeepSeek connection is implemented with provider profiles, model/key
-placeholders in `.env.example` and the ignored local `.env`, shared validation,
-bounded JSON generation, sanitized errors, transient outbox retries, independent
-duplicate hints, completed-job replay protection, and an explicit synthetic
-verification command. See [provider setup](provider-setup.md).
+The branch now implements all ten assistance tasks, bounded LangGraph execution
+with PostgreSQL checkpoints, independent generation/embedding profiles, approved
+plan/reference ingestion, hybrid pgvector/lexical retrieval, scoped RLS, immutable
+outputs and review revisions, human translation qualifications, funded admission,
+fenced leases, cancellation/erasure, operations controls and evaluated-release
+approval. Posko has an assistance/review workspace and knowledge management;
+Warga has extractive approved-source search. Production isolation, MFA onboarding,
+separate service/migration roles, TLS, AWS/Compose deployment templates, telemetry,
+evaluation tools, load tooling and privacy restore replay are included.
 
-This update does not introduce LangGraph, retrieval/indexing, immutable human
-review revisions, production hosting, evaluated real models, organization budgets,
-or the other remaining work packages. Those remain planned. Real model activation
-requires credentials and a model ID; defaults retain accurately labelled heuristic
-processing until configured.
+Knowledge import accepts bounded, licensed plaintext with an HTTPS source link
+and independent review. It does not crawl websites or automatically parse arbitrary
+PDFs, Word files or uploads. Photos and private contacts remain outside inference.
+Existing processed media stays in the encrypted production PostgreSQL store;
+the S3 template covers independent artifacts and privacy-ledger exports. A full
+LLM answer remains private; residents see original approved excerpts.
+
+These are implemented software capabilities. The current local installation uses
+labelled rules and simulation data. No live inference credentials, hosted rollout,
+reviewed 1,000-case benchmark, independent security report, operational sign-off
+or production capacity/availability evidence has been fabricated. The
+[readiness report](readiness.md) tracks these external launch gates, and the
+[runbook](operations.md) explains configuration, rollout and recovery.

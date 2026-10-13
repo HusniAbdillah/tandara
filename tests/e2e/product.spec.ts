@@ -152,7 +152,16 @@ test('responsive citizen pages, keyboard and WCAG AA scan', async ({ page }) => 
       fullPage: true,
     });
   }
-  for (const route of ['/', '/plan', '/report', '/checklist', '/training', '/help', '/tracking']) {
+  for (const route of [
+    '/',
+    '/plan',
+    '/knowledge',
+    '/report',
+    '/checklist',
+    '/training',
+    '/help',
+    '/tracking',
+  ]) {
     await page.goto(route);
     await expect(page.locator('main')).toBeVisible();
     await page.screenshot({
@@ -189,6 +198,8 @@ test('all Posko workflows render, map and admin configuration', async ({ page })
     '/audit',
     '/admin',
     '/notifications',
+    '/ai',
+    '/security',
   ]) {
     await page.goto('http://127.0.0.1:8081' + route);
     await expect(page.locator('main h1').first()).toBeVisible();
@@ -222,6 +233,49 @@ test('all Posko workflows render, map and admin configuration', async ({ page })
       fullPage: true,
     });
   }
+});
+test('AI briefing remains a private reviewed draft with visible source evidence', async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto('http://127.0.0.1:8081/ai');
+  await page.getByLabel('Jenis bantuan').selectOption('briefing');
+  const submitted = page.waitForResponse(
+    (response) => response.request().method() === 'POST' && /\/ai\/runs$/.test(response.url()),
+  );
+  await page.getByRole('button', { name: 'Buat draf bantuan' }).click();
+  const run = await (await submitted).json();
+  const result = page.locator('#ai-run-' + run.id);
+  await expect(result.getByText('Perlu tinjauan', { exact: true })).toBeVisible();
+  await expect(result.getByText(/Mode aturan lokal/)).toBeVisible();
+  await expect(result.locator('details').first()).toBeVisible();
+  await result.getByLabel('Catatan keputusan').fill('Tinjauan manusia pada draf simulasi browser.');
+  await result.getByRole('button', { name: 'Terima sebagai draf' }).click();
+  await result.getByText('Asal hasil dan riwayat', { exact: true }).click();
+  await expect(result.getByText(/^Diterima sebagai draf ·/)).toBeVisible();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: screenshotDir + '/posko-ai-reviewed.png', fullPage: true });
+  for (const width of [360, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze();
+  expect(results.violations).toEqual([]);
+});
+test('approved knowledge search shows original excerpts without generated answers', async ({
+  page,
+}) => {
+  await page.goto('/knowledge');
+  await page.getByRole('combobox', { name: 'Wilayah', exact: true }).selectOption(region);
+  await page.getByLabel('Kata kunci rencana').fill('dokumen');
+  await page.getByRole('button', { name: 'Cari sumber' }).click();
+  await expect(page.locator('article.panel blockquote').first()).toBeVisible();
+  await expect(page.getByText(/Petikan sumber asli/)).toBeVisible();
+  await page.screenshot({ path: screenshotDir + '/warga-knowledge-search.png', fullPage: true });
 });
 test('street basemap has attribution, privacy headers and a working visibility toggle', async ({
   page,

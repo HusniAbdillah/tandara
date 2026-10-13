@@ -25,7 +25,7 @@ export class AiInferenceError extends Error {
   }
 }
 
-class ProviderHttpError extends Error {
+export class ProviderHttpError extends Error {
   readonly retryAfterMs: number;
   constructor(
     readonly status: number,
@@ -133,6 +133,7 @@ export async function fetchJson(
   return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
 }
 export class CompatibleAdapter implements AiAdapter {
+  usage: { prompt_tokens: number; completion_tokens: number } | null = null;
   readonly provider: string;
   readonly model: string;
   readonly timeout: number;
@@ -223,6 +224,12 @@ export class CompatibleAdapter implements AiAdapter {
     try {
       const response = z
         .object({
+          usage: z
+            .object({
+              prompt_tokens: z.number().int().nonnegative(),
+              completion_tokens: z.number().int().nonnegative(),
+            })
+            .optional(),
           choices: z
             .array(
               z.object({
@@ -237,6 +244,7 @@ export class CompatibleAdapter implements AiAdapter {
         })
         .parse(raw);
       const choice = response.choices[0]!;
+      this.usage = response.usage ?? null;
       if (choice.message.refusal || (choice.finish_reason && choice.finish_reason !== 'stop'))
         throw new Error('Incomplete or refused output');
       return validateTriage(input, JSON.parse(choice.message.content));

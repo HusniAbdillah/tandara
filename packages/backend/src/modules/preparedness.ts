@@ -100,7 +100,7 @@ export class PreparednessService {
         (
           await sql<{
             id: string;
-          }>`INSERT INTO plan_versions(region_id,version,content,state,author_id) VALUES(${regionId}::uuid,${version},${JSON.stringify(data.content)}::jsonb,'draft',${user.id}::uuid) RETURNING id`.execute(
+          }>`INSERT INTO plan_versions(region_id,version,content,state,author_id,simulation) VALUES(${regionId}::uuid,${version},${JSON.stringify(data.content)}::jsonb,'draft',${user.id}::uuid,${region.simulation}) RETURNING id`.execute(
             tx,
           )
         ).rows[0],
