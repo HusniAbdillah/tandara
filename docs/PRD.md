@@ -1,5 +1,9 @@
 # PRD — Product Requirements Document
 
+This requirements document includes historical foundation-stage planning from
+main. Refer to the [completion matrix](product/requirements-matrix.md) and
+[delivery report](DELIVERY.md) for the implemented product and its verified limits.
+
 # **TANDARA**
 
 ## _From Local Signals to Shared Readiness._

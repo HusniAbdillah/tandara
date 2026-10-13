@@ -1,0 +1,47 @@
+{
+  "measuredAt": "2026-10-13T02:53:34.646Z",
+  "environment": "Local Docker Desktop; synthetic seed; not a capacity claim",
+  "budget": "p95 < 500ms on seed dataset",
+  "metrics": [
+    {
+      "path": "/health",
+      "requests": 100,
+      "concurrency": 5,
+      "p50Ms": 7.63,
+      "p95Ms": 17.01,
+      "maxMs": 18.41
+    },
+    {
+      "path": "/ready",
+      "requests": 100,
+      "concurrency": 5,
+      "p50Ms": 9.09,
+      "p95Ms": 17.93,
+      "maxMs": 18.67
+    },
+    {
+      "path": "/api/v1/regions/20000000-0000-4000-8000-000000000001/public",
+      "requests": 100,
+      "concurrency": 5,
+      "p50Ms": 14.7,
+      "p95Ms": 19.22,
+      "maxMs": 37.31
+    },
+    {
+      "path": "/api/v1/regions/20000000-0000-4000-8000-000000000001/reports",
+      "requests": 100,
+      "concurrency": 5,
+      "p50Ms": 17.63,
+      "p95Ms": 29.17,
+      "maxMs": 30.45
+    },
+    {
+      "path": "/api/v1/regions/20000000-0000-4000-8000-000000000001/coverage",
+      "requests": 100,
+      "concurrency": 5,
+      "p50Ms": 14.42,
+      "p95Ms": 18.67,
+      "maxMs": 22.26
+    }
+  ]
+}

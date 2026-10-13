@@ -19,6 +19,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@tandara/contracts": "workspace:*"
+    "@tandara/contracts": "workspace:*",
+    "zod": "4.6.7"
   }
 }

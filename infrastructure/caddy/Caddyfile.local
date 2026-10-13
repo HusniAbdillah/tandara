@@ -1,0 +1,53 @@
+{
+  admin off
+  auto_https off
+}
+(security) {
+  header {
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Permissions-Policy "camera=(), microphone=(), geolocation=(self)"
+  }
+}
+:8080 {
+  import security
+  header Referrer-Policy "no-referrer"
+  header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  encode gzip
+  handle /api/* {
+    reverse_proxy api:3000
+  }
+  handle /ready {
+    reverse_proxy api:3000
+  }
+  handle /health {
+    reverse_proxy api:3000
+  }
+  handle {
+    root * /srv/warga
+    header Cache-Control "no-cache"
+    try_files {path} /index.html
+    file_server
+  }
+}
+:8081 {
+  import security
+  header Referrer-Policy "strict-origin"
+  header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org; connect-src 'self' https://tile.openstreetmap.org; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+  encode gzip
+  handle /api/* {
+    reverse_proxy api:3000
+  }
+  handle /ready {
+    reverse_proxy api:3000
+  }
+  handle /health {
+    reverse_proxy api:3000
+  }
+  handle {
+    root * /srv/posko
+    header Cache-Control "no-store"
+    try_files {path} /index.html
+    file_server
+  }
+}

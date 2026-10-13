@@ -8,25 +8,22 @@ import { configureHttp, createHttpAdapter } from '../dist/bootstrap.js';
 
 let app;
 let databaseReady = true;
-before(
-  async () => {
-    const environment = parseEnvironment({
-      DATABASE_URL: 'postgres://test:test@localhost/test',
-      REDIS_URL: 'redis://localhost:6379',
-      NODE_ENV: 'test',
-      LOG_LEVEL: 'silent',
-    });
-    const module = await Test.createTestingModule({ imports: [AppModule.register(environment)] })
-      .overrideProvider(DatabaseService)
-      .useValue({ isReady: async () => databaseReady })
-      .compile();
-    app = module.createNestApplication(createHttpAdapter(), { logger: false });
-    await configureHttp(app);
-    await app.init();
-    await app.getHttpAdapter().getInstance().ready();
-  },
-  { timeout: 15000 },
-);
+before(async () => {
+  const environment = parseEnvironment({
+    DATABASE_URL: 'postgres://test:test@localhost/test',
+    REDIS_URL: 'redis://localhost:6379',
+    NODE_ENV: 'test',
+    LOG_LEVEL: 'silent',
+  });
+  const module = await Test.createTestingModule({ imports: [AppModule.register(environment)] })
+    .overrideProvider(DatabaseService)
+    .useValue({ isReady: async () => databaseReady })
+    .compile();
+  app = module.createNestApplication(createHttpAdapter(), { logger: false });
+  await configureHttp(app);
+  await app.init();
+  await app.getHttpAdapter().getInstance().ready();
+});
 after(async () => {
   await app?.close();
 });
@@ -55,15 +52,20 @@ test('readiness succeeds when database is available', async () => {
   assert.equal(response.statusCode, 200);
 });
 
-test('unknown feature endpoints do not pretend to accept reports', async () => {
-  const response = await app.inject({ method: 'POST', url: '/api/v1/reports', payload: {} });
-  assert.equal(response.statusCode, 404);
-  assert.equal(response.json().error.code, 'NOT_FOUND');
+test('invalid reports fail validation before database access', async () => {
+  const response = await app.inject({
+    method: 'POST',
+    url: '/api/v1/reports',
+    headers: { 'x-tandara-client': 'web' },
+    payload: {},
+  });
+  assert.equal(response.statusCode, 400);
+  assert.equal(response.json().error.code, 'VALIDATION_FAILED');
 });
 
 test('published OpenAPI describes the implemented metadata contract', async () => {
   const response = await app.inject({ method: 'GET', url: '/api/v1/system/openapi.json' });
   assert.equal(response.statusCode, 200);
   assert.ok(response.json().paths['/api/v1/system/info']);
-  assert.equal(response.json().paths['/api/v1/reports'], undefined);
+  assert.ok(response.json().paths['/api/v1/reports'].post.requestBody);
 });

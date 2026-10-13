@@ -7,3 +7,6 @@
 .env*
 **/.env*
 coverage
+playwright-report
+test-results
+docs/qa/screenshots

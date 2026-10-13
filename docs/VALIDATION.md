@@ -1,5 +1,10 @@
 # Foundation validation
 
+Historical validation from main's foundation stage. Current delivered-product
+verification is recorded in [QA validation](qa/validation.md), including the
+post-rebase checks. The runtime/path/version statements below describe that
+earlier execution and are not the current deployment instructions.
+
 Date: 2026-10-13 (Asia/Bangkok). Workspace: D:/Hackathon/Tandara.
 Environment actually tested: Windows, Node 22.13.1, pnpm 10.26.2, Docker Desktop Linux engine.
 Recommended/CI runtime: Node 22.23.3, pinned in .node-version.

@@ -1,7 +1,7 @@
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { FileMigrationProvider, Migrator } from 'kysely/migration';
+import { Migrator } from 'kysely/migration';
+import * as foundation from './migrations/001_foundation.js';
+import * as product from './migrations/002_product.js';
+import * as indexes from './migrations/003_indexes.js';
 import { createDatabase } from './client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -11,12 +11,11 @@ const { db } = createDatabase(connectionString);
 try {
   const migrator = new Migrator({
     db,
-    provider: new FileMigrationProvider({
-      fs,
-      path,
-      import: (filePath) => import(pathToFileURL(filePath).href),
-      migrationFolder: fileURLToPath(new URL('./migrations/', import.meta.url)),
-    }),
+    provider: {
+      async getMigrations() {
+        return { '001_foundation': foundation, '002_product': product, '003_indexes': indexes };
+      },
+    },
   });
   const { error, results } = await migrator.migrateToLatest();
   for (const result of results ?? []) {

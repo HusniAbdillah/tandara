@@ -10,16 +10,18 @@
     "preview": "vite preview --host 127.0.0.1 --port 5174 --strictPort"
   },
   "dependencies": {
-    "@tandara/contracts": "workspace:*",
     "@tandara/api-client": "workspace:*",
+    "@tandara/contracts": "workspace:*",
     "@tandara/ui": "workspace:*",
     "@tanstack/react-query": "5.104.2",
+    "maplibre-gl": "6.14.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-router": "7.18.4"
+    "react-router": "8.4.0",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "vite": "8.3.4",
-    "@vitejs/plugin-react": "6.1.2"
+    "@vitejs/plugin-react": "6.1.2",
+    "vite": "8.3.4"
   }
 }

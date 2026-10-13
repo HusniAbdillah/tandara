@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-12T18:54:22.564Z",
+  "scope": "Read-only public probe; no live activation or persistence; empty feed does not validate all non-empty payload variants",
+  "results": [
+    {
+      "provider": "bmkg",
+      "result": "normalized",
+      "count": 18,
+      "sourceType": "official_weather"
+    },
+    {
+      "provider": "petabencana",
+      "result": "normalized",
+      "count": 0,
+      "sourceType": null
+    }
+  ]
+}

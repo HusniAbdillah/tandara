@@ -1,5 +1,10 @@
 # Tandara — Three-Day Implementation Plan
 
+Historical foundation schedule. The complete implementation and executed evidence
+are now recorded in [DELIVERY.md](DELIVERY.md) and the
+[requirements matrix](product/requirements-matrix.md). Source and tests take
+precedence over the remaining future-tense tasks in this earlier schedule.
+
 Updated: 2026-10-13. Team: **three developers total**. No separate product/QA member.
 
 ## 1. Scope and source of truth

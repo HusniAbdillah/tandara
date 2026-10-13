@@ -1,0 +1,84 @@
+name: tandara
+services:
+  postgres:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tandara}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set local database password in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-tandara}
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+  migrate:
+    image: tandara-app:local
+    build: { context: ., target: app }
+    environment: &server-env
+      NODE_ENV: production
+      APP_MODE: simulation
+      DATABASE_URL: postgres://${POSTGRES_USER:-tandara}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-tandara}
+      REDIS_URL: redis://unused:6379
+      API_HOST: 0.0.0.0
+      API_PORT: 3000
+      TRUST_PROXY: 'true'
+      LOG_LEVEL: info
+      WORKER_ENABLED: 'true'
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
+      AI_MODE: ${AI_MODE:-heuristic}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      ALLOW_LIVE_SOURCES: ${ALLOW_LIVE_SOURCES:-false}
+      SESSION_SECURE: ${SESSION_SECURE:-false}
+      WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:8080,http://localhost:8081,http://127.0.0.1:8080,http://127.0.0.1:8081}
+    command:
+      [sh, -c, 'node packages/database/dist/migrate.js && node packages/database/dist/seed.js']
+    depends_on: { postgres: { condition: service_healthy } }
+  api:
+    image: tandara-app:local
+    environment: *server-env
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  worker:
+    image: tandara-app:local
+    environment: *server-env
+    command: [node, apps/worker/dist/main.js]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    healthcheck:
+      test: [CMD, node, tooling/worker-health.mjs]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  web:
+    image: tandara-web:local
+    build: { context: ., target: web }
+    volumes:
+      - type: bind
+        source: ./apps/coordinator-web/public/basemap.json
+        target: /srv/posko/basemap.json
+        read_only: true
+    ports: ['127.0.0.1:8080:8080', '127.0.0.1:8081:8081']
+    depends_on: { api: { condition: service_healthy } }
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  postgres-data:

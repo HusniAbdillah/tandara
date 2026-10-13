@@ -9,7 +9,13 @@ export class ApiErrorFilter implements ExceptionFilter {
     const http = host.switchToHttp();
     const request = http.getRequest<FastifyRequest>();
     const reply = http.getResponse<FastifyReply>();
-    const status = exception instanceof HttpException ? exception.getStatus() : 500;
+    const duplicate =
+      typeof exception === 'object' &&
+      exception !== null &&
+      'code' in exception &&
+      exception.code === '23505';
+    const status =
+      exception instanceof HttpException ? exception.getStatus() : duplicate ? 409 : 500;
     const codes: Record<number, string> = {
       400: 'VALIDATION_FAILED',
       401: 'UNAUTHORIZED',
@@ -25,9 +31,11 @@ export class ApiErrorFilter implements ExceptionFilter {
         message:
           status >= 500
             ? 'Layanan belum tersedia. Silakan coba lagi.'
-            : exception instanceof HttpException
-              ? exception.message
-              : 'Permintaan tidak berhasil.',
+            : duplicate
+              ? 'Data dengan kunci ini sudah ada. Gunakan pengiriman yang sama untuk mencoba ulang.'
+              : exception instanceof HttpException
+                ? exception.message
+                : 'Permintaan tidak berhasil.',
         requestId: request.id,
       },
     };
