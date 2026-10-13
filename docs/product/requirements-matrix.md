@@ -1,5 +1,8 @@
 # Completion and verification matrix
 
+> Historical delivery/planning snapshot. Current implementation and the remaining
+> three-day priorities are reconciled in the [2026-10-13 audit](hackathon-audit-2026-10-13.md).
+
 Scope: integrated **local simulation**, 2026-10-13. External operational activation
 is explicitly separate. Evidence is executed source/tests and artifacts, not the
 older PRD/TDD's future-tense schedule.

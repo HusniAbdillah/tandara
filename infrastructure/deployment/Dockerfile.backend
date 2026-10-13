@@ -22,6 +22,8 @@ COPY infrastructure/deployment/*.mjs ./deployment-tools/
 # Run operations from the backend package so ESM resolves its database dependency.
 RUN cp deployment-tools/database-command.mjs "$(readlink -f /out/api/node_modules/@tandara/backend)/database-command.mjs" \
  && cp deployment-tools/worker-health.mjs "$(readlink -f /out/worker/node_modules/@tandara/backend)/worker-health.mjs"
+# Verify the pruned runtime dependency graph, not only the workspace build.
+RUN node --input-type=module -e "await import('/out/api/node_modules/@tandara/backend/dist/index.js'); await import('/out/worker/node_modules/@tandara/backend/dist/index.js')"
 
 FROM node:24.20.0-alpine AS runtime
 ENV NODE_ENV=production

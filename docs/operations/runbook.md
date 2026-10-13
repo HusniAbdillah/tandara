@@ -1,5 +1,10 @@
 # Operating the simulation
 
+This runbook describes the initial demo delivery. Current AI/production controls
+are in [AI operations](../ai/operations.md); real public-feed activation is in
+[public sources](public-sources.md). Neither configuration establishes an
+operational emergency-response service.
+
 ## Startup and health
 
 Follow root README. `.env` configures local secrets; Compose has private PostGIS,
@@ -17,22 +22,22 @@ with SQL leases; capacity/load testing beyond the local dataset is not claimed.
 
 ## Environment reference
 
-| Variable                             | Meaning                                                                            |
-| ------------------------------------ | ---------------------------------------------------------------------------------- |
-| `DATABASE_URL`                       | Server connection, private network; local dev URL differs from Compose             |
-| `POSTGRES_USER/PASSWORD/DB`          | Compose database creation; password changes require actual DB rotation             |
-| `DEMO_PASSWORD`                      | Initial simulation seed password; >=12 chars; does not reset existing accounts     |
-| `APP_MODE`                           | Only `simulation` supported by this delivery                                       |
-| `WORKER_ENABLED`                     | Strict true/false; true runs actual consumers                                      |
-| `AI_MODE`                            | disabled, heuristic or compatible                                                  |
-| `AI_PROVIDER`                        | vikey, deepseek or custom; named providers supply their default HTTPS endpoint     |
-| `AI_BASE_URL/AI_MODEL/AI_API_KEY`    | Approved server-only compatible inference configuration                            |
-| `AI_TIMEOUT_MS/AI_MAX_OUTPUT_TOKENS` | Bounded provider request timeout (default 30000 ms) and output limit (2048 tokens) |
-| `ALLOW_LIVE_SOURCES`                 | Strict false by default; also needs per-source permission                          |
-| `SESSION_SECURE`                     | False only for loopback HTTP; true with public TLS                                 |
-| `WEB_ORIGINS`                        | Exact comma-separated trusted write origins                                        |
-| `TRUST_PROXY`                        | True only behind controlled Caddy; direct API/dev defaults false                   |
-| `API_HOST/PORT/LOG_LEVEL`            | Listener and logging settings                                                      |
+| Variable                             | Meaning                                                                                               |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                       | Server connection, private network; local dev URL differs from Compose                                |
+| `POSTGRES_USER/PASSWORD/DB`          | Compose database creation; password changes require actual DB rotation                                |
+| `DEMO_PASSWORD`                      | Initial simulation seed password; >=12 chars; does not reset existing accounts                        |
+| `APP_MODE`                           | `simulation` for demo; `production` requires isolated data, roles and security gates in AI operations |
+| `WORKER_ENABLED`                     | Strict true/false; true runs actual consumers                                                         |
+| `AI_MODE`                            | disabled, heuristic or compatible                                                                     |
+| `AI_PROVIDER`                        | vikey, deepseek or custom; named providers supply their default HTTPS endpoint                        |
+| `AI_BASE_URL/AI_MODEL/AI_API_KEY`    | Approved server-only compatible inference configuration                                               |
+| `AI_TIMEOUT_MS/AI_MAX_OUTPUT_TOKENS` | Bounded provider request timeout (default 30000 ms) and output limit (2048 tokens)                    |
+| `ALLOW_LIVE_SOURCES`                 | Strict false by default; also needs per-source permission                                             |
+| `SESSION_SECURE`                     | False only for loopback HTTP; true with public TLS                                                    |
+| `WEB_ORIGINS`                        | Exact comma-separated trusted write origins                                                           |
+| `TRUST_PROXY`                        | True only behind controlled Caddy; direct API/dev defaults false                                      |
+| `API_HOST/PORT/LOG_LEVEL`            | Listener and logging settings                                                                         |
 
 Host-level production deployment is deliberately separate from the local example.
 For configured inference, see [AI provider setup](../ai/provider-setup.md).

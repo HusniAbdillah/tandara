@@ -234,36 +234,64 @@ export class JobsService {
       const records = await ingestSource(source);
       await this.db.transaction().execute(async (tx) => {
         await this.ai.assertFence(tx, job);
-        const enabled = (
+        const current = (
           await sql<{
             enabled: boolean;
-          }>`SELECT enabled FROM information_sources WHERE id=${source.id}::uuid FOR UPDATE`.execute(
+            provider: string;
+            mode: string;
+            unchanged: boolean;
+          }>`SELECT enabled,provider,mode,config=${JSON.stringify(source.config)}::jsonb AND source_url=${source.sourceUrl} AND name=${source.name} AS unchanged FROM information_sources WHERE id=${source.id}::uuid FOR UPDATE`.execute(
             tx,
           )
-        ).rows[0]?.enabled;
-        if (!enabled) return;
+        ).rows[0];
+        if (
+          !current?.enabled ||
+          !current.unchanged ||
+          current.provider !== source.provider ||
+          current.mode !== source.mode
+        )
+          return;
+        const importedIds: string[] = [];
         for (const r of records) {
+          if (source.provider === 'bmkg_nowcast' || source.provider === 'petabencana') {
+            if (!r.scopeGeometry) throw new Error('Source geography missing');
+            const scope = (
+              await sql<{
+                valid: boolean;
+                matches: boolean;
+              }>`SELECT ST_IsValid(ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(r.scopeGeometry)}),4326)) AS valid, ST_Intersects(boundary,ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(r.scopeGeometry)}),4326)) AS matches FROM regions WHERE id=${source.regionId}::uuid`.execute(
+                tx,
+              )
+            ).rows[0];
+            if (!scope?.valid) throw new Error('Invalid source geometry');
+            if (!scope.matches) continue;
+          }
           const externalId =
             source.provider === 'fixture' ? 'fixture-1' : `${r.version}:${r.effectiveAt ?? ''}`;
           const row = (
             await sql<{
               id: string;
-            }>`INSERT INTO information_records(source_id,region_id,external_id,title,body,source_name,source_url,source_type,observed_at,fetched_at,effective_at,expires_at,verification_status,version,simulation) VALUES(${source.id}::uuid,${source.regionId}::uuid,${externalId},${r.title},${r.body},${r.sourceName},${r.sourceUrl},${r.sourceType},${r.observedAt}::timestamptz,${r.fetchedAt}::timestamptz,${r.effectiveAt}::timestamptz,${r.expiresAt}::timestamptz,${r.verificationStatus},${r.version},${r.simulation}) ON CONFLICT(source_id,external_id) DO UPDATE SET title=excluded.title,body=excluded.body,fetched_at=excluded.fetched_at,expires_at=excluded.expires_at,version=excluded.version RETURNING id`.execute(
+            }>`INSERT INTO information_records(source_id,region_id,external_id,title,body,source_name,source_url,source_type,issued_at,observed_at,fetched_at,effective_at,expires_at,verification_status,version,simulation) VALUES(${source.id}::uuid,${source.regionId}::uuid,${externalId},${r.title},${r.body},${r.sourceName},${r.sourceUrl},${r.sourceType},${r.issuedAt}::timestamptz,${r.observedAt}::timestamptz,${r.fetchedAt}::timestamptz,${r.effectiveAt}::timestamptz,${r.expiresAt}::timestamptz,${r.verificationStatus},${r.version},${r.simulation}) ON CONFLICT(source_id,external_id) DO UPDATE SET title=excluded.title,body=excluded.body,source_name=excluded.source_name,source_url=excluded.source_url,source_type=excluded.source_type,issued_at=excluded.issued_at,observed_at=excluded.observed_at,effective_at=excluded.effective_at,fetched_at=excluded.fetched_at,expires_at=excluded.expires_at,verification_status=excluded.verification_status,version=excluded.version RETURNING id`.execute(
               tx,
             )
           ).rows[0]!;
+          importedIds.push(row.id);
           await sql`INSERT INTO information_revisions(information_id,content) VALUES(${row.id}::uuid,${JSON.stringify(r)}::jsonb)`.execute(
             tx,
           );
         }
+        if (source.provider === 'bmkg_nowcast')
+          await sql`UPDATE information_records SET expires_at=LEAST(expires_at,now()),verification_status='superseded_or_absent_from_feed' WHERE source_id=${source.id}::uuid AND source_type='official_alert' AND NOT(id=ANY(${importedIds}::uuid[])) AND expires_at>now()`.execute(
+            tx,
+          );
         await sql`UPDATE information_sources SET last_success_at=now(),last_error=NULL WHERE id=${source.id}::uuid`.execute(
           tx,
         );
-        await sql`INSERT INTO source_runs(source_id,state,record_count) VALUES(${source.id}::uuid,'success',${records.length})`.execute(
+        await sql`INSERT INTO source_runs(source_id,state,record_count) VALUES(${source.id}::uuid,'success',${importedIds.length})`.execute(
           tx,
         );
         await audit(tx, null, source.regionId, 'source.synced', source.id, {
-          count: records.length,
+          count: importedIds.length,
         });
       });
     } catch {
@@ -278,7 +306,7 @@ export class JobsService {
   }
   async schedule() {
     await this.ai.scheduleKnowledge();
-    await sql`INSERT INTO outbox_jobs(kind,entity_id,region_id,dedupe_key) SELECT 'source_sync',id,region_id,'source:'||id||':'||floor(extract(epoch FROM now())/1800)::text FROM information_sources WHERE enabled ON CONFLICT DO NOTHING`.execute(
+    await sql`INSERT INTO outbox_jobs(kind,entity_id,region_id,dedupe_key) SELECT 'source_sync',id,region_id,'source:'||id||':'||floor(extract(epoch FROM now())/CASE WHEN provider='bmkg_nowcast' THEN 120 ELSE 1800 END)::text FROM information_sources WHERE enabled ON CONFLICT DO NOTHING`.execute(
       this.db,
     );
     await sql`INSERT INTO outbox_jobs(kind,dedupe_key) VALUES('retention','retention:'||to_char(now(),'YYYY-MM-DD')) ON CONFLICT DO NOTHING`.execute(

@@ -14,7 +14,7 @@ x-server: &server
   WEB_ORIGINS: ${WEB_ORIGINS:?Set the exact frontend origins}
   WORKER_ENABLED: 'true'
   AI_MODE: heuristic
-  ALLOW_LIVE_SOURCES: 'false'
+  ALLOW_LIVE_SOURCES: ${ALLOW_LIVE_SOURCES:-false}
   LOG_LEVEL: info
 services:
   postgres:

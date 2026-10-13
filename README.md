@@ -5,6 +5,11 @@ Community flood preparedness: **Tandara Warga** (resident PWA) and **Tandara Pos
 Indonesian interface. Seeded organizations, people, plans, reports and source material are
 explicitly **simulation**, not real incidents or operational emergency instructions.
 
+Current product priorities and the audit of all Markdown files are in the
+[three-day hackathon audit](docs/product/hackathon-audit-2026-10-13.md).
+[Public-source setup](docs/operations/public-sources.md) enables real BMKG CAP/
+forecast and PetaBencana data separately from demonstration reports and plans.
+
 ## Run the complete local product
 
 Prerequisite: Docker Desktop with Linux containers. Ports 8080 and 8081 must be free.

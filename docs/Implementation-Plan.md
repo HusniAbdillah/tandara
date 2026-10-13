@@ -1,5 +1,8 @@
 # Tandara — Three-Day Implementation Plan
 
+> Historical delivery/planning snapshot. Current implementation and the remaining
+> three-day priorities are reconciled in the [2026-10-13 audit](product/hackathon-audit-2026-10-13.md).
+
 Historical foundation schedule. The complete implementation and executed evidence
 are now recorded in [DELIVERY.md](DELIVERY.md) and the
 [requirements matrix](product/requirements-matrix.md). Source and tests take

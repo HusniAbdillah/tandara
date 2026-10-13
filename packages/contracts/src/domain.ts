@@ -201,11 +201,18 @@ export const aiReviewInputSchema = z.strictObject({
   note: z.string().trim().min(5).max(1000),
   output: triageSchema.optional(),
 });
+export const sourceProviderSchema = z.enum([
+  'fixture',
+  'bmkg',
+  'bmkg_nowcast',
+  'petabencana',
+  'inarisk',
+]);
 export const sourceSchema = z.object({
   id: z.uuid(),
   regionId: z.uuid(),
   name: z.string(),
-  provider: z.enum(['fixture', 'bmkg', 'petabencana', 'inarisk']),
+  provider: sourceProviderSchema,
   enabled: z.boolean(),
   mode: z.enum(['simulation', 'live', 'disabled']),
   sourceUrl: z.string(),
@@ -223,7 +230,8 @@ export const informationSchema = z.object({
   body: z.string(),
   sourceName: z.string(),
   sourceUrl: z.string(),
-  sourceType: z.enum(['official_weather', 'external_community', 'simulation']),
+  sourceType: z.enum(['official_weather', 'official_alert', 'external_community', 'simulation']),
+  issuedAt: z.string().nullable().default(null),
   observedAt: z.string().nullable(),
   fetchedAt: z.string(),
   effectiveAt: z.string().nullable(),
@@ -242,11 +250,20 @@ export const publicReportSchema = z.object({
   reviewer: z.string(),
   simulation: z.boolean(),
 });
+export const publicSourceHealthSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  provider: sourceProviderSchema,
+  lastAttemptAt: z.string().nullable(),
+  lastSuccessAt: z.string().nullable(),
+  failed: z.boolean(),
+});
 export const publicDataSchema = z.object({
   region: regionSchema,
   plans: z.array(planSchema),
   information: z.array(informationSchema),
   reports: z.array(publicReportSchema),
+  sources: z.array(publicSourceHealthSchema).default([]),
   fetchedAt: z.string(),
 });
 export const coverageSchema = z.object({

@@ -9,14 +9,14 @@ import { embeddingRelease } from '../../packages/backend/dist/modules/knowledge.
 import { readAiSettings } from '../../packages/backend/dist/config/ai.js';
 import { aiOperationsSettings } from '../../packages/backend/dist/config/ai-operations.js';
 import { encryptMfa, newMfa } from '../../packages/backend/dist/modules/mfa.js';
-import { createApp } from '../../apps/api/dist/bootstrap.js';
 import {
-  parseEnvironment,
+  createApp,
   JobsService,
   AiService,
   KnowledgeService,
   DatabaseService,
-} from '../../packages/backend/dist/index.js';
+} from '../../apps/api/dist/bootstrap.js';
+import { parseEnvironment } from '../../packages/backend/dist/index.js';
 const require = createRequire(new URL('../../packages/database/package.json', import.meta.url));
 const { Client } = require('pg');
 const backendRequire = createRequire(

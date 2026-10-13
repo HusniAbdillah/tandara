@@ -58,6 +58,7 @@ the local Compose example does not provision encryption or key rotation. Do not
 log credentials, receipt tokens, raw reports or contacts. Review audit access and
 retention with the owning community and applicable Indonesian requirements.
 
-MFA/SSO, independent penetration testing, capacity validation, availability SLOs,
+TOTP MFA and production privileged-session checks are implemented; see
+[AI operations](../ai/operations.md). SSO, independent penetration testing, capacity validation, availability SLOs,
 real emergency response agreements and legal conclusions are not claimed by this
 local simulation. Emergency contact numbers are deliberately not invented.

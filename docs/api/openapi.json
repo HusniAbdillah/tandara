@@ -4440,8 +4440,16 @@
                             "type": "string",
                             "enum": [
                               "official_weather",
+                              "official_alert",
                               "external_community",
                               "simulation"
+                            ]
+                          },
+                          "issuedAt": {
+                            "default": null,
+                            "type": [
+                              "string",
+                              "null"
                             ]
                           },
                           "observedAt": {
@@ -4484,6 +4492,7 @@
                           "sourceName",
                           "sourceUrl",
                           "sourceType",
+                          "issuedAt",
                           "observedAt",
                           "fetchedAt",
                           "effectiveAt",
@@ -4555,6 +4564,57 @@
                         "additionalProperties": false
                       }
                     },
+                    "sources": {
+                      "default": [],
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "fixture",
+                              "bmkg",
+                              "bmkg_nowcast",
+                              "petabencana",
+                              "inarisk"
+                            ]
+                          },
+                          "lastAttemptAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "lastSuccessAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "failed": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "provider",
+                          "lastAttemptAt",
+                          "lastSuccessAt",
+                          "failed"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
                     "fetchedAt": {
                       "type": "string"
                     }
@@ -4564,6 +4624,7 @@
                     "plans",
                     "information",
                     "reports",
+                    "sources",
                     "fetchedAt"
                   ],
                   "additionalProperties": false
@@ -8352,6 +8413,7 @@
                         "enum": [
                           "fixture",
                           "bmkg",
+                          "bmkg_nowcast",
                           "petabencana",
                           "inarisk"
                         ]
