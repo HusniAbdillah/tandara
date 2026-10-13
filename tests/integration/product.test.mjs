@@ -4,8 +4,8 @@ import { before, after, test } from 'node:test';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
-import { createApp } from '../../apps/api/dist/bootstrap.js';
-import { parseEnvironment, JobsService } from '../../packages/backend/dist/index.js';
+import { createApp, JobsService } from '../../apps/api/dist/bootstrap.js';
+import { parseEnvironment } from '../../packages/backend/dist/index.js';
 
 const require = createRequire(new URL('../../packages/database/package.json', import.meta.url));
 const { Client } = require('pg');
