@@ -87,6 +87,7 @@ export function ResidentApp() {
             plans: [planSchema.parse(saved.content)],
             information: [],
             reports: [],
+            sources: [],
             fetchedAt: saved.cachedAt,
           };
         }
@@ -94,6 +95,7 @@ export function ResidentApp() {
       }
     },
     retry: 1,
+    refetchInterval: online ? 60000 : false,
   });
   useEffect(() => {
     void synchronize().catch(() => {});
@@ -213,7 +215,7 @@ export function ResidentApp() {
               </NavLink>
             ))}
           </nav>
-          {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
+          {region?.simulation && <Badge tone="amber">WILAYAH DEMO</Badge>}
         </div>
       </header>
       <div className="context-bar">
@@ -272,12 +274,123 @@ export function ResidentApp() {
             {deployment.data && <a href={deployment.data.coordinatorOrigin}>Tandara Posko</a>}
           </div>
           <p>
-            {region?.simulation ? 'Simulasi — bukan kejadian nyata. ' : ''}Tandara mendukung
-            kesiapsiagaan komunitas; ikuti arahan otoritas resmi.
+            {region?.simulation
+              ? 'Wilayah demo: laporan dan rencana contoh berlabel simulasi. Sumber publik asli berlabel terpisah. '
+              : ''}
+            Tandara mendukung kesiapsiagaan komunitas; ikuti arahan otoritas resmi.
           </p>
         </footer>
       </main>
     </div>
+  );
+}
+export function WarningReadiness({ data, now }: { data: PublicData; now: number }) {
+  const alerts = data.information.filter(
+    (i) =>
+      i.sourceType === 'official_alert' &&
+      !i.simulation &&
+      i.expiresAt &&
+      Date.parse(i.expiresAt) > now,
+  );
+  const feeds = data.sources.filter((s) => s.provider === 'bmkg_nowcast');
+  const unavailable =
+    feeds.length === 0 ||
+    feeds.some((s) => s.failed || !s.lastSuccessAt || now - Date.parse(s.lastSuccessAt) > 300000);
+  return (
+    <section className="panel" aria-labelledby="warning-readiness-title">
+      <div className="panel-heading">
+        <h2 id="warning-readiness-title">Peringatan resmi & langkah kesiapsiagaan</h2>
+        <Badge tone={unavailable || alerts.length ? 'amber' : 'teal'}>
+          {unavailable
+            ? 'SUMBER BELUM TERKONFIRMASI'
+            : alerts.length
+              ? 'PERINGATAN BMKG'
+              : 'FEED TELAH DIPERIKSA'}
+        </Badge>
+      </div>
+      {unavailable && (
+        <Notice tone="warning">
+          Pembaruan peringatan belum terkonfirmasi. Periksa kanal BMKG; kondisi wilayah tidak dapat
+          disimpulkan dari feed yang kosong atau terlambat.
+        </Notice>
+      )}
+      {alerts.length ? (
+        alerts.map((alert) => (
+          <article key={alert.id}>
+            <h3>{alert.title}</h3>
+            <details>
+              <summary>Cakupan dan uraian asli BMKG</summary>
+              <p>{alert.body}</p>
+            </details>
+            <p className="meta">
+              Diterbitkan {formatTime(alert.issuedAt)} · Berlaku {formatTime(alert.effectiveAt)}{' '}
+              sampai {formatTime(alert.expiresAt)}
+            </p>
+            <p className="meta">
+              Diambil Tandara {formatTime(alert.fetchedAt)}
+              {alert.issuedAt && Date.parse(alert.fetchedAt) >= Date.parse(alert.issuedAt)
+                ? ' · Jeda terbit → pengambilan terakhir: ' +
+                  Math.round((Date.parse(alert.fetchedAt) - Date.parse(alert.issuedAt)) / 60000) +
+                  ' menit'
+                : ''}
+              . Jeda ini bukan waktu penerimaan setiap warga.
+            </p>
+            {alert.effectiveAt && Date.parse(alert.effectiveAt) > now && (
+              <Badge tone="amber">Mulai berlaku pada waktu tercantum</Badge>
+            )}
+            <a href={alert.sourceUrl} target="_blank" rel="noreferrer">
+              Baca dokumen peringatan asli BMKG →
+            </a>
+          </article>
+        ))
+      ) : (
+        <p>
+          Tidak ada peringatan BMKG yang berlaku dan cocok dengan batas wilayah dalam data terakhir.
+          Ini tidak berarti wilayah aman.
+        </p>
+      )}
+      <p className="meta">
+        Cakupan diperiksa melalui irisan polygon peringatan dan batas wilayah yang diatur pengelola;
+        bukan prediksi banjir atau penetapan jalur aman.
+      </p>
+      {data.region.simulation && (
+        <p className="meta">
+          Batas wilayah demo bersifat ilustratif. Rencana dan laporan latihan tidak menjadi data
+          lapangan hanya karena sumber BMKG diaktifkan.
+        </p>
+      )}
+      {!data.plans.length && (
+        <p>
+          Rencana lokal belum tersedia. Periksa informasi dan arahan pengelola sebelum menentukan
+          langkah.
+        </p>
+      )}
+      {feeds.map((source) => (
+        <p className="meta" key={source.id}>
+          {source.name}: berhasil diperiksa {formatTime(source.lastSuccessAt)}
+          {source.failed ? ' · pembaruan terakhir gagal' : ''}
+        </p>
+      ))}
+      <div className="actions">
+        <Link className="button primary" to="/plan">
+          Baca & simpan rencana offline
+        </Link>
+        <Link className="button" to="/checklist">
+          Periksa persiapan keluarga
+        </Link>
+        <Link className="button" to="/report?category=blocked_access">
+          Laporkan hambatan akses
+        </Link>
+        <Link to="/help">Kontak pengelola</Link>
+        <a
+          href="https://www.bmkg.go.id/cuaca/peringatan-dini-cuaca"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Kanal resmi BMKG
+        </a>
+      </div>
+    </section>
   );
 }
 function Home({ data, plan }: { data: PublicData; plan: Plan | undefined }) {
@@ -292,8 +405,9 @@ function Home({ data, plan }: { data: PublicData; plan: Plan | undefined }) {
             {data.region.name} · {data.region.organization}
           </span>
         </div>
-        <span className="meta">Diperbarui {formatTime(data.fetchedAt)}</span>
+        <span className="meta">Halaman dimuat {formatTime(data.fetchedAt)}</span>
       </div>
+      <WarningReadiness data={data} now={now} />
       <section className="hero">
         <div className="hero-copy">
           <p className="eyebrow">Siap bersama, mulai dari sekitar.</p>
@@ -376,9 +490,11 @@ function Home({ data, plan }: { data: PublicData; plan: Plan | undefined }) {
                       <Badge tone={i.simulation ? 'amber' : 'teal'}>
                         {i.simulation
                           ? 'SIMULASI'
-                          : i.sourceType === 'official_weather'
-                            ? 'Sumber resmi · prakiraan cuaca'
-                            : 'Laporan urun daya eksternal'}
+                          : i.sourceType === 'official_alert'
+                            ? 'BMKG · peringatan resmi'
+                            : i.sourceType === 'official_weather'
+                              ? 'Sumber resmi · prakiraan cuaca'
+                              : 'Laporan urun daya eksternal'}
                       </Badge>
                       {i.expiresAt && Date.parse(i.expiresAt) < now && (
                         <Badge tone="amber">Kedaluwarsa</Badge>
@@ -393,6 +509,7 @@ function Home({ data, plan }: { data: PublicData; plan: Plan | undefined }) {
                           {i.sourceName}
                         </a>
                         <span>Diambil {formatTime(i.fetchedAt)}</span>
+                        <span>Diterbitkan sumber: {formatTime(i.issuedAt)}</span>
                         <span>Pengamatan: {formatTime(i.observedAt)}</span>
                         <span>Berlaku: {formatTime(i.effectiveAt)}</span>
                         <span>Berakhir: {formatTime(i.expiresAt)}</span>

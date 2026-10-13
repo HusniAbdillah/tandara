@@ -39,10 +39,12 @@ export const stateNames: Record<string, string> = {
 };
 const ok = z.object({ ok: z.boolean() });
 export function ReportForm({ region, online }: { region: Region; online: boolean }) {
-  const help = new URLSearchParams(useLocation().search).get('help') === '1';
+  const parameters = new URLSearchParams(useLocation().search);
+  const help = parameters.get('help') === '1';
+  const requestedCategory = region.config.categories.find((c) => c === parameters.get('category'));
   const navigate = useNavigate();
   const [category, setCategory] = useState(
-    help ? 'follow_up_needed' : region.config.categories[0]!,
+    help ? 'follow_up_needed' : (requestedCategory ?? region.config.categories[0]!),
   );
   const [description, setDescription] = useState('');
   const [landmark, setLandmark] = useState('');

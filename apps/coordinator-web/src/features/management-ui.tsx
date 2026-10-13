@@ -615,6 +615,7 @@ function SourceEditor({
   const [authorized, setAuthorized] = useState(source?.config['authorized'] === true);
   const [adm4, setAdm4] = useState(String(source?.config['adm4'] ?? ''));
   const [admin, setAdmin] = useState(String(source?.config['admin'] ?? ''));
+  const [province, setProvince] = useState(String(source?.config['province'] ?? ''));
   const [fail, setFail] = useState(source?.config['fail'] === true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -640,6 +641,7 @@ function SourceEditor({
                   authorized,
                   ...(adm4 ? { adm4 } : {}),
                   ...(admin ? { admin } : {}),
+                  ...(province ? { province } : {}),
                   fail,
                 },
               },
@@ -660,7 +662,7 @@ function SourceEditor({
       <div className="form-grid">
         <Field label="Provider">
           <select value={provider} onChange={(e) => setProvider(e.target.value as typeof provider)}>
-            {['fixture', 'bmkg', 'petabencana', 'inarisk'].map((p) => (
+            {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
               <option key={p}>{p}</option>
             ))}
           </select>
@@ -689,8 +691,22 @@ function SourceEditor({
           <input
             value={adm4}
             onChange={(e) => setAdm4(e.target.value)}
-            placeholder="31.71.03.1001"
+            placeholder="31.75.03.1002 (Bidara Cina)"
           />
+        </Field>
+      )}
+      {provider === 'bmkg_nowcast' && (
+        <Field label="Nama provinsi sesuai BMKG">
+          <input
+            required
+            value={province}
+            onChange={(e) => setProvince(e.target.value)}
+            placeholder="DKI Jakarta"
+          />
+          <span className="meta">
+            Peringatan CAP resmi; hanya polygon yang beririsan dengan batas wilayah yang
+            ditampilkan. Data kosong bukan tanda aman.
+          </span>
         </Field>
       )}
       {provider === 'petabencana' && (
