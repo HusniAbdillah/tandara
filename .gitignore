@@ -2,6 +2,7 @@ node_modules/
 dist/
 .turbo/
 .vercel/
+.commandcode/
 coverage/
 playwright-report/
 test-results/
