@@ -1,0 +1,42 @@
+{
+  "color": {
+    "brand": {
+      "deep": { "value": "#10303D", "type": "color" },
+      "teal": { "value": "#1F6F7A", "type": "color" },
+      "teal-soft": { "value": "#7FB3B8", "type": "color" },
+      "teal-tint": { "value": "#DCEDEE", "type": "color" },
+      "signal": { "value": "#E3A33B", "type": "color" }
+    },
+    "neutral": {
+      "paper": { "value": "#F7F5F0", "type": "color" },
+      "surface": { "value": "#FFFFFF", "type": "color" },
+      "line": { "value": "#E3DFD6", "type": "color" },
+      "muted": { "value": "#55656B", "type": "color" },
+      "ink": { "value": "#10303D", "type": "color" }
+    },
+    "status": {
+      "official": { "fg": { "value": "#2457A6", "type": "color" }, "bg": { "value": "#E3ECF8", "type": "color" } },
+      "plan": { "fg": { "value": "#1F6F7A", "type": "color" }, "bg": { "value": "#DCEDEE", "type": "color" } },
+      "community": { "fg": { "value": "#6A4C9C", "type": "color" }, "bg": { "value": "#ECE6F5", "type": "color" } },
+      "awaiting": { "fg": { "value": "#8A5A0C", "type": "color" }, "bg": { "value": "#FBEFD9", "type": "color" } },
+      "reviewed": { "fg": { "value": "#2F7A4B", "type": "color" }, "bg": { "value": "#E2F1E7", "type": "color" } },
+      "ai": { "fg": { "value": "#4A5560", "type": "color" }, "bg": { "value": "#FFFFFF", "type": "color" } },
+      "simulation": { "fg": { "value": "#A23B72", "type": "color" }, "bg": { "value": "#F8E6EF", "type": "color" } },
+      "offline": { "fg": { "value": "#10303D", "type": "color" }, "bg": { "value": "#EDEAE3", "type": "color" } },
+      "no-info": { "fg": { "value": "#55656B", "type": "color" }, "bg": { "value": "#F1EFEA", "type": "color" } },
+      "system-error": { "fg": { "value": "#B4372B", "type": "color" }, "bg": { "value": "#F8E3E0", "type": "color" } }
+    }
+  },
+  "font": {
+    "family": { "sans": { "value": "Plus Jakarta Sans", "type": "fontFamilies" }, "mono": { "value": "IBM Plex Mono", "type": "fontFamilies" } },
+    "display": { "value": { "fontSize": "48", "lineHeight": "56", "fontWeight": "700", "letterSpacing": "-2%" }, "type": "typography" },
+    "h1": { "value": { "fontSize": "32", "lineHeight": "40", "fontWeight": "700", "letterSpacing": "-1.5%" }, "type": "typography" },
+    "h2": { "value": { "fontSize": "24", "lineHeight": "32", "fontWeight": "600", "letterSpacing": "-1%" }, "type": "typography" },
+    "h3": { "value": { "fontSize": "18", "lineHeight": "26", "fontWeight": "600" }, "type": "typography" },
+    "body": { "value": { "fontSize": "16", "lineHeight": "24", "fontWeight": "400" }, "type": "typography" },
+    "small": { "value": { "fontSize": "14", "lineHeight": "20", "fontWeight": "500" }, "type": "typography" },
+    "meta": { "value": { "fontFamily": "IBM Plex Mono", "fontSize": "12", "lineHeight": "16", "fontWeight": "500" }, "type": "typography" }
+  },
+  "radius": { "sm": { "value": "6" }, "md": { "value": "10" }, "lg": { "value": "16" }, "pill": { "value": "999" } },
+  "space": { "1": { "value": "4" }, "2": { "value": "8" }, "3": { "value": "12" }, "4": { "value": "16" }, "6": { "value": "24" }, "8": { "value": "32" }, "12": { "value": "48" }, "16": { "value": "64" } }
+}
