@@ -341,9 +341,17 @@ CI main sukses pada SHA yang sama
 ```
 
 Pemindahan backend memakai [docker save/load](https://docs.docker.com/reference/cli/docker/image/save/)
-melalui SSH; tag image memakai commit SHA dan content ID diverifikasi. Server
+melalui SSH; tag image memakai commit SHA dan digest konfigurasi image diverifikasi. Server
 tidak melakukan git clone, pnpm install, atau build. DB/Caddy data persisten
 pada Docker volumes bernama project `tandara-demo`.
+
+Digest portable dihitung dari config yang dirujuk `manifest.json` dalam arsip
+`docker save`, termasuk referensi layer rootfs. Setelah load, server mengekspor
+ulang tag tersebut melalui pipe dan membandingkan digest config. Nilai `.Id`
+dari `docker image inspect` tidak dibandingkan langsung antarhost karena store
+containerd dan classic dapat menampilkan digest manifest/index versus config.
+Checksum arsip transfer tetap diperiksa sebelum load. Verifikasi ulang memakai
+stream agar tidak membuat salinan tar tambahan di disk VPS.
 
 Tidak ada rollback database otomatis. Pada kegagalan release, script mencoba
 menjalankan image/config aplikasi sebelumnya; itu hanya aman bila migration
@@ -423,8 +431,11 @@ module dari konteks backend; health probe menutup pool pg secara eksplisit.
 Client frontend juga diperbaiki agar POST tanpa body (logout, refresh, mark-read,
 retry) tidak mengirim JSON Content-Type kosong yang ditolak Fastify.
 
-Belum dilakukan: bootstrap Ubuntu pada VPS sebenarnya, penerbitan image melalui
-workflow remote, penerbitan Vercel, TLS/DNS publik, dan rehearsal browser pada
-domain final. Daftar GitHub Secrets/Variables saat diperiksa masih kosong.
-Belum ada SSH key/server credential atau Vercel token pada sesi ini. File
-deployment masih di working tree dan perlu commit/push sebelum workflow aktif.
+Pada pemeriksaan awal, setup VPS, secrets, remote workflow, Vercel dan domain
+belum dilakukan. Pengguna kemudian menyiapkan akun/server dan menjalankan
+workflow. Run `38373308615` berhasil menguji production image pada runner,
+mengirim arsip dengan checksum valid, dan load image pada Tencent. Release
+berhenti sebelum migration server karena perbandingan `.Id` antar Docker store.
+Perbaikan memakai digest config portable dan menambahkan delapan regression
+tests Python. Deployment Vercel, TLS/DNS publik dan rehearsal browser domain
+final tetap perlu dibuktikan pada run sesudah perbaikan.

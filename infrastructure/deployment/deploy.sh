@@ -4,9 +4,9 @@ umask 077
 root=/opt/tandara
 release=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)
 sha=${1:?Release commit SHA required}
-expected_image_id=${2:?Expected Docker image ID required}
+expected_image_id=${2:?Expected Docker config digest required}
 [[ "$sha" =~ ^[a-f0-9]{40}$ && "$release" == "$root/releases/$sha" ]] || { echo 'Invalid release path/SHA.' >&2; exit 1; }
-[[ "$expected_image_id" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo 'Invalid image ID.' >&2; exit 1; }
+[[ "$expected_image_id" =~ ^sha256:[a-f0-9]{64}$ ]] || { echo 'Invalid config digest.' >&2; exit 1; }
 [[ -f "$root/.env" ]] || { echo 'Install /opt/tandara/.env first.' >&2; exit 1; }
 [[ "$(stat -c %a "$root/.env")" == 600 ]] || { echo '.env must have mode 600.' >&2; exit 1; }
 exec 9>"$root/deploy.lock"
@@ -22,7 +22,14 @@ demo_password=${DEMO_PASSWORD:-}
 [[ ${API_DOMAIN:-} =~ ^[a-z0-9][a-z0-9.-]+\.[a-z]{2,}$ ]] || { echo 'Set API_DOMAIN.' >&2; exit 1; }
 [[ ${WEB_ORIGINS:-} == https://* && "$WEB_ORIGINS" != *'*'* ]] || { echo 'Set exact HTTPS WEB_ORIGINS.' >&2; exit 1; }
 image="tandara-backend:$sha"
-[[ "$(docker image inspect --format '{{.Id}}' "$image")" == "$expected_image_id" ]] || { echo 'Loaded image does not match CI image ID.' >&2; exit 1; }
+# Docker's classic and containerd stores expose different .Id meanings.
+# Re-export the loaded tag and compare its config (including layer diff IDs).
+actual_image_id=$(docker image save "$image" | python3 "$release/image_config_id.py" - "$image")
+printf 'Loaded release config digest: %s\n' "$actual_image_id"
+[[ "$actual_image_id" == "$expected_image_id" ]] || {
+  printf 'Loaded image config mismatch: expected %s, got %s.\n' "$expected_image_id" "$actual_image_id" >&2
+  exit 1
+}
 printf 'APP_IMAGE=%s\n' "$image" > "$release/release.env"
 dc=(docker compose --project-name tandara-demo --env-file "$root/.env" --env-file "$release/release.env" -f "$release/backend.compose.yml")
 "${dc[@]}" config --quiet

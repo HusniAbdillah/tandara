@@ -43,6 +43,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm check
       - run: pnpm test:deployment
+      - run: python3 -m unittest discover -s tooling/deployment -p '*_test.py'
       - name: Validate deployment shell scripts
         run: |
           for script in infrastructure/deployment/*.sh tooling/deployment/*.sh; do

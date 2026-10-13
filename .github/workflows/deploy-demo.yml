@@ -90,9 +90,10 @@ jobs:
           mkdir -p .local/transfer
           docker image save "tandara-backend:$RELEASE_SHA" | gzip > .local/transfer/backend.tar.gz
           (cd .local/transfer && sha256sum backend.tar.gz > backend.tar.gz.sha256)
-          image_id=$(docker image inspect --format '{{.Id}}' "tandara-backend:$RELEASE_SHA")
+          image_id=$(python3 infrastructure/deployment/image_config_id.py .local/transfer/backend.tar.gz "tandara-backend:$RELEASE_SHA")
           [[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]
-          tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh
+          printf 'Exported release config digest: %s\n' "$image_id"
+          tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh image_config_id.py
           ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "mkdir -p /opt/tandara/incoming/$RELEASE_SHA"
           scp -i "$HOME/.ssh/tandara" -P "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes .local/transfer/* "$SSH_USER@$SSH_HOST:/opt/tandara/incoming/$RELEASE_SHA/"
           ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA $image_id" <<'REMOTE'
