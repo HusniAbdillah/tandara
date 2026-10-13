@@ -113,8 +113,8 @@ jobs:
           REMOTE
       - name: Deploy Warga and Posko after backend is healthy
         run: |
-          pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/resident-web --token "$VERCEL_TOKEN"
-          pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/coordinator-web --token "$VERCEL_TOKEN"
+          VERCEL_PROJECT_ID="$RESIDENT_PROJECT_ID" pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/resident-web --token "$VERCEL_TOKEN"
+          VERCEL_PROJECT_ID="$COORDINATOR_PROJECT_ID" pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/coordinator-web --token "$VERCEL_TOKEN"
       - name: Verify final domain routes
         run: |
           curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandara.my.id/ >/dev/null
