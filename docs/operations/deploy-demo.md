@@ -261,6 +261,39 @@ Pada Settings → Domains masing-masing project:
 Pastikan production domain tidak memaksa juri login ke Vercel. Login aplikasi
 Posko tetap berlaku. Uji akses dalam incognito sebelum membagikan link.
 
+### Menggunakan custom domain dan domain vercel.app bersamaan
+
+Kedua jenis domain dapat menunjuk production deployment yang sama. Pertahankan
+domain `.vercel.app` pada Settings → Domains dan tambahkan custom domain tanpa
+redirect apabila kedua alamat harus tetap dapat digunakan langsung. Ambil nama
+production alias yang benar dari dashboard; nama project tidak menjamin alamat
+`<project>.vercel.app` tersedia, dan URL deployment ber-hash bukan alias stabil.
+
+Tambahkan kedua origin alias tersebut ke `WEB_ORIGINS` di `/opt/tandara/.env`,
+bersama dua custom origin. Gunakan URL HTTPS persis, dipisahkan koma tanpa path,
+trailing slash atau wildcard. Jangan mengizinkan seluruh `*.vercel.app` karena
+domain itu juga digunakan aplikasi pihak lain. Perubahan `.env` berlaku ketika
+Compose merekonsiliasi container pada deployment berikutnya.
+
+Alias production yang dikonfirmasi pengguna untuk kedua project adalah
+`tandara-warga.vercel.app` dan `tandara-posko.vercel.app`. Konfigurasi lengkap:
+
+```dotenv
+API_DOMAIN=api.tandara.my.id
+WEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id,https://tandara-warga.vercel.app,https://tandara-posko.vercel.app
+```
+
+Jangan menambahkan spasi setelah koma; API membandingkan origin secara persis.
+
+Frontend memakai `/api` relatif dan rewrite Vercel ke API Tencent, sehingga
+build yang sama dapat dipakai lewat kedua domain. Cookie login, service worker
+dan penyimpanan offline tetap terpisah antarorigin; login ulang pada alamat lain.
+Menambahkan domain atau membuat project belum meng-upload frontend. Workflow
+baru meng-upload hasil build ke Vercel setelah backend Tencent lolos readiness;
+backend gagal berarti langkah deployment frontend dilewati. DNS custom FE yang
+belum siap dapat membuat pemeriksaan akhir gagal setelah FE sudah diterbitkan;
+API tetap memerlukan DNS dan HTTPS yang bekerja untuk fitur aplikasi.
+
 Ambil **Project ID** setiap project dari Settings → General. Untuk Org ID,
 `vercel link` di dua folder `.local/vercel-link/warga` dan `.local/vercel-link/posko`
 dapat menghasilkan `.vercel/project.json` berisi orgId/projectId, atau ambil
