@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.26.2",
   "engines": {
-    "node": ">=22.13.1 <25",
+    "node": ">=22.22.0 <25",
     "pnpm": ">=10.26.2 <11"
   },
   "scripts": {
@@ -14,7 +14,8 @@
     "lint": "eslint . && node tooling/check-boundaries.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "turbo run test",
+    "test": "turbo run test --concurrency=1",
+    "test:deployment": "node --test tooling/deployment/*.test.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "db:migrate": "turbo run build --filter=@tandara/database && pnpm --filter @tandara/database migrate",
     "db:seed": "turbo run build --filter=@tandara/database && pnpm --filter @tandara/database seed",

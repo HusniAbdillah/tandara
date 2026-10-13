@@ -1,0 +1,126 @@
+name: Deploy demo
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: tandara-demo-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_repository.full_name == github.repository) ||
+       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      GH_TOKEN: ${{ github.token }}
+      SSH_HOST: ${{ vars.TENCENT_SSH_HOST || '43.129.33.176' }}
+      SSH_PORT: ${{ vars.TENCENT_SSH_PORT || '22' }}
+      SSH_USER: tandara-deploy
+      SSH_PRIVATE_KEY: ${{ secrets.TENCENT_SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.TENCENT_SSH_KNOWN_HOSTS }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      RESIDENT_PROJECT_ID: ${{ secrets.VERCEL_RESIDENT_PROJECT_ID }}
+      COORDINATOR_PROJECT_ID: ${{ secrets.VERCEL_COORDINATOR_PROJECT_ID }}
+      TANDARA_API_ORIGIN: https://api.tandora.my.id
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          persist-credentials: false
+      - name: Verify release is current main and CI passed for this exact commit
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          [[ "$current" == "$RELEASE_SHA" ]] || { echo 'Refusing a stale main release.'; exit 1; }
+          passed=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch main --commit "$RELEASE_SHA" --event push --status success --json databaseId --jq 'length')
+          [[ "$passed" -gt 0 ]] || { echo 'This commit must pass CI before deployment.'; exit 1; }
+      - name: Validate credentials and configure pinned SSH host key
+        run: |
+          set -euo pipefail
+          [[ "$SSH_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]*$ ]]
+          [[ "$SSH_PORT" =~ ^[0-9]{1,5}$ && "$SSH_PORT" -gt 0 && "$SSH_PORT" -le 65535 ]]
+          for name in SSH_PRIVATE_KEY SSH_KNOWN_HOSTS VERCEL_TOKEN VERCEL_ORG_ID RESIDENT_PROJECT_ID COORDINATOR_PROJECT_ID; do
+            [[ -n "${!name}" ]] || { echo "Missing deployment secret: $name"; exit 1; }
+          done
+          [[ "$RESIDENT_PROJECT_ID" != "$COORDINATOR_PROJECT_ID" ]]
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/tandara"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/tandara" "$HOME/.ssh/known_hosts"
+          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" 'test -f /opt/tandara/.env && docker compose version'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build and package both static frontends
+        run: |
+          pnpm exec turbo run build --filter=@tandara/resident-web... --filter=@tandara/coordinator-web...
+          VERCEL_PROJECT_ID="$RESIDENT_PROJECT_ID" node tooling/deployment/prepare-vercel.mjs resident-web
+          VERCEL_PROJECT_ID="$COORDINATOR_PROJECT_ID" node tooling/deployment/prepare-vercel.mjs coordinator-web
+      - uses: docker/setup-buildx-action@v3
+      - name: Build portable production backend
+        run: docker build --platform linux/amd64 -f infrastructure/deployment/Dockerfile.backend -t "tandara-backend:$RELEASE_SHA" .
+      - name: Validate pruned image against an isolated synthetic database
+        run: bash tooling/deployment/smoke-backend.sh "tandara-backend:$RELEASE_SHA"
+      - name: Transfer release over SSH and deploy Tencent
+        run: |
+          set -euo pipefail
+          mkdir -p .local/transfer
+          docker image save "tandara-backend:$RELEASE_SHA" | gzip > .local/transfer/backend.tar.gz
+          (cd .local/transfer && sha256sum backend.tar.gz > backend.tar.gz.sha256)
+          image_id=$(docker image inspect --format '{{.Id}}' "tandara-backend:$RELEASE_SHA")
+          [[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]
+          tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh
+          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "mkdir -p /opt/tandara/incoming/$RELEASE_SHA"
+          scp -i "$HOME/.ssh/tandara" -P "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes .local/transfer/* "$SSH_USER@$SSH_HOST:/opt/tandara/incoming/$RELEASE_SHA/"
+          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA $image_id" <<'REMOTE'
+          set -euo pipefail
+          sha=$1
+          image_id=$2
+          [[ "$sha" =~ ^[a-f0-9]{40}$ && "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]
+          cd "/opt/tandara/incoming/$sha"
+          sha256sum -c backend.tar.gz.sha256
+          gzip -dc backend.tar.gz | docker image load
+          mkdir -p "/opt/tandara/releases/$sha"
+          tar -xzf release.tar.gz -C "/opt/tandara/releases/$sha"
+          chmod 700 "/opt/tandara/releases/$sha/backup.sh" "/opt/tandara/releases/$sha/deploy.sh"
+          bash "/opt/tandara/releases/$sha/deploy.sh" "$sha" "$image_id"
+          # Only transfer files from this validated release; preserve running/rollback images and DB.
+          rm -- backend.tar.gz backend.tar.gz.sha256 release.tar.gz
+          REMOTE
+      - name: Deploy Warga and Posko after backend is healthy
+        run: |
+          pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/resident-web --token "$VERCEL_TOKEN"
+          pnpm dlx vercel@63.1.2 deploy --prebuilt --prod --yes --cwd .local/deploy/coordinator-web --token "$VERCEL_TOKEN"
+      - name: Verify final domain routes
+        run: |
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandora.my.id/ >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandora.my.id/ >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://tandora.my.id/api/v1/regions >/dev/null
+          curl --fail --silent --show-error --retry 6 --retry-delay 5 https://posko.tandora.my.id/api/v1/regions >/dev/null
+          printf 'Released commit %s to Tencent and both Vercel projects.\n' "$RELEASE_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove runner SSH credentials
+        if: always()
+        run: rm -f -- "$HOME/.ssh/tandara"

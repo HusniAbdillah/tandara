@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .turbo/
+.vercel/
 coverage/
 playwright-report/
 test-results/

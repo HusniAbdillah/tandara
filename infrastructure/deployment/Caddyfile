@@ -1,0 +1,27 @@
+{
+	admin off
+}
+{$API_DOMAIN} {
+	encode gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		Cache-Control no-store
+	}
+	@api path /api/* /ready /health
+	handle @api {
+		reverse_proxy api:3000
+	}
+	handle {
+		respond "Not found" 404
+	}
+}
+# Container liveness only; this port is never published on the host.
+:8080 {
+	handle /health {
+		respond "ok" 200
+	}
+	handle {
+		respond "Not found" 404
+	}
+}

@@ -1,0 +1,33 @@
+FROM node:24.20.0-alpine AS build
+WORKDIR /workspace
+RUN npm install --global pnpm@10.26.2
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/worker/package.json ./apps/worker/package.json
+COPY apps/resident-web/package.json ./apps/resident-web/package.json
+COPY apps/coordinator-web/package.json ./apps/coordinator-web/package.json
+COPY packages/contracts/package.json ./packages/contracts/package.json
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/backend/package.json ./packages/backend/package.json
+COPY packages/api-client/package.json ./packages/api-client/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+RUN pnpm install --frozen-lockfile
+COPY apps ./apps
+COPY packages ./packages
+COPY tooling/typescript ./tooling/typescript
+RUN pnpm exec turbo run build --filter=@tandara/api... --filter=@tandara/worker...
+RUN pnpm --filter @tandara/api deploy --prod /out/api \
+ && pnpm --filter @tandara/worker deploy --prod /out/worker
+COPY infrastructure/deployment/*.mjs ./deployment-tools/
+# Run operations from the backend package so ESM resolves its database dependency.
+RUN cp deployment-tools/database-command.mjs "$(readlink -f /out/api/node_modules/@tandara/backend)/database-command.mjs" \
+ && cp deployment-tools/worker-health.mjs "$(readlink -f /out/worker/node_modules/@tandara/backend)/worker-health.mjs"
+
+FROM node:24.20.0-alpine AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build --chown=node:node /out/api ./api
+COPY --from=build --chown=node:node /out/worker ./worker
+USER node
+EXPOSE 3000
+CMD ["node", "api/dist/main.js"]

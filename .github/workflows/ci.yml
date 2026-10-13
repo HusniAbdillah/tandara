@@ -42,6 +42,13 @@ jobs:
       - run: cp .env.example .env
       - run: pnpm format:check
       - run: pnpm check
+      - run: pnpm test:deployment
+      - name: Validate deployment shell scripts
+        run: |
+          for script in infrastructure/deployment/*.sh tooling/deployment/*.sh; do
+            bash -n "$script"
+            shellcheck "$script"
+          done
       - run: pnpm db:migrate && pnpm db:migrate
         env:
           DATABASE_URL: postgres://tandara:ci_only_password@127.0.0.1:55432/tandara

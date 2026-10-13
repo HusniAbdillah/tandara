@@ -57,7 +57,7 @@ reference-only. The default triage is labelled **deterministic**, not live infer
 
 ## Development and tests
 
-Use Node 22.13.1–24.x and pnpm 10.26.2. Docker uses Node 24; CI and local
+Use Node 22.22.0–24.x and pnpm 10.26.2. Docker uses Node 24; CI and local
 validation use Node 24.20.0 from `.node-version`.
 
 ```powershell
@@ -90,6 +90,10 @@ tests add clearly labelled synthetic reports and training outcomes. Integration
 tests also publish/erase test records and add fictional scoped accounts.
 
 ## Deployment boundary
+
+For the three-week jury demo on Vercel + Tencent, follow the
+[automatic deployment guide](docs/operations/deploy-demo.md). It includes the
+one-time Ubuntu setup, DNS, repository secrets, CI-gated release and backup flow.
 
 This delivery runs locally as a simulation. Public deployment requires a configured
 domain/TLS, `SESSION_SECURE=true`, exact `WEB_ORIGINS`, restricted proxy trust, unique

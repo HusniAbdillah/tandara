@@ -1,0 +1,120 @@
+name: tandara-demo
+x-logging: &logging
+  driver: json-file
+  options: { max-size: 10m, max-file: '3' }
+x-server: &server
+  NODE_ENV: production
+  APP_MODE: simulation
+  DATABASE_URL: postgres://tandara:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/tandara
+  REDIS_URL: redis://unused:6379
+  API_HOST: 0.0.0.0
+  API_PORT: '3000'
+  SESSION_SECURE: 'true'
+  TRUST_PROXY: 'true'
+  WEB_ORIGINS: ${WEB_ORIGINS:?Set the exact frontend origins}
+  WORKER_ENABLED: 'true'
+  AI_MODE: heuristic
+  ALLOW_LIVE_SOURCES: 'false'
+  LOG_LEVEL: info
+services:
+  postgres:
+    image: postgis/postgis:16-3.5
+    environment:
+      POSTGRES_USER: tandara
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: tandara
+    volumes: [postgres-data:/var/lib/postgresql/data]
+    networks: [database]
+    mem_limit: 640m
+    command: [postgres, -c, shared_buffers=128MB, -c, max_connections=30, -c, work_mem=4MB]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+    logging: *logging
+  migrate:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
+    environment: *server
+    command: [node, api/node_modules/@tandara/backend/database-command.mjs, migrate]
+    profiles: [operations]
+    networks: [database]
+    mem_limit: 256m
+    depends_on: { postgres: { condition: service_healthy } }
+    logging: *logging
+  seed:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
+    environment:
+      <<: *server
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Set a unique demo password}
+    command: [node, api/node_modules/@tandara/backend/database-command.mjs, seed]
+    profiles: [operations]
+    networks: [database]
+    mem_limit: 256m
+    depends_on: { postgres: { condition: service_healthy } }
+    logging: *logging
+  api:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
+    environment: *server
+    networks: [database, application]
+    mem_limit: 512m
+    init: true
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on: { postgres: { condition: service_healthy } }
+    restart: unless-stopped
+    logging: *logging
+  worker:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
+    environment: *server
+    command: [node, worker/dist/main.js]
+    networks: [database, application]
+    mem_limit: 256m
+    init: true
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, node, worker/node_modules/@tandara/backend/worker-health.mjs]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 15s
+    depends_on: { postgres: { condition: service_healthy } }
+    restart: unless-stopped
+    logging: *logging
+  caddy:
+    image: caddy:2.10.2-alpine
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?Set API_DOMAIN}
+    ports: ['80:80', '443:443']
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [application]
+    mem_limit: 96m
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/health]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on: { api: { condition: service_healthy } }
+    restart: unless-stopped
+    logging: *logging
+networks:
+  database: { internal: true }
+  application: {}
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:
