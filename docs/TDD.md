@@ -2398,22 +2398,13 @@ A feature is considered complete only when:
 
 The system should make local information easier to access, clearer to understand, safer to share, and easier for coordinators to review—while always preserving uncertainty, privacy, local ownership, and the authority of official disaster-management channels.
 
-# 30. Foundation Status and Feature Design Gates
+# 30. Current implementation and historical design gates
 
-Updated 2026-10-13 for three developers and three days. The implemented foundation
-is described in ARCHITECTURE.md. All business table SQL above remains a proposal,
-not an applied migration. Resolve these gates before implementing those tables:
-
-- Normalize membership region assignments and enforce tenant-compatible foreign keys.
-- Use immutable plan-version snapshots for content, contacts, and meeting points.
-- Separate report reviewState, visibility, and closure reason; define concurrency/reopening.
-- Define payload fingerprints and secure idempotency/guest receipt replay after lost responses.
-- Add leased outbox dispatch and idempotent consumers before enabling background work.
-- Use a strict canonical AI schema; distinguish live provider output from mock fixtures.
-- Index geometry/geography expressions actually queried; filter tenant/simulation/deleted records.
-- Do not persist private coordinator data or help-request contact data in PWA caches.
-- Storage/media are deferred; use a maintained S3-compatible implementation through an adapter.
-- API /ready requires the database; Redis health belongs to async processing, not API liveness.
-
-The old roadmap is a product backlog. The three-day execution order, actual team
-ownership, and foundation completion gates are in Implementation-Plan.md.
+The design above includes proposals and historical stack choices. On 2026-10-13,
+business migrations, scoped workflows, SQL outbox leases, privacy/media, governed
+AI/retrieval and MFA are implemented; migration 009 adds public-warning provenance.
+Redis/BullMQ and separate object storage are not dependencies of the demo runtime.
+See [implemented architecture](ARCHITECTURE.md) and the
+[current audit](product/hackathon-audit-2026-10-13.md) for source-verified status.
+Production provider approval, field-validated plans, capacity/recovery and
+operational ownership still require external evidence, as documented in AI readiness.

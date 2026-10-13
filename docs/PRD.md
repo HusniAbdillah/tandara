@@ -2077,13 +2077,12 @@ three-day MVP cut and daily gates. The roadmap below remains the longer-term bac
 
 > Tandara is not another flood-reporting map. It is a preparedness and trust layer that helps communities understand what they know, what they do not know, and what they can prepare for together.
 
-# 31. Implemented Foundation Boundary
+# 31. Current implementation boundary
 
-Updated 2026-10-13. Canonical source structure: ARCHITECTURE.md and ADR-0001.
-The repository now has two web shells, API metadata/health, a disabled standalone
-worker, shared contracts/client/UI/server/database packages, local Compose, and CI.
-Business workflows described by this PRD are not implemented by the boilerplate.
-
-For three developers in three days, media uploads, plan editor, full administration,
-drill analytics, external sources, and automatic notifications are deferred.
-Production/pilot requires separate operational and security gates.
+The original roadmap describes product intent, not the remaining implementation
+work. On 2026-10-13, source includes resident/posko business workflows, durable
+SQL workers, governed AI/retrieval, MFA and deployment tooling. The earlier
+foundation-only statement is superseded by the
+[current code/document audit](product/hackathon-audit-2026-10-13.md).
+Real public-source activation and local data validation remain separate from
+software completion; seed reports/plans are still demonstrations.
