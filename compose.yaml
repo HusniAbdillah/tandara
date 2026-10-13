@@ -29,9 +29,12 @@ services:
       WORKER_ENABLED: 'true'
       DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
       AI_MODE: ${AI_MODE:-heuristic}
+      AI_PROVIDER: ${AI_PROVIDER:-custom}
       AI_BASE_URL: ${AI_BASE_URL:-}
       AI_API_KEY: ${AI_API_KEY:-}
       AI_MODEL: ${AI_MODEL:-}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS:-30000}
+      AI_MAX_OUTPUT_TOKENS: ${AI_MAX_OUTPUT_TOKENS:-2048}
       ALLOW_LIVE_SOURCES: ${ALLOW_LIVE_SOURCES:-false}
       SESSION_SECURE: ${SESSION_SECURE:-false}
       WEB_ORIGINS: ${WEB_ORIGINS:-http://localhost:8080,http://localhost:8081,http://127.0.0.1:8080,http://127.0.0.1:8081}

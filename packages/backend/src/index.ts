@@ -10,3 +10,4 @@ export * from './modules/reports.js';
 export * from './modules/preparedness.js';
 export * from './modules/administration.js';
 export * from './modules/jobs.js';
+export { createAiAdapter } from './modules/adapters.js';

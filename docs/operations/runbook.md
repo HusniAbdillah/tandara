@@ -17,22 +17,27 @@ with SQL leases; capacity/load testing beyond the local dataset is not claimed.
 
 ## Environment reference
 
-| Variable                          | Meaning                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| `DATABASE_URL`                    | Server connection, private network; local dev URL differs from Compose         |
-| `POSTGRES_USER/PASSWORD/DB`       | Compose database creation; password changes require actual DB rotation         |
-| `DEMO_PASSWORD`                   | Initial simulation seed password; >=12 chars; does not reset existing accounts |
-| `APP_MODE`                        | Only `simulation` supported by this delivery                                   |
-| `WORKER_ENABLED`                  | Strict true/false; true runs actual consumers                                  |
-| `AI_MODE`                         | disabled, heuristic or compatible                                              |
-| `AI_BASE_URL/AI_MODEL/AI_API_KEY` | Approved server-only compatible inference configuration                        |
-| `ALLOW_LIVE_SOURCES`              | Strict false by default; also needs per-source permission                      |
-| `SESSION_SECURE`                  | False only for loopback HTTP; true with public TLS                             |
-| `WEB_ORIGINS`                     | Exact comma-separated trusted write origins                                    |
-| `TRUST_PROXY`                     | True only behind controlled Caddy; direct API/dev defaults false               |
-| `API_HOST/PORT/LOG_LEVEL`         | Listener and logging settings                                                  |
+| Variable                             | Meaning                                                                            |
+| ------------------------------------ | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`                       | Server connection, private network; local dev URL differs from Compose             |
+| `POSTGRES_USER/PASSWORD/DB`          | Compose database creation; password changes require actual DB rotation             |
+| `DEMO_PASSWORD`                      | Initial simulation seed password; >=12 chars; does not reset existing accounts     |
+| `APP_MODE`                           | Only `simulation` supported by this delivery                                       |
+| `WORKER_ENABLED`                     | Strict true/false; true runs actual consumers                                      |
+| `AI_MODE`                            | disabled, heuristic or compatible                                                  |
+| `AI_PROVIDER`                        | vikey, deepseek or custom; named providers supply their default HTTPS endpoint     |
+| `AI_BASE_URL/AI_MODEL/AI_API_KEY`    | Approved server-only compatible inference configuration                            |
+| `AI_TIMEOUT_MS/AI_MAX_OUTPUT_TOKENS` | Bounded provider request timeout (default 30000 ms) and output limit (2048 tokens) |
+| `ALLOW_LIVE_SOURCES`                 | Strict false by default; also needs per-source permission                          |
+| `SESSION_SECURE`                     | False only for loopback HTTP; true with public TLS                                 |
+| `WEB_ORIGINS`                        | Exact comma-separated trusted write origins                                        |
+| `TRUST_PROXY`                        | True only behind controlled Caddy; direct API/dev defaults false                   |
+| `API_HOST/PORT/LOG_LEVEL`            | Listener and logging settings                                                      |
 
 Host-level production deployment is deliberately separate from the local example.
+For configured inference, see [AI provider setup](../ai/provider-setup.md).
+Transient inference errors use outbox retries; permanent errors remain failed for
+operator review. Manual retry is audited and preserves failed suggestions.
 Use a verified domain, automatic TLS or an approved ingress, restricted exposed
 ports, unique secrets, backup encryption and reviewed permissions. Do not set a
 wildcard Origin or expose demo accounts. The root Dockerfile builds browser assets

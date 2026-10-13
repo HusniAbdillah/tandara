@@ -3,7 +3,7 @@ import { sql } from 'kysely';
 import { DatabaseService } from '../platform/database.service.js';
 import { audit } from './shared.js';
 import { eraseReport } from './privacy.js';
-import { createAiAdapter, ingestSource, PROMPT_VERSION } from './adapters.js';
+import { AiInferenceError, createAiAdapter, ingestSource, PROMPT_VERSION } from './adapters.js';
 import type { SourceInput, TriageInput } from './adapters.js';
 
 interface Job {
@@ -46,29 +46,56 @@ export class JobsService {
       await sql`UPDATE outbox_jobs SET state='completed',locked_at=NULL,error=NULL WHERE id=${job.id}::uuid`.execute(
         this.db,
       );
-    } catch {
-      await sql`UPDATE outbox_jobs SET state=${job.attempts >= 3 ? 'failed' : 'pending'},locked_at=NULL,error='Processing failed; inspect adapter configuration or availability',available_at=now()+${Math.min(300, 2 ** (job.attempts + 1))}*interval '1 second' WHERE id=${job.id}::uuid`.execute(
+    } catch (error) {
+      const terminal = job.attempts >= 3 || (error instanceof AiInferenceError && !error.retryable);
+      const delay = Math.max(
+        Math.min(300000, 2 ** (job.attempts + 1) * 1000),
+        error instanceof AiInferenceError ? error.retryAfterMs : 0,
+      );
+      await sql`UPDATE outbox_jobs SET state=${terminal ? 'failed' : 'pending'},locked_at=NULL,error=${error instanceof AiInferenceError ? error.message : 'Processing failed; inspect adapter configuration or availability'},available_at=now()+${delay}*interval '1 millisecond' WHERE id=${job.id}::uuid`.execute(
         this.db,
       );
     }
     return true;
   }
   async triage(job: Job) {
+    if (
+      (await sql`SELECT key FROM app_metadata WHERE key=${`triage-job:${job.id}`}`.execute(this.db))
+        .rows.length
+    )
+      return;
     const report = (
       await sql<TriageInput>`SELECT id,description,landmark_text AS "landmarkText",observation_time::text AS "observationTime" FROM reports WHERE id=${job.entity_id}::uuid AND NOT erased`.execute(
         this.db,
       )
     ).rows[0];
     if (!report) return;
+    // Spatial duplicate evidence stays available when AI is disabled or unavailable.
+    const mayProcess = await this.db.transaction().execute(async (tx) => {
+      const available = (
+        await sql`SELECT id FROM reports WHERE id=${report.id}::uuid AND NOT erased FOR SHARE`.execute(
+          tx,
+        )
+      ).rows.length;
+      if (!available) return false;
+      await sql`INSERT INTO duplicate_candidates(report_id,other_id,region_id,evidence) SELECT r.id,o.id,r.region_id,'Titik dalam 250 meter, pengamatan dalam 60 menit; kemiripan teks >= 0,15 atau kategori sama. Perlu keputusan manusia.' FROM reports r JOIN reports o ON o.region_id=r.region_id AND o.id<>r.id WHERE r.id=${report.id}::uuid AND NOT r.erased AND NOT o.erased AND o.state NOT IN ('rejected','closed') AND r.observation_time IS NOT NULL AND o.observation_time IS NOT NULL AND abs(extract(epoch FROM r.observation_time-o.observation_time))<=3600 AND ST_DWithin(r.location::geography,o.location::geography,250) AND (similarity(r.description,o.description)>=0.15 OR r.category=o.category) ON CONFLICT(report_id,other_id) DO NOTHING`.execute(
+        tx,
+      );
+      return true;
+    });
+    if (!mayProcess) return;
     const adapter = createAiAdapter();
     const start = Date.now();
     if (!adapter) return;
     let output = null;
-    let failure = false;
+    let failure: AiInferenceError | null = null;
     try {
       output = await adapter.suggest(report);
-    } catch {
-      failure = true;
+    } catch (error) {
+      failure =
+        error instanceof AiInferenceError ? error : new AiInferenceError('invalid_output', false);
+      // Do not mark retryable attempts as processed: the outbox owns bounded retries.
+      if (failure.retryable && job.attempts < 3) throw failure;
     }
     await this.db.transaction().execute(async (tx) => {
       const marked =
@@ -82,17 +109,15 @@ export class JobsService {
         )
       ).rows.length;
       if (!available) return;
-      await sql`INSERT INTO ai_suggestions(report_id,output,state,provider,model,prompt_version,duration_ms,error) VALUES(${report.id}::uuid,${output ? JSON.stringify(output) : null}::jsonb,${failure ? 'failed' : 'ready'},${adapter.provider},${adapter.model},${PROMPT_VERSION},${Date.now() - start},${failure ? 'Adapter unavailable or output rejected' : null})`.execute(
-        tx,
-      );
-      await sql`INSERT INTO duplicate_candidates(report_id,other_id,region_id,evidence) SELECT r.id,o.id,r.region_id,'Titik dalam 250 meter, pengamatan dalam 60 menit; kemiripan teks >= 0,15 atau kategori sama. Perlu keputusan manusia.' FROM reports r JOIN reports o ON o.region_id=r.region_id AND o.id<>r.id WHERE r.id=${report.id}::uuid AND NOT o.erased AND o.state NOT IN ('rejected','closed') AND r.observation_time IS NOT NULL AND o.observation_time IS NOT NULL AND abs(extract(epoch FROM r.observation_time-o.observation_time))<=3600 AND ST_DWithin(r.location::geography,o.location::geography,250) AND (similarity(r.description,o.description)>=0.15 OR r.category=o.category) ON CONFLICT(report_id,other_id) DO NOTHING`.execute(
+      await sql`INSERT INTO ai_suggestions(report_id,output,state,provider,model,prompt_version,duration_ms,error) VALUES(${report.id}::uuid,${output ? JSON.stringify(output) : null}::jsonb,${failure ? 'failed' : 'ready'},${adapter.provider},${adapter.model},${PROMPT_VERSION},${Date.now() - start},${failure?.message ?? null})`.execute(
         tx,
       );
       await audit(tx, null, job.region_id, 'triage.processed', report.id, {
         provider: adapter.provider,
-        failed: failure,
+        failed: Boolean(failure),
       });
     });
+    if (failure) throw failure;
   }
   async source(job: Job) {
     const source = (

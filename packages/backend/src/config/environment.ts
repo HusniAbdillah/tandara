@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { aiEnvironmentShape, validateAiSettings } from './ai.js';
 
 const environmentSchema = z
   .object({
@@ -17,34 +18,12 @@ const environmentSchema = z
       .default('false')
       .transform((value) => value === 'true'),
     APP_MODE: z.literal('simulation').default('simulation'),
-    AI_MODE: z.enum(['disabled', 'heuristic', 'compatible']).default('heuristic'),
-    AI_BASE_URL: z.string().default(''),
-    AI_MODEL: z.string().default(''),
+    ...aiEnvironmentShape,
     SESSION_SECURE: z.enum(['true', 'false']).default('false'),
     TRUST_PROXY: z.enum(['true', 'false']).default('false'),
     ALLOW_LIVE_SOURCES: z.enum(['true', 'false']).default('false'),
   })
-  .superRefine((v, ctx) => {
-    if (v.AI_MODE === 'compatible') {
-      let valid: boolean;
-      try {
-        const url = new URL(v.AI_BASE_URL);
-        valid =
-          url.protocol === 'https:' ||
-          (url.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(url.hostname));
-      } catch {
-        valid = false;
-      }
-      if (!valid)
-        ctx.addIssue({
-          code: 'custom',
-          path: ['AI_BASE_URL'],
-          message: 'Approved HTTPS or localhost endpoint required',
-        });
-      if (!v.AI_MODEL)
-        ctx.addIssue({ code: 'custom', path: ['AI_MODEL'], message: 'Model required' });
-    }
-  });
+  .superRefine(validateAiSettings);
 
 export type Environment = z.infer<typeof environmentSchema>;
 export const ENVIRONMENT = Symbol('TANDARA_ENVIRONMENT');

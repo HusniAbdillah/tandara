@@ -320,15 +320,20 @@ export class AdministrationService {
   async retryJob(user: User, id: string) {
     this.identity.requireAdmin(user);
     parse(z.uuid(), id);
-    if (
-      !(
-        await sql`UPDATE outbox_jobs SET state='pending',attempts=0,available_at=now(),error=NULL WHERE id=${id}::uuid AND state='failed' RETURNING id`.execute(
-          this.db,
+    return this.db.transaction().execute(async (tx) => {
+      const row = (
+        await sql<{
+          kind: string;
+        }>`UPDATE outbox_jobs SET state='pending',attempts=0,available_at=now(),error=NULL WHERE id=${id}::uuid AND state='failed' RETURNING kind`.execute(
+          tx,
         )
-      ).rows.length
-    )
-      conflict('Hanya pekerjaan gagal dapat dicoba lagi.');
-    return { ok: true };
+      ).rows[0];
+      if (!row) conflict('Hanya pekerjaan gagal dapat dicoba lagi.');
+      if (row.kind === 'triage')
+        await sql`DELETE FROM app_metadata WHERE key=${`triage-job:${id}`}`.execute(tx);
+      await audit(tx, user.id, null, 'job.retry', id, { kind: row.kind });
+      return { ok: true };
+    });
   }
   async deleteReport(user: User, id: string) {
     this.identity.requireAdmin(user);

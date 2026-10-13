@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { createServer } from 'node:http';
 import { createApp } from '../../apps/api/dist/bootstrap.js';
 import { parseEnvironment, JobsService } from '../../packages/backend/dist/index.js';
 
@@ -231,6 +232,232 @@ test('human rejection of AI is separate, audit-backed, and does not mutate origi
   assert.equal(after.report.description, base.description);
   assert.equal(after.report.state, 'submitted');
   assert.equal(after.suggestions[0].state, 'rejected');
+});
+
+test('configured inference retries transient failures, persists validated output and isolates private fields', async () => {
+  const keys = ['AI_MODE', 'AI_PROVIDER', 'AI_BASE_URL', 'AI_MODEL', 'AI_API_KEY'];
+  const previous = Object.fromEntries(keys.map((name) => [name, process.env[name]]));
+  let requests = 0;
+  let requestBody;
+  let requestAuthorization;
+  let responseStatus = 429;
+  const server = createServer(async (req, res) => {
+    const chunks = [];
+    for await (const chunk of req) chunks.push(chunk);
+    requestBody = JSON.parse(Buffer.concat(chunks).toString());
+    requestAuthorization = req.headers.authorization;
+    requests++;
+    res.setHeader('Content-Type', 'application/json');
+    res.statusCode = responseStatus;
+    if (responseStatus !== 200) {
+      res.setHeader('Retry-After', '2');
+      res.end(JSON.stringify({ error: { message: 'DO_NOT_LOG_PROVIDER_DETAILS' } }));
+      return;
+    }
+    const original = JSON.parse(requestBody.messages[1].content).untrustedReport;
+    res.end(
+      JSON.stringify({
+        choices: [
+          {
+            finish_reason: 'stop',
+            message: {
+              content: JSON.stringify({
+                suggestedCategory: 'road_flooding',
+                facts: [
+                  {
+                    field: 'description',
+                    value: original.description,
+                    evidence: original.description,
+                  },
+                ],
+                missingInformation: [],
+                summary: original.description,
+                sourceIds: [original.id],
+                needsHumanReview: true,
+              }),
+            },
+          },
+        ],
+      }),
+    );
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const submitted = await call(
+    'POST',
+    '/reports',
+    {
+      ...base,
+      description: 'SIMULASI API model: genangan di jalan dekat balai latihan.',
+      contactPermission: true,
+      contactDetails: 'PRIVATE_CONTACT_NOT_FOR_MODEL',
+      trackingToken: crypto.randomUUID() + crypto.randomUUID(),
+    },
+    undefined,
+    { 'idempotency-key': crypto.randomUUID() },
+  );
+  assert.equal(submitted.statusCode, 201, submitted.body);
+  const id = submitted.json().id;
+  const job = (
+    await db.query("SELECT id FROM outbox_jobs WHERE kind='triage' AND entity_id=$1", [id])
+  ).rows[0];
+  const prioritize = () =>
+    db.query("UPDATE outbox_jobs SET available_at='1900-01-01' WHERE id=$1", [job.id]);
+  try {
+    Object.assign(process.env, {
+      AI_MODE: 'compatible',
+      AI_PROVIDER: 'custom',
+      AI_BASE_URL: 'http://127.0.0.1:' + server.address().port + '/v1',
+      AI_MODEL: 'integration-model',
+      AI_API_KEY: 'synthetic-provider-key',
+    });
+    await prioritize();
+    await app.get(JobsService).tick();
+    let row = (
+      await db.query('SELECT state,attempts,error,available_at FROM outbox_jobs WHERE id=$1', [
+        job.id,
+      ])
+    ).rows[0];
+    assert.equal(row.state, 'pending');
+    assert.equal(row.attempts, 1);
+    assert.ok(row.available_at > new Date());
+    assert.ok(!row.error.includes('DO_NOT_LOG_PROVIDER_DETAILS'));
+    assert.equal(
+      (await db.query('SELECT count(*)::int n FROM ai_suggestions WHERE report_id=$1', [id]))
+        .rows[0].n,
+      0,
+    );
+    responseStatus = 200;
+    await prioritize();
+    await app.get(JobsService).tick();
+    row = (await db.query('SELECT state,attempts FROM outbox_jobs WHERE id=$1', [job.id])).rows[0];
+    assert.equal(row.state, 'completed');
+    assert.equal(row.attempts, 2);
+    const result = (await call('GET', '/reports/' + id, undefined, coordinator)).json();
+    assert.equal(result.suggestions.length, 1);
+    assert.equal(result.suggestions[0].model, 'integration-model');
+    assert.equal(result.suggestions[0].output.needsHumanReview, true);
+    assert.equal(result.report.state, 'submitted');
+    assert.equal(requestAuthorization, 'Bearer synthetic-provider-key');
+    assert.ok(!JSON.stringify(requestBody).includes('PRIVATE_CONTACT_NOT_FOR_MODEL'));
+    assert.ok(!JSON.stringify(requestBody).includes('trackingToken'));
+    assert.equal(requests, 2);
+    await app
+      .get(JobsService)
+      .triage({ id: job.id, kind: 'triage', entity_id: id, region_id: region, attempts: 2 });
+    assert.equal(
+      (await db.query('SELECT count(*)::int n FROM ai_suggestions WHERE report_id=$1', [id]))
+        .rows[0].n,
+      1,
+    );
+    assert.equal(requests, 2, 'Completed jobs must not make another paid inference request');
+    const permanent = await call('POST', '/reports/' + id + '/triage', undefined, coordinator);
+    assert.equal(permanent.statusCode, 201, permanent.body);
+    const permanentJob = (
+      await db.query(
+        'SELECT id FROM outbox_jobs WHERE entity_id=$1 AND id<>$2 ORDER BY created_at DESC LIMIT 1',
+        [id, job.id],
+      )
+    ).rows[0];
+    responseStatus = 401;
+    await db.query("UPDATE outbox_jobs SET available_at='1900-01-01' WHERE id=$1", [
+      permanentJob.id,
+    ]);
+    await app.get(JobsService).tick();
+    row = (
+      await db.query('SELECT state,attempts,error FROM outbox_jobs WHERE id=$1', [permanentJob.id])
+    ).rows[0];
+    assert.equal(row.state, 'failed');
+    assert.equal(row.attempts, 1);
+    assert.ok(!row.error.includes('DO_NOT_LOG_PROVIDER_DETAILS'));
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int n FROM ai_suggestions WHERE report_id=$1 AND state='failed'",
+          [id],
+        )
+      ).rows[0].n,
+      1,
+    );
+    responseStatus = 200;
+    const retry = await call('POST', '/admin/jobs/' + permanentJob.id + '/retry', undefined, admin);
+    assert.equal(retry.statusCode, 201, retry.body);
+    await db.query("UPDATE outbox_jobs SET available_at='1900-01-01' WHERE id=$1", [
+      permanentJob.id,
+    ]);
+    await app.get(JobsService).tick();
+    assert.equal(
+      (await db.query('SELECT state FROM outbox_jobs WHERE id=$1', [permanentJob.id])).rows[0]
+        .state,
+      'completed',
+    );
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int n FROM ai_suggestions WHERE report_id=$1 AND state='ready'",
+          [id],
+        )
+      ).rows[0].n,
+      2,
+    );
+
+    assert.equal(
+      (await call('POST', '/reports/' + id + '/triage', undefined, coordinator)).statusCode,
+      201,
+    );
+    const exhausted = (
+      await db.query(
+        'SELECT id FROM outbox_jobs WHERE entity_id=$1 ORDER BY created_at DESC LIMIT 1',
+        [id],
+      )
+    ).rows[0];
+    responseStatus = 503;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      await db.query("UPDATE outbox_jobs SET available_at='1900-01-01' WHERE id=$1", [
+        exhausted.id,
+      ]);
+      await app.get(JobsService).tick();
+    }
+    row = (await db.query('SELECT state,attempts FROM outbox_jobs WHERE id=$1', [exhausted.id]))
+      .rows[0];
+    assert.equal(row.state, 'failed');
+    assert.equal(row.attempts, 4);
+    assert.equal(
+      (
+        await db.query(
+          "SELECT count(*)::int n FROM ai_suggestions WHERE report_id=$1 AND state='failed'",
+          [id],
+        )
+      ).rows[0].n,
+      2,
+    );
+
+    process.env.AI_MODE = 'disabled';
+    await db.query('DELETE FROM duplicate_candidates WHERE report_id=$1', [id]);
+    assert.equal(
+      (await call('POST', '/reports/' + id + '/triage', undefined, coordinator)).statusCode,
+      201,
+    );
+    const disabled = (
+      await db.query(
+        'SELECT id FROM outbox_jobs WHERE entity_id=$1 ORDER BY created_at DESC LIMIT 1',
+        [id],
+      )
+    ).rows[0];
+    await db.query("UPDATE outbox_jobs SET available_at='1900-01-01' WHERE id=$1", [disabled.id]);
+    const beforeDisabled = requests;
+    await app.get(JobsService).tick();
+    assert.equal(requests, beforeDisabled);
+    assert.ok(
+      (await db.query('SELECT count(*)::int n FROM duplicate_candidates WHERE report_id=$1', [id]))
+        .rows[0].n > 0,
+    );
+  } finally {
+    for (const name of keys) {
+      if (previous[name] === undefined) delete process.env[name];
+      else process.env[name] = previous[name];
+    }
+    await new Promise((resolve) => server.close(resolve));
+  }
 });
 test('CSRF, stale revisions and illegal transitions fail closed', async () => {
   const body = { state: 'reviewed', reason: 'Tinjauan uji oleh koordinator.', revision: 1 };

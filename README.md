@@ -55,6 +55,27 @@ Posko displays local layers over an attributed OpenStreetMap street basemap;
 BMKG/PetaBencana adapters are disabled until configured and authorized. InaRISK is
 reference-only. The default triage is labelled **deterministic**, not live inference.
 
+## Connect a real AI provider
+
+The ignored `.env` and `.env.example` have `AI_MODEL` and `AI_API_KEY` placeholders.
+For temporary Vikey inference, set `AI_PROVIDER=vikey`, replace both placeholders,
+and set `AI_MODE=compatible`. Leave `AI_BASE_URL` blank to use the provider default.
+Later, use `AI_PROVIDER=deepseek` with that provider's model ID and API key; a blank
+base URL then resolves to DeepSeek. No frontend changes are required.
+
+Recreate the server containers after editing `.env`:
+
+```powershell
+docker compose up -d --force-recreate api worker
+```
+
+`pnpm ai:verify` makes one synthetic, potentially billable request and validates its
+output. Tests use mock providers and never need real keys. Placeholder credentials
+cannot be sent: enabling compatible mode before replacing them fails validation.
+See [AI setup](docs/ai/provider-setup.md) for endpoint configuration, limits,
+verification, retries, and switching providers. The full production architecture
+is specified separately in the [production plan](docs/ai/production-delivery-plan.md).
+
 ## Development and tests
 
 Routine CI checks code, builds, real database/API integration and deployment

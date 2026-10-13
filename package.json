@@ -24,6 +24,7 @@
     "infra:down": "docker compose --env-file .env -f infrastructure/compose/compose.dev.yml down",
     "test:integration": "pnpm build && node --env-file=.env --test tests/integration/*.test.mjs",
     "api:openapi": "turbo run build --filter=@tandara/api... && pnpm --filter @tandara/api openapi",
+    "ai:verify": "turbo run build --filter=@tandara/backend... && node --env-file=.env tooling/verify-ai.mjs",
     "dev:resident": "pnpm build:packages && pnpm --filter @tandara/resident-web dev",
     "dev:coordinator": "pnpm build:packages && pnpm --filter @tandara/coordinator-web dev"
   },
