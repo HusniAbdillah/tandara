@@ -10,3 +10,7 @@ export * from './modules/reports.js';
 export * from './modules/preparedness.js';
 export * from './modules/administration.js';
 export * from './modules/jobs.js';
+export { createAiAdapter } from './modules/adapters.js';
+export * from './modules/ai.js';
+export * from './modules/knowledge.js';
+export { startTelemetry, stopTelemetry } from './platform/telemetry.js';

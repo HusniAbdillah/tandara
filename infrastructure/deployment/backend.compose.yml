@@ -18,7 +18,7 @@ x-server: &server
   LOG_LEVEL: info
 services:
   postgres:
-    image: postgis/postgis:16-3.5
+    image: ${POSTGRES_IMAGE:?Set POSTGRES_IMAGE to the release image with PostGIS and pgvector}
     environment:
       POSTGRES_USER: tandara
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}

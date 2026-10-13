@@ -1,0 +1,34 @@
+# Run a reviewed OpenTelemetry Collector Contrib image in the private network.
+# Mount server TLS certificates and expose only 4318 to application security groups.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+        tls:
+          cert_file: /run/secrets/collector-cert.pem
+          key_file: /run/secrets/collector-key.pem
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+  batch:
+    timeout: 5s
+exporters:
+  debug:
+    verbosity: basic
+  prometheus:
+    endpoint: 0.0.0.0:9464
+    send_timestamps: false
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus]
+# Trace export logs aggregate counts only. Applications emit only task/provider metadata.

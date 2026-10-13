@@ -1,10 +1,17 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { createLogger, parseEnvironment, JobsService } from '@tandara/backend';
+import {
+  createLogger,
+  parseEnvironment,
+  JobsService,
+  startTelemetry,
+  stopTelemetry,
+} from '@tandara/backend';
 import { WorkerModule } from './worker.module.js';
 
 try {
   const environment = parseEnvironment(process.env);
+  startTelemetry('tandara-worker');
   const app = await NestFactory.createApplicationContext(WorkerModule.register(environment), {
     logger: createLogger(environment, 'worker'),
   });
@@ -33,6 +40,7 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
   await app.close();
+  await stopTelemetry();
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Worker startup failed.');
   process.exitCode = 1;

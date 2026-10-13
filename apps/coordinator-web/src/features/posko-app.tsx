@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
-import { regionSchema, userSchema } from '@tandara/contracts';
+import { deploymentSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
 import { Brand, Badge, Field, Icon, Notice } from '@tandara/ui';
 import { Inbox, Overview, ReportDetailPage } from './reports-ui.js';
@@ -17,6 +17,8 @@ import {
 import { SituationMap } from './situation-map.js';
 import { AdminPage } from './admin-ui.js';
 import { NotificationsPage } from './notifications-ui.js';
+import { AiWorkspace } from './ai-ui.js';
+import { AccountSecurity } from './security-ui.js';
 
 const authSchema = z.object({ user: userSchema, csrf: z.string() });
 const nav = [
@@ -27,6 +29,8 @@ const nav = [
   ['/assistance', 'Tindak lanjut', 'help'],
   ['/training', 'Latihan', 'training'],
   ['/sources', 'Sumber informasi', 'source'],
+  ['/ai', 'Asisten Posko', 'help'],
+  ['/security', 'Keamanan akun', 'settings'],
   ['/audit', 'Jejak audit', 'audit'],
   ['/notifications', 'Pembaruan', 'source'],
 ] as const;
@@ -44,6 +48,10 @@ export function PoskoApp() {
     queryFn: () => request('/regions', z.array(regionSchema)),
   });
   const [selected, setSelected] = useState('');
+  const deployment = useQuery({
+    queryKey: ['deployment'],
+    queryFn: () => request('/deployment', deploymentSchema),
+  });
   const [message, setMessage] = useState('');
   const user = auth.data?.user;
   const available = regions.data?.filter(
@@ -67,9 +75,19 @@ export function PoskoApp() {
         Memeriksa sesi…
       </main>
     );
-  if (!user) return <Login onLogin={(data) => client.setQueryData(['auth'], data)} />;
+  if (!user)
+    return (
+      <Login
+        simulation={deployment.data?.mode === 'simulation'}
+        residentOrigin={deployment.data?.residentOrigin}
+        onLogin={(data) => client.setQueryData(['auth'], data)}
+      />
+    );
   let content;
-  if (!region)
+  if (path === '/admin' && user.role === 'admin')
+    content = <AdminPage user={user} region={region} regions={regions.data ?? []} run={run} />;
+  else if (path === '/security') content = <AccountSecurity />;
+  else if (!region)
     content = (
       <Notice tone="warning">Tidak ada wilayah aktif yang ditugaskan untuk akun ini.</Notice>
     );
@@ -94,6 +112,12 @@ export function PoskoApp() {
         break;
       case '/sources':
         content = <SourcesPage region={region} user={user} run={run} />;
+        break;
+      case '/ai':
+        content = <AiWorkspace region={region} user={user} run={run} />;
+        break;
+      case '/security':
+        content = <AccountSecurity />;
         break;
       case '/audit':
         content = <AuditPage region={region} user={user} />;
@@ -182,7 +206,7 @@ export function PoskoApp() {
                 <Icon name="shield" size={15} />
                 Keputusan tetap pada manusia
               </span>
-              <Badge tone="amber">SIMULASI</Badge>
+              {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
               <button
                 className="quiet small mobile-logout"
                 onClick={async () => {
@@ -200,8 +224,8 @@ export function PoskoApp() {
             <div key={region?.id}>{content}</div>
             <footer className="safe-footer">
               <p>
-                Simulasi — bukan kejadian nyata. Laporan komunitas dan saran AI bukan peringatan
-                resmi. Area tanpa informasi tidak berarti aman.
+                {region?.simulation ? 'Simulasi — bukan kejadian nyata. ' : ''}Laporan komunitas dan
+                saran AI bukan peringatan resmi. Area tanpa informasi tidak berarti aman.
               </p>
             </footer>
           </main>
@@ -210,7 +234,16 @@ export function PoskoApp() {
     </>
   );
 }
-function Login({ onLogin }: { onLogin: (data: z.infer<typeof authSchema>) => void }) {
+function Login({
+  onLogin,
+  simulation,
+  residentOrigin,
+}: {
+  onLogin: (data: z.infer<typeof authSchema>) => void;
+  simulation: boolean;
+  residentOrigin: string | undefined;
+}) {
+  const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -228,7 +261,9 @@ function Login({ onLogin }: { onLogin: (data: z.infer<typeof authSchema>) => voi
           Tinjau laporan warga, pahami informasi yang belum lengkap, dan kelola rencana komunitas
           dengan keputusan yang dapat ditelusuri.
         </p>
-        <Badge tone="amber">Lingkungan simulasi · bukan layanan darurat</Badge>
+        <Badge tone="amber">
+          {simulation ? 'Lingkungan simulasi · ' : ''}Bukan layanan darurat
+        </Badge>
       </section>
       <main className="login-form">
         <Brand audience="Posko" />
@@ -243,7 +278,7 @@ function Login({ onLogin }: { onLogin: (data: z.infer<typeof authSchema>) => voi
               onLogin(
                 await request('/auth/login', authSchema, {
                   method: 'POST',
-                  body: { email, password },
+                  body: { email, password, ...(code ? { code } : {}) },
                 }),
               );
             } catch (err) {
@@ -272,13 +307,25 @@ function Login({ onLogin }: { onLogin: (data: z.infer<typeof authSchema>) => voi
             />
           </Field>
           {error && <Notice tone="error">{error}</Notice>}
+          <Field label="Kode autentikator (jika diaktifkan)">
+            <input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+          </Field>
           <button className="primary" style={{ width: '100%' }} disabled={busy}>
             {busy ? 'Memeriksa…' : 'Masuk'}
             <Icon name="arrow" />
           </button>
         </form>
-        <p className="meta">Gunakan akun simulasi yang diberikan pengelola lingkungan ini.</p>
-        <a href="http://localhost:8080">Buka Tandara Warga →</a>
+        <p className="meta">
+          Gunakan akun {simulation ? 'simulasi ' : ''}yang diberikan pengelola lingkungan ini.
+        </p>
+        {residentOrigin && <a href={residentOrigin}>Buka Tandara Warga →</a>}
       </main>
     </div>
   );

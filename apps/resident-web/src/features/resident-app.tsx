@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { KnowledgeSearch } from './knowledge-search.js';
 import { Link, NavLink, useLocation } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
-import { publicDataSchema, regionSchema, planSchema } from '@tandara/contracts';
+import { deploymentSchema, publicDataSchema, regionSchema, planSchema } from '@tandara/contracts';
 import type { PublicData, Region, Plan } from '@tandara/contracts';
 import { Badge, Brand, Empty, Icon, Notice, PageHeader, formatTime, useClock } from '@tandara/ui';
 import { residentDb } from '../offline/database.js';
@@ -26,11 +27,16 @@ function useOnline() {
 const nav = [
   ['/', 'Beranda', 'home'],
   ['/plan', 'Rencana', 'plan'],
+  ['/knowledge', 'Cari rencana', 'source'],
   ['/report', 'Laporan', 'report'],
   ['/checklist', 'Checklist', 'check'],
   ['/training', 'Latihan', 'training'],
 ] as const;
 export function ResidentApp() {
+  const deployment = useQuery({
+    queryKey: ['deployment'],
+    queryFn: () => request('/deployment', deploymentSchema),
+  });
   const path = useLocation().pathname;
   const online = useOnline();
   const [regionId, setRegionId] = useState(localStorage.getItem('tandara:region') ?? '');
@@ -133,6 +139,10 @@ export function ResidentApp() {
       <Empty title="Pilih wilayah">Wilayah diperlukan sebelum laporan dapat disimpan.</Empty>
     );
   else if (path === '/tracking') content = <TrackingPage />;
+  else if (path === '/knowledge')
+    content = region ? (
+      <KnowledgeSearch key={activeRegion} regionId={activeRegion} online={online} />
+    ) : null;
   else if (path === '/training')
     content = region ? <TrainingPage key={activeRegion} region={region} /> : null;
   else if (data.isPending)
@@ -203,7 +213,7 @@ export function ResidentApp() {
               </NavLink>
             ))}
           </nav>
-          <Badge tone="amber">SIMULASI</Badge>
+          {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
         </div>
       </header>
       <div className="context-bar">
@@ -259,11 +269,11 @@ export function ResidentApp() {
             >
               Ukuran teks {large ? 'standar' : 'besar'}
             </button>
-            <a href="http://localhost:8081">Tandara Posko</a>
+            {deployment.data && <a href={deployment.data.coordinatorOrigin}>Tandara Posko</a>}
           </div>
           <p>
-            Simulasi — bukan kejadian nyata. Tandara mendukung kesiapsiagaan komunitas; ikuti arahan
-            otoritas resmi.
+            {region?.simulation ? 'Simulasi — bukan kejadian nyata. ' : ''}Tandara mendukung
+            kesiapsiagaan komunitas; ikuti arahan otoritas resmi.
           </p>
         </footer>
       </main>
@@ -436,7 +446,7 @@ function Home({ data, plan }: { data: PublicData; plan: Plan | undefined }) {
             {data.reports.map((r) => (
               <li key={r.id}>
                 <Badge tone="teal">Laporan warga · ditinjau koordinator</Badge>{' '}
-                <Badge tone="amber">Simulasi</Badge>
+                {r.simulation && <Badge tone="amber">Simulasi</Badge>}
                 <p>{r.summary}</p>
                 <div className="meta">
                   Ditinjau {r.reviewer} · {formatTime(r.reviewedAt)}
@@ -469,7 +479,7 @@ export function PlanView({
       <div className="panel">
         <div className="panel-heading">
           <h2>{plan.content.title}</h2>
-          <Badge tone="amber">Simulasi</Badge>
+          {plan.simulation && <Badge tone="amber">Simulasi</Badge>}
         </div>
         <div className="meta">
           <strong>{plan.owner}</strong>
@@ -618,8 +628,7 @@ function Help({ region }: { region: Region }) {
           ))
         ) : (
           <Empty title="Kontak resmi terverifikasi belum tersedia">
-            Nomor telepon tidak dibuat untuk simulasi. Periksa kanal resmi pemerintah daerah dan
-            pengelola komunitas.
+            Periksa nomor kontak melalui kanal resmi pemerintah daerah dan pengelola komunitas.
           </Empty>
         )}
         <div className="button-row">

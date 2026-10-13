@@ -1,0 +1,25 @@
+groups:
+  - name: tandara
+    rules:
+      - alert: TandaraWorkersUnavailable
+        expr: tandara_worker_healthy < 1
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: 'No healthy Tandara worker; core reports remain usable.' }
+      - alert: TandaraAiBacklog
+        expr: tandara_ai_queue_oldest_seconds > 300
+        for: 2m
+        labels: { severity: warning }
+        annotations:
+          { summary: 'AI backlog exceeds five minutes; inspect provider and task controls.' }
+      - alert: TandaraAiBudgetNearLimit
+        expr: tandara_ai_budget_reserved_percent >= 80
+        for: 1m
+        labels: { severity: warning }
+        annotations: { summary: 'At least 80% of the daily conservative AI budget is reserved.' }
+      - alert: TandaraTelemetryMissing
+        expr: absent(tandara_worker_healthy)
+        for: 3m
+        labels: { severity: critical }
+        annotations:
+          { summary: 'Worker telemetry is missing; check collector and application readiness.' }

@@ -98,7 +98,7 @@ export class ReportsService {
           await sql<{
             id: string;
             state: ReportReviewState;
-          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash}) RETURNING id,state`.execute(
+          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash,simulation) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash},${process.env['APP_MODE'] !== 'production'}) RETURNING id,state`.execute(
             tx,
           )
         ).rows[0],
@@ -117,8 +117,10 @@ export class ReportsService {
       await sql`INSERT INTO outbox_jobs(kind,entity_id,region_id,dedupe_key) VALUES('triage',${row.id}::uuid,${data.regionId}::uuid,${`triage:${row.id}`})`.execute(
         tx,
       );
-      await audit(tx, null, data.regionId, 'report.created', row.id, { simulation: true });
-      await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,'Simulasi: laporan komunitas baru menunggu tinjauan.' FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE m.region_id=${data.regionId}::uuid AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
+      await audit(tx, null, data.regionId, 'report.created', row.id, {
+        simulation: process.env['APP_MODE'] !== 'production',
+      });
+      await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,${(process.env['APP_MODE'] === 'production' ? '' : 'Simulasi: ') + 'laporan komunitas baru menunggu tinjauan.'} FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE m.region_id=${data.regionId}::uuid AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
         tx,
       );
       return { id: row.id, trackingToken: token, state: row.state };
@@ -215,7 +217,7 @@ export class ReportsService {
     const suggestions = (
       await sql<
         ReportDetail['suggestions'][number]
-      >`SELECT id,output,state,provider,model,prompt_version AS "promptVersion",duration_ms AS "durationMs",error,created_at::text AS "createdAt",human_note AS "humanNote" FROM ai_suggestions WHERE report_id=${id}::uuid ORDER BY created_at DESC`.execute(
+      >`SELECT s.id,s.output,s.reviewed_output AS "reviewedOutput",s.legacy_provenance AS "legacyProvenance",COALESCE((SELECT jsonb_agg(jsonb_build_object('id',v.id,'action',v.action,'note',v.note,'output',v.output,'reviewerId',v.reviewer_id,'createdAt',v.created_at) ORDER BY v.created_at DESC) FROM ai_suggestion_reviews v WHERE v.suggestion_id=s.id),'[]'::jsonb) reviews,s.state,s.provider,s.model,s.prompt_version AS "promptVersion",s.duration_ms AS "durationMs",s.error,s.created_at::text AS "createdAt",s.human_note AS "humanNote" FROM ai_suggestions s WHERE report_id=${id}::uuid ORDER BY created_at DESC`.execute(
         this.db,
       )
     ).rows;
@@ -282,10 +284,13 @@ export class ReportsService {
       throw new BadRequestException('Isi saran hasil koreksi diperlukan.');
     return this.db.transaction().execute(async (tx) => {
       const result =
-        await sql`UPDATE ai_suggestions SET state=${data.action},human_note=${data.note},output=COALESCE(${data.output ? JSON.stringify(data.output) : null}::jsonb,output),reviewer_id=${user.id}::uuid,reviewed_at=now() WHERE id=${suggestionId}::uuid AND report_id=${id}::uuid AND state='ready' RETURNING id`.execute(
+        await sql`UPDATE ai_suggestions SET state=${data.action},human_note=${data.note},reviewed_output=${data.output ? JSON.stringify(data.output) : null}::jsonb,reviewer_id=${user.id}::uuid,reviewed_at=now() WHERE id=${suggestionId}::uuid AND report_id=${id}::uuid AND state='ready' RETURNING id`.execute(
           tx,
         );
       if (!result.rows.length) conflict('Saran sudah ditinjau atau tidak tersedia.');
+      await sql`INSERT INTO ai_suggestion_reviews(suggestion_id,reviewer_id,action,note,output) VALUES(${suggestionId}::uuid,${user.id}::uuid,${data.action},${data.note},${data.output ? JSON.stringify(data.output) : null}::jsonb)`.execute(
+        tx,
+      );
       await audit(tx, user.id, region, 'ai.review', suggestionId, { action: data.action });
       return { ok: true };
     });

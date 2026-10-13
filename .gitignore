@@ -9,8 +9,14 @@ test-results/
 .env
 .env.*
 !.env.example
+!.env.production.example
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
 *.log
 .tmp/
 .local/
 .DS_Store
+__pycache__/
 Thumbs.db

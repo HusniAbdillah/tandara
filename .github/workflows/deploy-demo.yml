@@ -82,13 +82,15 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - name: Build portable production backend
         run: docker build --platform linux/amd64 -f infrastructure/deployment/Dockerfile.backend -t "tandara-backend:$RELEASE_SHA" .
+      - name: Build release database with PostGIS and pgvector
+        run: docker build --platform linux/amd64 -f infrastructure/deployment/Dockerfile.postgres -t "tandara-postgres:$RELEASE_SHA" .
       - name: Validate pruned image against an isolated synthetic database
         run: bash tooling/deployment/smoke-backend.sh "tandara-backend:$RELEASE_SHA"
       - name: Transfer release over SSH and deploy Tencent
         run: |
           set -euo pipefail
           mkdir -p .local/transfer
-          docker image save "tandara-backend:$RELEASE_SHA" | gzip > .local/transfer/backend.tar.gz
+          docker image save "tandara-backend:$RELEASE_SHA" "tandara-postgres:$RELEASE_SHA" | gzip > .local/transfer/backend.tar.gz
           (cd .local/transfer && sha256sum backend.tar.gz > backend.tar.gz.sha256)
           image_id=$(python3 infrastructure/deployment/image_config_id.py .local/transfer/backend.tar.gz "tandara-backend:$RELEASE_SHA")
           [[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]

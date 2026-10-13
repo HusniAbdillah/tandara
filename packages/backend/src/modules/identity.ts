@@ -6,6 +6,7 @@ import { z } from 'zod';
 import type { User, Region } from '@tandara/contracts';
 import { DatabaseService } from '../platform/database.service.js';
 import { audit, found, hash, parse, rateLimit, regionProjection } from './shared.js';
+import { encryptMfa, newMfa, verifyMfa } from './mfa.js';
 
 const derive = promisify(scrypt);
 export async function passwordHash(password: string): Promise<string> {
@@ -28,7 +29,14 @@ export class IdentityService {
   }
   async login(input: unknown, ip: string) {
     const data = parse(
-      z.strictObject({ email: z.email(), password: z.string().min(1).max(200) }),
+      z.strictObject({
+        email: z.email(),
+        password: z.string().min(1).max(200),
+        code: z
+          .string()
+          .regex(/^\d{6}$/)
+          .optional(),
+      }),
       input,
     );
     await rateLimit(this.db, `login-ip:${ip}`, 20, 900);
@@ -38,7 +46,10 @@ export class IdentityService {
         id: string;
         password_hash: string;
         suspended: boolean;
-      }>`SELECT id,password_hash,suspended FROM users WHERE email=${data.email}`.execute(this.db)
+        totp_secret: string | null;
+      }>`SELECT id,password_hash,suspended,totp_secret FROM users WHERE email=${data.email}`.execute(
+        this.db,
+      )
     ).rows[0];
     // Equal-cost hash even for unknown accounts.
     const valid = await verifyPassword(
@@ -47,10 +58,26 @@ export class IdentityService {
     );
     if (!row || !valid || row.suspended)
       throw new UnauthorizedException('Email atau kata sandi tidak sesuai.');
+    let counter: number | null = null;
+    if (row.totp_secret) counter = verifyMfa(row.totp_secret, data.code ?? '');
+    if (
+      (row.totp_secret && counter === null) ||
+      (process.env['APP_MODE'] === 'production' && !row.totp_secret)
+    )
+      throw new UnauthorizedException('Kode autentikator diperlukan atau tidak sesuai.');
     const token = randomBytes(32).toString('hex');
     const csrf = randomBytes(32).toString('hex');
     await this.db.transaction().execute(async (tx) => {
-      await sql`INSERT INTO sessions(token_hash,user_id,csrf_hash,expires_at) VALUES(${hash(token)},${row.id}::uuid,${hash(csrf)},now()+interval '8 hours')`.execute(
+      if (
+        counter !== null &&
+        !(
+          await sql`UPDATE users SET totp_counter=${counter} WHERE id=${row.id}::uuid AND totp_counter<${counter} RETURNING id`.execute(
+            tx,
+          )
+        ).rows.length
+      )
+        throw new UnauthorizedException('Kode telah digunakan. Tunggu kode berikutnya.');
+      await sql`INSERT INTO sessions(token_hash,user_id,csrf_hash,expires_at,mfa_verified) VALUES(${hash(token)},${row.id}::uuid,${hash(csrf)},now()+${process.env['APP_MODE'] === 'production' ? 1 : 8}*interval '1 hour',${counter !== null})`.execute(
         tx,
       );
       await audit(tx, row.id, null, 'auth.login', row.id);
@@ -64,7 +91,7 @@ export class IdentityService {
       await sql<{
         user: User;
         csrf_hash: string;
-      }>`SELECT jsonb_build_object('id',u.id,'name',u.name,'email',u.email,'role',u.role,'suspended',u.suspended,'regionIds',COALESCE((SELECT jsonb_agg(m.region_id) FROM memberships m WHERE m.user_id=u.id),'[]'::jsonb)) AS "user",s.csrf_hash FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=${hash(token)} AND s.expires_at>now() AND NOT u.suspended`.execute(
+      }>`SELECT jsonb_build_object('id',u.id,'name',u.name,'email',u.email,'role',u.role,'suspended',u.suspended,'regionIds',COALESCE((SELECT jsonb_agg(m.region_id) FROM memberships m WHERE m.user_id=u.id),'[]'::jsonb)) AS "user",s.csrf_hash FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=${hash(token)} AND s.expires_at>now() AND NOT u.suspended AND (${process.env['APP_MODE'] !== 'production'} OR (s.mfa_verified AND u.totp_secret IS NOT NULL))`.execute(
         this.db,
       )
     ).rows[0];
@@ -75,6 +102,63 @@ export class IdentityService {
   }
   async logout(token: string) {
     await sql`DELETE FROM sessions WHERE token_hash=${hash(token)}`.execute(this.db);
+    return { ok: true };
+  }
+  async authenticateInternal(id: string): Promise<User> {
+    return found(
+      (
+        await sql<{
+          user: User;
+        }>`SELECT jsonb_build_object('id',u.id,'name',u.name,'email',u.email,'role',u.role,'suspended',u.suspended,'regionIds',COALESCE((SELECT jsonb_agg(region_id) FROM memberships WHERE user_id=u.id),'[]'::jsonb)) "user" FROM users u WHERE id=${id}::uuid AND NOT suspended`.execute(
+          this.db,
+        )
+      ).rows[0],
+    ).user;
+  }
+  async beginMfa(user: User, input: unknown) {
+    const data = parse(
+      z.strictObject({ password: z.string().min(1).max(200), code: z.string().optional() }),
+      input,
+    );
+    const row = found(
+      (
+        await sql<{
+          password_hash: string;
+          totp_secret: string | null;
+        }>`SELECT password_hash,totp_secret FROM users WHERE id=${user.id}::uuid`.execute(this.db)
+      ).rows[0],
+    );
+    await rateLimit(this.db, 'mfa:' + user.id, 5, 900);
+    if (
+      !(await verifyPassword(data.password, row.password_hash)) ||
+      (row.totp_secret && verifyMfa(row.totp_secret, data.code ?? '') === null)
+    )
+      throw new UnauthorizedException('Autentikasi tidak sesuai.');
+    const enrollment = newMfa(user.email);
+    await sql`UPDATE users SET totp_pending=${encryptMfa(enrollment.secret)} WHERE id=${user.id}::uuid`.execute(
+      this.db,
+    );
+    return enrollment;
+  }
+  async confirmMfa(user: User, input: unknown) {
+    const data = parse(z.strictObject({ code: z.string().regex(/^\d{6}$/) }), input);
+    await rateLimit(this.db, 'mfa:' + user.id, 5, 900);
+    await this.db.transaction().execute(async (tx) => {
+      const row = found(
+        (
+          await sql<{
+            totp_pending: string | null;
+          }>`SELECT totp_pending FROM users WHERE id=${user.id}::uuid FOR UPDATE`.execute(tx)
+        ).rows[0],
+      );
+      const counter = row.totp_pending ? verifyMfa(row.totp_pending, data.code) : null;
+      if (counter === null) throw new UnauthorizedException('Kode tidak sesuai.');
+      await sql`UPDATE users SET totp_secret=totp_pending,totp_pending=NULL,totp_counter=${counter} WHERE id=${user.id}::uuid`.execute(
+        tx,
+      );
+      await sql`DELETE FROM sessions WHERE user_id=${user.id}::uuid`.execute(tx);
+      await audit(tx, user.id, null, 'auth.mfa.enrolled', user.id);
+    });
     return { ok: true };
   }
   requireAdmin(user: User) {

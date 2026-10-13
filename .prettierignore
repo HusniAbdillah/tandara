@@ -3,6 +3,7 @@ dist
 .turbo
 .local
 .tmp
+.terraform
 coverage
 pnpm-lock.yaml
 docs/api/openapi.json

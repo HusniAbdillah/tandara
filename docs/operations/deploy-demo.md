@@ -20,6 +20,13 @@ Frontend tidak dibangun di VPS atau melalui Git integration Vercel; workflow
 memakai [Build Output API](https://vercel.com/docs/build-output-api/configuration)
 dan [prebuilt deployment](https://vercel.com/docs/cli/deploy).
 
+Image backend dan database dikirim dalam satu arsip privat. Database release
+mempertahankan PostgreSQL 16/PostGIS 3.5 dan menambahkan pgvector untuk migration
+knowledge. `release.env` mengikat `APP_IMAGE` dan `POSTGRES_IMAGE` ke SHA release
+yang sama; volume database tetap dipertahankan. Smoke test menggunakan kedua
+image tersebut pada database sintetis terpisah, termasuk heartbeat worker dengan
+identitas setiap proses. AI tetap memakai aturan lokal pada deployment demo ini.
+
 `DEPLOY_ENABLED` belum disetel berarti workflow deployment dilewati. CI tetap
 berjalan. Tidak ada job yang membutuhkan password root atau Tencent API key.
 

@@ -1,0 +1,10 @@
+FROM postgis/postgis:16-3.5
+# Preserve the deployed PG/PostGIS base; add the extension required by knowledge migrations.
+# Bullseye's signed PGDG/security packages are now in their official archives.
+RUN sed -i 's|http://apt.postgresql.org/pub/repos/apt/|https://apt-archive.postgresql.org/pub/repos/apt/|' /etc/apt/sources.list.d/pgdg.list \
+    && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list \
+    && sed -i 's|https://deb.debian.org/debian-security|https://archive.debian.org/debian-security|' /etc/apt/sources.list \
+    && apt-get update && apt-get install -y --no-install-recommends build-essential git ca-certificates postgresql-server-dev-16 \
+    && git clone --depth 1 --branch v0.8.7 https://github.com/pgvector/pgvector.git /tmp/pgvector \
+    && make -C /tmp/pgvector && make -C /tmp/pgvector install \
+    && rm -rf /tmp/pgvector /var/lib/apt/lists/*

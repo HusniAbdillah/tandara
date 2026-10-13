@@ -114,7 +114,10 @@ export function PlansPage({ region, user, run }: ManagementProps) {
                       {r.name}: {r.description} · {r.reviewNote}
                     </p>
                   ))}
-                  <p>Simulasi — bukan rencana operasional berizin atau jaminan rute aman.</p>
+                  <p>
+                    {p.simulation ? 'Simulasi — ' : ''}Rencana tidak menjamin keamanan rute saat
+                    ini.
+                  </p>
                 </details>
                 <div className="button-row no-print">
                   {['draft', 'changes_requested'].includes(p.state) && p.authorId === user.id && (

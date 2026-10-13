@@ -8,7 +8,11 @@ import { Badge, Field, Notice, PageHeader, formatTime, useClock } from '@tandara
 import type { ManagementProps } from './posko-app.js';
 import { categories, ok } from './reports-ui.js';
 
-export function AdminPage({ user, region, run }: ManagementProps & { regions: Region[] }) {
+export function AdminPage({
+  user,
+  region,
+  run,
+}: Omit<ManagementProps, 'region'> & { region?: Region | undefined; regions: Region[] }) {
   const now = useClock();
   const [tab, setTab] = useState('operations');
   const [error, setError] = useState('');
@@ -294,8 +298,8 @@ export function AdminPage({ user, region, run }: ManagementProps & { regions: Re
         </>
       )}
       <p className="meta">
-        Wilayah konteks saat ini: {region.name}. Backup dan pemulihan dijalankan melalui runbook,
-        tidak dilabeli berhasil tanpa hasil pengujian.
+        Wilayah konteks saat ini: {region?.name ?? 'Belum ada wilayah'}. Backup dan pemulihan
+        dijalankan melalui runbook, tidak dilabeli berhasil tanpa hasil pengujian.
       </p>
     </>
   );

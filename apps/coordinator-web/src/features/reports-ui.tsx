@@ -389,7 +389,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
         <section className="panel">
           <div className="panel-heading">
             <h2>Laporan asli</h2>
-            <Badge tone="amber">Simulasi</Badge>
+            {r.simulation && <Badge tone="amber">Simulasi</Badge>}
           </div>
           <p className="raw-report">{r.description}</p>
           <div className="meta">
@@ -450,6 +450,28 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
                       : 'Belum diketahui'}
                   </h3>
                   <p>{suggestion.output.summary}</p>
+                  {suggestion.reviewedOutput && (
+                    <>
+                      <h4>Hasil koreksi koordinator</h4>
+                      <p>{suggestion.reviewedOutput.summary}</p>
+                    </>
+                  )}
+                  {suggestion.legacyProvenance && (
+                    <Notice tone="warning">
+                      Saran lama pernah dikoreksi sebelum riwayat asli disimpan; asal lengkap tidak
+                      dapat dipulihkan.
+                    </Notice>
+                  )}
+                  {!!suggestion.reviews?.length && (
+                    <details>
+                      <summary>Riwayat tinjauan saran</summary>
+                      {suggestion.reviews.map((r) => (
+                        <p key={r.id}>
+                          {r.action} · {formatTime(r.createdAt)} · {r.note}
+                        </p>
+                      ))}
+                    </details>
+                  )}
                   {suggestion.output.missingInformation.map((m, i) => (
                     <Notice key={i} tone="warning">
                       {m}

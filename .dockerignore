@@ -2,6 +2,10 @@
 **/node_modules
 **/dist
 **/.turbo
+**/.terraform
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfvars
 .local
 .tmp
 .env*
@@ -9,4 +13,5 @@
 coverage
 playwright-report
 test-results
+**/__pycache__
 docs/qa/screenshots
