@@ -2,10 +2,11 @@
 set -Eeuo pipefail
 image=${1:?Pass the already built deployment image}
 [[ "$image" =~ ^tandara-backend:[a-zA-Z0-9._-]+$ ]] || { echo 'Unexpected smoke image.' >&2; exit 1; }
+postgres_image="tandara-postgres:${image#tandara-backend:}"
 mkdir -p .local
 temp=$(mktemp -d "$PWD/.local/deploy-smoke.XXXXXX")
 project="tandara-smoke-$$"
-printf 'APP_IMAGE=%s\nPOSTGRES_PASSWORD=0123456789abcdef0123456789abcdef\nDEMO_PASSWORD=synthetic-smoke-only\nAPI_DOMAIN=smoke.invalid\nWEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id\n' "$image" > "$temp/smoke.env"
+printf 'APP_IMAGE=%s\nPOSTGRES_IMAGE=%s\nPOSTGRES_PASSWORD=0123456789abcdef0123456789abcdef\nDEMO_PASSWORD=synthetic-smoke-only\nAPI_DOMAIN=smoke.invalid\nWEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id\n' "$image" "$postgres_image" > "$temp/smoke.env"
 dc=(docker compose --project-name "$project" --env-file "$temp/smoke.env" -f infrastructure/deployment/backend.compose.yml)
 cleanup() {
   [[ "$project" =~ ^tandara-smoke-[0-9]+$ ]] || return 1

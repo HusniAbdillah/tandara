@@ -30,7 +30,7 @@ printf 'Loaded release config digest: %s\n' "$actual_image_id"
   printf 'Loaded image config mismatch: expected %s, got %s.\n' "$expected_image_id" "$actual_image_id" >&2
   exit 1
 }
-printf 'APP_IMAGE=%s\n' "$image" > "$release/release.env"
+printf 'APP_IMAGE=%s\nPOSTGRES_IMAGE=tandara-postgres:%s\n' "$image" "$sha" > "$release/release.env"
 dc=(docker compose --project-name tandara-demo --env-file "$root/.env" --env-file "$release/release.env" -f "$release/backend.compose.yml")
 "${dc[@]}" config --quiet
 previous=''

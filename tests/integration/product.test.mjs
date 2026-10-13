@@ -56,6 +56,9 @@ async function login(email) {
 before(async () => {
   await db.connect();
   assert.equal(process.env.APP_MODE, 'simulation', 'Integration tests require simulation mode');
+  // Ignore the operator's live provider configuration; fixtures opt in explicitly below.
+  process.env.AI_MODE = 'heuristic';
+  process.env.AI_EMBEDDING_MODE = 'disabled';
   // This suite uses only a loopback synthetic provider; production limits are tested separately.
   for (const field of [
     'AI_DAILY_BUDGET_MICRO_USD',

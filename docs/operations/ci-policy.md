@@ -10,6 +10,8 @@ status checks retain their identities. New commits cancel obsolete CI runs.
 - ESLint and architecture dependency boundaries.
 - TypeScript for all workspaces and tooling.
 - Unit and HTTP tests, then production builds for every workspace.
+- AI evaluation/privacy tooling guards after the builds; integration test files
+  run sequentially because they share the disposable database.
 - Real PostgreSQL/PostGIS integration and API product contracts.
 - Migrations and synthetic seed applied twice to verify repeatability.
 - OpenAPI regenerated and compared against the checked-in contract.
