@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { aiEnvironmentShape, validateAiSettings } from './ai.js';
 import { aiOperationsShape } from './ai-operations.js';
+import { validateAiEmbeddingSettings } from './ai-embedding.js';
 
 const environmentSchema = z
   .object({
@@ -30,6 +31,7 @@ const environmentSchema = z
     AI_DATA_PROCESSING_APPROVED: z.enum(['true', 'false']).default('false'),
   })
   .superRefine(validateAiSettings)
+  .superRefine(validateAiEmbeddingSettings)
   .superRefine((value, ctx) => {
     if (value.APP_MODE !== 'production') return;
     const require = (valid: boolean, path: string) => {

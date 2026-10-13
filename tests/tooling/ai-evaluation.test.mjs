@@ -16,6 +16,7 @@ test('paid evaluation and restore replay fail closed before contacting external 
     AI_EVALUATION_APPROVED_DATA: 'false',
     RESTORE_QUARANTINE: 'false',
     APP_MODE: 'simulation',
+    AI_MODE: 'heuristic',
   };
   for (const [file, pattern] of [
     ['run-ai-evaluation.mjs', /explicit paid-call/],
@@ -23,6 +24,7 @@ test('paid evaluation and restore replay fail closed before contacting external 
     ['privacy-ledger-backup.mjs', /Privacy ledger backup failed/],
     ['onboard-production.mjs', /isolated production mode/],
     ['provision-production-user.mjs', /isolated production maintenance/],
+    ['verify-ai.mjs', /AI_MODE=compatible/],
   ]) {
     const result = spawnSync(process.execPath, ['tooling/' + file], { env, encoding: 'utf8' });
     assert.notEqual(result.status, 0);

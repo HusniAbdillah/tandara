@@ -62,10 +62,11 @@ When updating application code, rebuild first:
 docker compose up --build -d --wait
 ```
 
-From the repository, `pnpm ai:verify` builds the server packages and makes exactly
-one synthetic inference request using `.env`. This can incur provider charges.
+From the repository, `pnpm ai:verify` builds the server packages and makes one
+synthetic chat request plus document/query embedding requests when enabled, using `.env`.
+These calls can incur provider charges and are bounded by the configured per-run cap.
 It validates schema, evidence, source references and human-review flags, and
-prints provider/model/timing only. It does not store a report or publish content.
+prints provider/model/dimension/timing metadata only. It does not store a report or publish content.
 It fails locally without a network request when mode or placeholders are invalid.
 
 To exercise the complete workflow, submit a clearly labelled simulation report in
@@ -121,12 +122,30 @@ embedding provider or use lexical retrieval.
 
 ```dotenv
 AI_EMBEDDING_MODE=disabled
-AI_EMBEDDING_PROVIDER=vikey
+AI_EMBEDDING_PROVIDER=gemini
 AI_EMBEDDING_BASE_URL=
-AI_EMBEDDING_MODEL=replace-with-embedding-model-id
-AI_EMBEDDING_API_KEY=replace-with-embedding-api-key
+AI_EMBEDDING_MODEL=gemini-embedding-001
+AI_EMBEDDING_API_KEY=replace-with-gemini-api-key
 AI_EMBEDDING_DIMENSIONS=1536
 ```
+
+For Google AI Studio/Gemini, set `AI_EMBEDDING_PROVIDER=gemini` and use a separate
+Google key in `AI_EMBEDDING_API_KEY`. Keep the Vikey key in `AI_API_KEY`.
+After filling the keys, set both modes to `compatible`. Blank embedding base URL
+resolves to Google's fixed `https://generativelanguage.googleapis.com/v1beta`;
+the adapter uses native `embedContent` with `x-goog-api-key`, not Vikey's endpoint.
+The key never enters a URL or browser bundle.
+
+The configured text model is `gemini-embedding-001`. Document ingestion uses
+`RETRIEVAL_DOCUMENT`; questions use `RETRIEVAL_QUERY`. The app requests 1,536
+dimensions explicitly and normalizes the returned vectors. `gemini-embedding-2`
+is also supported with Google's asymmetric retrieval prefixes and no `taskType`.
+Dimensions must be 128–3,072; the model, dimensions and task/normalization protocol
+are versioned so old vectors cannot mix with a changed profile. A provider change
+requires a complete source-version reindex. Google usage is recorded when supplied;
+otherwise it remains labelled estimated.
+[Google embedding guide](https://ai.google.dev/gemini-api/docs/embeddings),
+[native embedding API](https://ai.google.dev/api/embeddings).
 
 Enable compatible embeddings only with a supported model, exact dimension and
 reviewed processing policy. Until then, approved-content search uses PostgreSQL

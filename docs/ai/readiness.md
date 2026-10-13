@@ -1,10 +1,12 @@
 # AI delivery and launch readiness
 
 The full AI software is installed on `bulk/everything`. This installation remains
-a local simulation with no live provider calls. Filling a model/key placeholder
+a local simulation. Authorized synthetic verification has exercised Vikey chat
+and Gemini embeddings; no resident data was sent for those checks. Filling a model/key placeholder
 does not close production launch gates.
 
 Local results are recorded in the [verification report](../qa/ai-delivery.md).
+The real-provider smoke results are in [Vikey/Gemini verification](../qa/gemini-provider-verification.md).
 
 | Capability               | Delivered behavior                                                                                                                                                                   |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

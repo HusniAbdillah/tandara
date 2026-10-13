@@ -4,7 +4,7 @@ import {
   type AiEvidence,
 } from '@tandara/contracts';
 
-export const WORKFLOW_VERSION = 'assistance-1';
+export const WORKFLOW_VERSION = 'assistance-2';
 export const MAX_CONTEXT_CHARACTERS = 24000;
 // Quarantine ambiguous identity/contact material instead of promising complete PII detection.
 export function redactAiText(text: string): string {

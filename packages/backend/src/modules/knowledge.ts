@@ -6,11 +6,10 @@ import { IdentityService } from './identity.js';
 import { audit } from './shared.js';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { DatabaseService } from '../platform/database.service.js';
-import { aiOperationsSettings } from '../config/ai-operations.js';
-import { readAiSettings } from '../config/ai.js';
-import { AiInferenceError, ProviderHttpError, fetchJson } from './adapters.js';
 import { found, hash, parse, type Connection } from './shared.js';
 import { redactAiText, sensitiveAiText } from './ai-policy.js';
+import { embeddingRelease } from './ai-embeddings.js';
+export { embedText, embeddingRelease } from './ai-embeddings.js';
 
 export async function scopedAi<T>(
   db: DatabaseService['db'],
@@ -22,80 +21,6 @@ export async function scopedAi<T>(
     await sql`SET LOCAL ROLE tandara_ai_scope`.execute(tx);
     return work(tx);
   });
-}
-export async function embedText(
-  text: string,
-  onUsage?: (tokens: number) => void,
-): Promise<number[]> {
-  const ops = aiOperationsSettings();
-  const settings = readAiSettings({
-    AI_MODE: 'compatible',
-    AI_PROVIDER: ops.AI_EMBEDDING_PROVIDER,
-    AI_BASE_URL: ops.AI_EMBEDDING_BASE_URL,
-    AI_API_KEY: ops.AI_EMBEDDING_API_KEY,
-    AI_MODEL: ops.AI_EMBEDDING_MODEL,
-  });
-  let response: unknown;
-  try {
-    response = await fetchJson(
-      settings.AI_BASE_URL.replace(/\/+$/, '') + '/embeddings',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + settings.AI_API_KEY,
-        },
-        body: JSON.stringify({
-          model: settings.AI_MODEL,
-          input: redactAiText(text),
-          encoding_format: 'float',
-        }),
-      },
-      30000,
-    );
-  } catch (error) {
-    if (error instanceof ProviderHttpError && [408, 429, 500, 502, 503, 504].includes(error.status))
-      throw new AiInferenceError('provider_unavailable', true, error.retryAfterMs);
-    if (
-      error instanceof TypeError ||
-      (error instanceof DOMException && ['TimeoutError', 'AbortError'].includes(error.name))
-    )
-      throw new AiInferenceError('provider_unavailable', true);
-    throw new AiInferenceError('provider_rejected', false);
-  }
-  try {
-    const usage = z
-      .object({ usage: z.object({ total_tokens: z.number().int().nonnegative() }).optional() })
-      .parse(response).usage;
-    if (usage) onUsage?.(usage.total_tokens);
-    const value = z
-      .object({
-        data: z
-          .array(
-            z.object({
-              embedding: z.array(z.number().finite()).length(ops.AI_EMBEDDING_DIMENSIONS),
-            }),
-          )
-          .length(1),
-      })
-      .parse(response).data[0]!.embedding;
-    if (value.every((n) => n === 0)) throw new Error('Invalid embedding');
-    return value;
-  } catch {
-    throw new AiInferenceError('invalid_output', false);
-  }
-}
-export function embeddingRelease(): string {
-  const s = aiOperationsSettings();
-  return hash(
-    JSON.stringify([
-      s.AI_EMBEDDING_MODE,
-      s.AI_EMBEDDING_PROVIDER,
-      s.AI_EMBEDDING_BASE_URL,
-      s.AI_EMBEDDING_MODEL,
-      s.AI_EMBEDDING_DIMENSIONS,
-    ]),
-  );
 }
 @Injectable()
 export class KnowledgeService {

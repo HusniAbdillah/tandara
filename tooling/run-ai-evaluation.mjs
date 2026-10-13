@@ -171,7 +171,9 @@ try {
         if (!scope || scope.simulation || scope.suspended)
           throw new Error('Active isolated staging corpus required.');
         const vector =
-          prices.AI_EMBEDDING_MODE === 'compatible' ? await embedText(c.retrieval.query) : null;
+          prices.AI_EMBEDDING_MODE === 'compatible'
+            ? await embedText(c.retrieval.query, undefined, 'query')
+            : null;
         const retrieved = await knowledge.search(c.retrieval.regionId, c.retrieval.query, vector);
         actualRetrievedSourceIds = retrieved.map((s) => s.kind + ':' + s.id);
         sources = retrieved.map((s) => ({

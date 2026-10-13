@@ -965,9 +965,13 @@ export class AiService implements OnApplicationShutdown {
     );
     let tokens: number | null = null;
     try {
-      const vector = await embedText(run.request.question!, (n) => {
-        tokens = n;
-      });
+      const vector = await embedText(
+        run.request.question!,
+        (n) => {
+          tokens = n;
+        },
+        'query',
+      );
       await this.db.transaction().execute(async (tx) => {
         await this.assertFence(tx, lease);
         await sql`SELECT id FROM ai_runs WHERE id=${run.id}::uuid FOR UPDATE`.execute(tx);

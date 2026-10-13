@@ -111,6 +111,19 @@ before(async () => {
       res.end(JSON.stringify({ data: [{ embedding: [1, 0, 0] }] }));
       return;
     }
+    if (req.url === '/gemini/embeddings') {
+      assert.equal(req.headers['x-goog-api-key'], 'local-fixture-secret');
+      assert.equal(body.outputDimensionality, 128);
+      assert.ok(['RETRIEVAL_DOCUMENT', 'RETRIEVAL_QUERY'].includes(body.taskType));
+      res.setHeader('content-type', 'application/json');
+      res.end(
+        JSON.stringify({
+          embedding: { values: [1, ...Array(127).fill(0)] },
+          usageMetadata: { promptTokenCount: 11 },
+        }),
+      );
+      return;
+    }
     const envelope = JSON.parse(body.messages[1].content);
     const data = envelope.untrustedReport ?? envelope;
     requestSeen = data;
@@ -877,81 +890,140 @@ test('revoking the actor during inference prevents candidate and output persiste
     null,
   );
 });
-test('embedding ingestion promotes complete source versions atomically and respects withdrawal', async () => {
-  Object.assign(process.env, {
-    AI_EMBEDDING_MODE: 'compatible',
-    AI_EMBEDDING_PROVIDER: 'custom',
-    AI_EMBEDDING_BASE_URL: process.env.AI_BASE_URL,
-    AI_EMBEDDING_MODEL: 'fixture-embedding',
-    AI_EMBEDDING_API_KEY: 'local-fixture-secret',
-    AI_EMBEDDING_DIMENSIONS: '3',
-  });
-  try {
-    const imported = await call('POST', '/regions/' + region + '/knowledge/references', {
-      title: 'Referensi indeks sintetis',
-      text: 'Paragraf pertama tentang perlengkapan latihan.\n\nParagraf kedua tentang pencatatan latihan.',
-      sourceUrl: 'https://example.test/index',
-      licenseNote: 'Fixture diizinkan untuk pengujian.',
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
-    });
-    assert.equal(imported.statusCode, 201, imported.body);
-    const ref = imported.json().id;
-    await call(
-      'POST',
-      '/regions/' + region + '/knowledge/references/' + ref + '/review',
-      { action: 'approved', note: 'Persetujuan independen untuk fixture indeks.' },
-      admin,
-    );
-    await app.get(AiService).scheduleKnowledge();
-    const chunks = (
-      await db.query(
-        'SELECT c.id FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id WHERE d.source_id=$1 ORDER BY c.section',
-        [ref],
-      )
-    ).rows;
-    assert.equal(chunks.length, 2);
-    for (let index = 0; index < chunks.length; index++) {
-      const run = (
+for (const provider of ['custom', 'gemini'])
+  test(
+    provider +
+      ' embedding ingestion promotes complete source versions atomically and respects withdrawal',
+    async () => {
+      const originalFetch = globalThis.fetch;
+      const payloadStart = payloads.length;
+      const marker = 'native-fixture-' + crypto.randomUUID();
+      const searchVector = provider === 'gemini' ? [1, ...Array(127).fill(0)] : [1, 0, 0];
+      if (provider === 'gemini')
+        globalThis.fetch = (url, options) => {
+          const target =
+            String(url) ===
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent'
+              ? process.env.AI_BASE_URL + '/gemini/embeddings'
+              : url;
+          return originalFetch(target, options);
+        };
+      Object.assign(process.env, {
+        AI_EMBEDDING_MODE: 'compatible',
+        AI_EMBEDDING_PROVIDER: provider,
+        AI_EMBEDDING_BASE_URL: provider === 'gemini' ? '' : process.env.AI_BASE_URL,
+        AI_EMBEDDING_MODEL: provider === 'gemini' ? 'gemini-embedding-001' : 'fixture-embedding',
+        AI_EMBEDDING_API_KEY: 'local-fixture-secret',
+        AI_EMBEDDING_DIMENSIONS: provider === 'gemini' ? '128' : '3',
+      });
+      try {
+        const imported = await call('POST', '/regions/' + region + '/knowledge/references', {
+          title: 'Referensi indeks sintetis',
+          text:
+            'Paragraf pertama ' +
+            marker +
+            ' tentang perlengkapan latihan.\n\nParagraf kedua ' +
+            marker +
+            ' tentang pencatatan latihan.',
+          sourceUrl: 'https://example.test/index',
+          licenseNote: 'Fixture diizinkan untuk pengujian.',
+          expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        });
+        assert.equal(imported.statusCode, 201, imported.body);
+        const ref = imported.json().id;
+        await call(
+          'POST',
+          '/regions/' + region + '/knowledge/references/' + ref + '/review',
+          { action: 'approved', note: 'Persetujuan independen untuk fixture indeks.' },
+          admin,
+        );
+        await app.get(AiService).scheduleKnowledge();
+        const chunks = (
+          await db.query(
+            'SELECT c.id FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id WHERE d.source_id=$1 ORDER BY c.section',
+            [ref],
+          )
+        ).rows;
+        assert.equal(chunks.length, 2);
+        for (let index = 0; index < chunks.length; index++) {
+          const run = (
+            await db.query(
+              "SELECT id FROM ai_runs WHERE task='knowledge_index' AND request->>'chunkId'=$1 AND release_id IN (SELECT id FROM ai_model_releases WHERE manifest->>'embeddingRelease'=$2)",
+              [chunks[index].id, embeddingRelease()],
+            )
+          ).rows[0];
+          assert.ok(run);
+          const job = (
+            await db.query(
+              "UPDATE outbox_jobs SET state='processing',lease_owner='fixture-index-worker',lease_until=now()+interval '2 minutes',fence=fence+1 WHERE entity_id=$1 RETURNING id,region_id,entity_id,attempts,fence::text,lease_owner",
+              [run.id],
+            )
+          ).rows[0];
+          await app.get(AiService).indexKnowledge(job);
+          await db.query("UPDATE outbox_jobs SET state='completed' WHERE id=$1", [job.id]);
+          const result = await app
+            .get(KnowledgeService)
+            .search(region, 'unmatchedsyntheticword', searchVector);
+          assert.equal(
+            result.some((r) => r.entityId === ref),
+            index === 1,
+          );
+        }
+        if (provider === 'gemini') {
+          const submitted = await call(
+            'POST',
+            '/regions/' + region + '/ai/runs',
+            { task: 'answer', requestKey: crypto.randomUUID(), question: 'unmatchedsyntheticword' },
+            admin,
+          );
+          assert.equal(submitted.statusCode, 201, submitted.body);
+          const result = await drain(submitted.json().id);
+          assert.equal(result.state, 'ready');
+          assert.ok(result.sources.some((s) => s.entityId === ref));
+          const nativeRequests = payloads
+            .slice(payloadStart)
+            .filter(
+              (body) =>
+                body.content?.parts &&
+                (body.taskType === 'RETRIEVAL_QUERY' ||
+                  body.content.parts[0].text.includes(marker)),
+            );
+          assert.equal(
+            nativeRequests.filter((body) => body.taskType === 'RETRIEVAL_DOCUMENT').length,
+            2,
+          );
+          assert.equal(
+            nativeRequests.filter((body) => body.taskType === 'RETRIEVAL_QUERY').length,
+            1,
+          );
+          const usage = (
+            await db.query(
+              "SELECT usage FROM ai_attempts WHERE run_id=$1 AND operation='embedding'",
+              [result.id],
+            )
+          ).rows[0].usage;
+          assert.equal(usage.prompt_tokens, 11);
+        }
+        await call(
+          'POST',
+          '/regions/' + region + '/knowledge/references/' + ref + '/review',
+          { action: 'withdrawn', note: 'Penarikan referensi indeks sintetis.' },
+          admin,
+        );
+        assert.ok(
+          !(
+            await app.get(KnowledgeService).search(region, 'unmatchedsyntheticword', searchVector)
+          ).some((r) => r.entityId === ref),
+        );
+      } finally {
+        globalThis.fetch = originalFetch;
         await db.query(
-          "SELECT id FROM ai_runs WHERE task='knowledge_index' AND request->>'chunkId'=$1 AND release_id IN (SELECT id FROM ai_model_releases WHERE manifest->>'embeddingRelease'=$2)",
-          [chunks[index].id, embeddingRelease()],
-        )
-      ).rows[0];
-      assert.ok(run);
-      const job = (
+          "UPDATE ai_runs SET state='cancelled' WHERE task='knowledge_index' AND state IN ('queued','processing') AND release_id IN (SELECT id FROM ai_model_releases WHERE manifest->>'model'='fixture-only')",
+        );
         await db.query(
-          "UPDATE outbox_jobs SET state='processing',lease_owner='fixture-index-worker',lease_until=now()+interval '2 minutes',fence=fence+1 WHERE entity_id=$1 RETURNING id,region_id,entity_id,attempts,fence::text,lease_owner",
-          [run.id],
-        )
-      ).rows[0];
-      await app.get(AiService).indexKnowledge(job);
-      await db.query("UPDATE outbox_jobs SET state='completed' WHERE id=$1", [job.id]);
-      const result = await app
-        .get(KnowledgeService)
-        .search(region, 'unmatchedsyntheticword', [1, 0, 0]);
-      assert.equal(
-        result.some((r) => r.entityId === ref),
-        index === 1,
-      );
-    }
-    await call(
-      'POST',
-      '/regions/' + region + '/knowledge/references/' + ref + '/review',
-      { action: 'withdrawn', note: 'Penarikan referensi indeks sintetis.' },
-      admin,
-    );
-    assert.ok(
-      !(await app.get(KnowledgeService).search(region, 'unmatchedsyntheticword', [1, 0, 0])).some(
-        (r) => r.entityId === ref,
-      ),
-    );
-  } finally {
-    await db.query(
-      "UPDATE ai_runs SET state='cancelled' WHERE task='knowledge_index' AND state IN ('queued','processing') AND release_id IN (SELECT id FROM ai_model_releases WHERE manifest->>'model'='fixture-only')",
-    );
-    await db.query(
-      "UPDATE outbox_jobs SET state='failed',error='fixture_cleanup',fence=fence+1,lease_owner=NULL,lease_until=NULL WHERE kind='knowledge_index' AND state IN ('pending','processing') AND entity_id IN (SELECT id FROM ai_runs WHERE state='cancelled' AND task='knowledge_index')",
-    );
-    process.env.AI_EMBEDDING_MODE = 'disabled';
-  }
-});
+          "UPDATE outbox_jobs SET state='failed',error='fixture_cleanup',fence=fence+1,lease_owner=NULL,lease_until=NULL WHERE kind='knowledge_index' AND state IN ('pending','processing') AND entity_id IN (SELECT id FROM ai_runs WHERE state='cancelled' AND task='knowledge_index')",
+        );
+        process.env.AI_EMBEDDING_MODE = 'disabled';
+      }
+    },
+  );

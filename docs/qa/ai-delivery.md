@@ -42,3 +42,6 @@ alert delivery, canary/rollback, on-call ownership, declared capacity/fault test
 and cloud PITR/privacy-ledger RPO/RTO evidence remain external launch gates. See
 [readiness](../ai/readiness.md), [operations](../ai/operations.md),
 [evaluation](../ai/evaluation.md) and [threat model](../ai/threat-model.md).
+
+Later native Gemini support and authorized synthetic provider checks are recorded
+in [Vikey/Gemini verification](gemini-provider-verification.md).
