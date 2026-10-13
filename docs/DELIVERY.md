@@ -1,5 +1,8 @@
 # Tandara / ArahSiaga delivery
 
+> Historical delivery/planning snapshot. Current implementation and the remaining
+> three-day priorities are reconciled in the [2026-10-13 audit](product/hackathon-audit-2026-10-13.md).
+
 ## Executive summary
 
 Integrated local simulation of resident preparedness and community coordination:

@@ -1,18 +1,27 @@
 # Integration status and configuration
 
-| Adapter          | Implemented behavior                                                                 | Default delivery                |
-| ---------------- | ------------------------------------------------------------------------------------ | ------------------------------- |
-| Fixture          | Explicit simulation, original timestamps, deliberate outage switch                   | Enabled for demo                |
-| BMKG             | Fixed official weather endpoint, administrative code, validated normalized forecasts | Disabled                        |
-| PetaBencana      | Fixed crowd-report API, user-agent attribution, bounded normalized community records | Disabled                        |
-| InaRISK          | Disclosed reference context; no fabricated operational data                          | Disabled/reference only         |
-| AI heuristic     | Quoted facts, missing information, keyword suggestions, group counts                 | Deterministic fallback          |
-| Compatible model | Server-side JSON chat completion with schema/evidence validation                     | No approved provider configured |
+| Adapter          | Implemented behavior                                                                    | Default delivery                |
+| ---------------- | --------------------------------------------------------------------------------------- | ------------------------------- |
+| Fixture          | Explicit simulation, original timestamps, deliberate outage switch                      | Enabled for demo                |
+| BMKG             | Fixed official weather endpoint, administrative code, validated normalized forecasts    | Disabled                        |
+| BMKG CAP nowcast | Official RSS/CAP warnings, validity and geographic intersection, Update/Cancel handling | Disabled; explicit opt-in       |
+| PetaBencana      | Fixed crowd-report API, user-agent attribution, bounded normalized community records    | Disabled                        |
+| InaRISK          | Disclosed reference context; no fabricated operational data                             | Disabled/reference only         |
+| AI heuristic     | Quoted facts, missing information, keyword suggestions, group counts                    | Deterministic fallback          |
+| Compatible model | Server-side JSON chat completion with schema/evidence validation                        | No approved provider configured |
 
 BMKG weather forecasts are not flood warnings. PetaBencana crowd reports remain
 external community reports. Fetch time never substitutes for observation time.
 Unknown source observation time stays null. Source attribution, URL, source type,
 effective/expiry, version, simulation and verification status remain visible.
+Issuance/publication is separately exposed as `issuedAt`. PetaBencana publication
+expiry is stable across refreshes, points are filtered to the selected region,
+and raw social text/contacts are not copied into the public feed.
+
+CAP warnings are official BMKG weather warnings, attributed to BMKG rather than
+issued by Tandara. Only Actual/Public messages qualify; validity and geographic
+matching are required. Empty/outage states and source health are visible in Warga.
+See [activation and data curation](../operations/public-sources.md).
 
 Network adapters use fixed endpoints, no redirects, timeout and two-megabyte
 response bounds. Invalid/missing data produces a source-run failure. The previous
@@ -38,6 +47,7 @@ completion/JSON support; arbitrary SDK/model compatibility is not claimed.
 regeneration creates a new suggestion without destroying earlier evidence.
 
 Official references consulted: [BMKG forecast data](https://data.bmkg.go.id/prakiraan-cuaca/),
+[BMKG CAP warnings](https://data.bmkg.go.id/peringatan-dini-cuaca/),
 [PetaBencana report API](https://docs.petabencana.id/routes/laporan-urun-daya),
 [PetaBencana licensing](https://github.com/petabencana/petabencana-meta/blob/master/petabencana.id/LICENSING.md).
 These are integration references, not a claim that this operator has obtained
