@@ -9,6 +9,10 @@ project="tandara-smoke-$$"
 printf 'APP_IMAGE=%s\nPOSTGRES_IMAGE=%s\nPOSTGRES_PASSWORD=0123456789abcdef0123456789abcdef\nDEMO_PASSWORD=synthetic-smoke-only\nAPI_DOMAIN=smoke.invalid\nWEB_ORIGINS=https://tandara.my.id,https://posko.tandara.my.id\n' "$image" "$postgres_image" > "$temp/smoke.env"
 dc=(docker compose --project-name "$project" --env-file "$temp/smoke.env" -f infrastructure/deployment/backend.compose.yml)
 cleanup() {
+  local status=$?
+  if ((status != 0)); then
+    "${dc[@]}" logs --tail 60 api worker >&2 || true
+  fi
   [[ "$project" =~ ^tandara-smoke-[0-9]+$ ]] || return 1
   "${dc[@]}" down --volumes --remove-orphans
 }
