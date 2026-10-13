@@ -10,13 +10,16 @@ export interface Database {
   };
 }
 
-export function createDatabase(connectionString: string) {
+export function createDatabase(
+  connectionString: string,
+  options: { statementTimeoutMs?: number } = {},
+) {
   const pool = new pg.Pool({
     connectionString,
     max: 10,
     connectionTimeoutMillis: 3000,
     idleTimeoutMillis: 30000,
-    statement_timeout: 5000,
+    statement_timeout: options.statementTimeoutMs ?? 5000,
     application_name: 'tandara',
   });
   const db = new Kysely<Database>({ dialect: new PostgresDialect({ pool }) });
