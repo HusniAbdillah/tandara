@@ -9,3 +9,7 @@ pnpm-lock.yaml
 docs/api/openapi.json
 playwright-report
 test-results
+# Generated design-system runtime and exported brand guideline documents.
+logo/doc-page.js
+logo/support.js
+logo/*.dc.html

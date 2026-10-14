@@ -90,10 +90,7 @@ export function Icon({
 export function Brand({ audience, className = '' }: { audience: string; className?: string }) {
   return (
     <a href="/" className={`brand ${className}`} aria-label={'Tandara ' + audience + ', beranda'}>
-      <svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
-        <rect width="40" height="40" rx="9" fill="currentColor" />
-        <path d="M9 15h22M13 20h14M17 25h6" stroke="white" strokeWidth="3" strokeLinecap="round" />
-      </svg>
+      <img src="/icon.svg" width="36" height="36" alt="" className="shrink-0" />
       <span>
         tandara<span className="brand-audience">{audience}</span>
       </span>
@@ -217,9 +214,7 @@ export function AppShell({
       </a>
       <header className="site-header">
         <a className="brand" href="/" aria-label={`Tandara ${audience}, beranda`}>
-          <span className="brand-mark" aria-hidden="true">
-            T
-          </span>
+          <img src="/icon.svg" width="36" height="36" alt="" className="shrink-0" />
           <span>
             Tandara <small>{audience}</small>
           </span>
