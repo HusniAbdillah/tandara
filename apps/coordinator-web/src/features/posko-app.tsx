@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { deploymentSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
-import { Brand, Badge, Field, Icon, Notice } from '@tandara/ui';
+import { Badge, Brand, Button, Field, Icon, Notice, cn } from '@tandara/ui';
 import { Inbox, Overview, ReportDetailPage } from './reports-ui.js';
 import {
   PlansPage,
@@ -139,14 +139,14 @@ export function PoskoApp() {
       <a className="skip-link" href="#main">
         Lewati ke konten
       </a>
-      <div className="posko-layout grid min-h-screen grid-cols-[224px_minmax(0,1fr)] max-[1100px]:grid-cols-[200px_minmax(0,1fr)] max-md:block print:block">
-        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-line bg-[#fcfdf9] px-[18px] py-7 max-md:static max-md:h-auto max-md:border-0 max-md:p-0 print:hidden">
-          <Brand audience="Posko" className="mx-[10px] mb-[34px] max-md:hidden" />
-          <p className="mb-2.5 ml-3 mr-3 mt-5 text-[10px] font-bold tracking-[1.5px] text-[#53665a] max-md:hidden">
+      <div className="posko-layout grid min-h-screen grid-cols-[232px_minmax(0,1fr)] max-[1100px]:grid-cols-[210px_minmax(0,1fr)] max-md:block print:block">
+        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-line bg-[#f8faf7] px-4 py-6 max-md:static max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 print:hidden">
+          <Brand audience="Posko" className="mx-2 mb-8 max-md:hidden" />
+          <p className="mb-2.5 ml-3 mr-3 mt-2 text-[10px] font-bold tracking-[1.5px] text-[#53665a] max-md:hidden">
             RUANG KOORDINASI
           </p>
           <nav
-            className="flex flex-col gap-1 max-md:flex-row max-md:gap-1.5 max-md:overflow-x-auto max-md:border-b max-md:border-line max-md:px-4 max-md:py-2"
+            className="flex flex-col gap-1 max-md:flex-row max-md:gap-1 max-md:overflow-x-auto max-md:border-b max-md:border-line max-md:px-3 max-md:py-2"
             aria-label="Navigasi Posko"
           >
             {nav.map(([url, label, icon]) => (
@@ -155,7 +155,10 @@ export function PoskoApp() {
                 to={url}
                 end={url === '/'}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-[11px] text-[13px] font-[550] text-muted no-underline max-md:min-h-11 max-md:whitespace-nowrap max-md:px-[9px] max-md:text-xs ${isActive ? 'bg-[#e5eee5] font-[650] text-brand' : ''}`
+                  cn(
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground no-underline transition-colors hover:bg-[#edf3ee] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs',
+                    isActive && 'border-[#d8e6db] bg-[#eaf2ec] font-semibold text-brand',
+                  )
                 }
               >
                 <Icon name={icon} />
@@ -166,7 +169,10 @@ export function PoskoApp() {
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-md px-3 py-[11px] text-[13px] font-[550] text-muted no-underline max-md:min-h-11 max-md:whitespace-nowrap max-md:px-[9px] max-md:text-xs ${isActive ? 'bg-[#e5eee5] font-[650] text-brand' : ''}`
+                  cn(
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground no-underline transition-colors hover:bg-[#edf3ee] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs',
+                    isActive && 'border-[#d8e6db] bg-[#eaf2ec] font-semibold text-brand',
+                  )
                 }
               >
                 <Icon name="settings" />
@@ -181,8 +187,10 @@ export function PoskoApp() {
             <p className="muted mb-1 text-xs">
               {user.role === 'admin' ? 'Administrator' : 'Koordinator wilayah'}
             </p>
-            <button
-              className="quiet small"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3 justify-start px-2 text-muted-foreground"
               onClick={async () => {
                 await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
                 client.clear();
@@ -191,11 +199,11 @@ export function PoskoApp() {
             >
               <Icon name="logout" size={16} />
               Keluar
-            </button>
+            </Button>
           </div>
         </aside>
         <div>
-          <header className="posko-header flex h-[78px] items-center justify-between gap-4 border-b border-line bg-[#fcfdf9] px-9 py-4 max-[1100px]:px-6 max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
+          <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-white/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
             <label className="flex min-w-[180px] max-w-[330px] items-center gap-2.5 text-brand">
               <Icon name="pin" />
               <select
@@ -215,7 +223,7 @@ export function PoskoApp() {
               </select>
             </label>
             <div className="actions">
-              <span className="flex items-center gap-1.5 text-xs text-muted">
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Icon name="shield" size={15} />
                 Keputusan tetap pada manusia
               </span>
@@ -234,7 +242,7 @@ export function PoskoApp() {
           </header>
           <main
             id="main"
-            className="posko-main mx-auto max-w-[1600px] px-9 py-8 min-[1600px]:px-12 min-[1600px]:py-10 max-[1100px]:px-6 max-[1100px]:py-7 max-md:px-5 max-md:py-6 print:p-0"
+            className="posko-main mx-auto max-w-[1540px] px-9 py-8 min-[1600px]:px-12 min-[1600px]:py-9 max-[1100px]:px-6 max-[1100px]:py-7 max-md:px-5 max-md:py-6 print:p-0"
             tabIndex={-1}
           >
             {message && <Notice>{message}</Notice>}

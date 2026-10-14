@@ -11,7 +11,27 @@ import {
   triageSchema,
 } from '@tandara/contracts';
 import type { Region, User, Report } from '@tandara/contracts';
-import { Badge, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Empty,
+  Field,
+  Icon,
+  Input,
+  Notice,
+  PageHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  formatTime,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 
 export const categories: Record<string, string> = {
@@ -65,9 +85,9 @@ export function Overview({ region, user }: { region: Region; user: User }) {
       ),
   });
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
-        eyebrow="Ruang koordinasi"
+        eyebrow="RINGKASAN WILAYAH"
         title="Pahami kabar. Tentukan tindak lanjut."
         description={
           'Ringkasan informasi komunitas ' +
@@ -75,148 +95,268 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           '. Semua angka berasal dari catatan platform.'
         }
         action={
-          <Link className="button primary" to="/inbox">
-            Buka kotak laporan →
-          </Link>
+          <Button asChild>
+            <Link to="/inbox">
+              Buka kotak laporan <Icon name="arrow" size={16} />
+            </Link>
+          </Button>
         }
       />
-      <div className="metrics">
-        <div className="metric">
-          <h2>Menunggu tinjauan</h2>
-          <span className="number">{pending.data?.total ?? '—'}</span>
-          <p>Status laporan: submitted</p>
-        </div>
-        <div className="metric">
-          <h2>Tindak lanjut terbuka</h2>
-          <span className="number">
-            {assistance.data?.filter((a) => a.state !== 'closed').length ?? '—'}
-          </span>
-          <p>Antrean bantuan komunitas</p>
-        </div>
-        <div className="metric">
-          <h2>Sumber bermasalah</h2>
-          <span className="number">
-            {sources.data?.filter((s) => s.enabled && s.lastError).length ?? '—'}
-          </span>
-          <p>Sumber aktif dengan kegagalan terakhir</p>
-        </div>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <MetricCard
+          icon="inbox"
+          label="Menunggu tinjauan"
+          value={pending.data?.total ?? '—'}
+          note="Laporan baru"
+          href="/inbox"
+          tone="amber"
+        />
+        <MetricCard
+          icon="help"
+          label="Tindak lanjut terbuka"
+          value={assistance.data?.filter((a) => a.state !== 'closed').length ?? '—'}
+          note="Permintaan bantuan"
+          href="/assistance"
+          tone="teal"
+        />
+        <MetricCard
+          icon="source"
+          label="Sumber bermasalah"
+          value={sources.data?.filter((s) => s.enabled && s.lastError).length ?? '—'}
+          note="Sumber aktif dengan kendala"
+          href="/sources"
+          tone={sources.data?.some((s) => s.enabled && s.lastError) ? 'amber' : 'neutral'}
+        />
       </div>
-      <div className="wide-split">
-        <section>
-          <div className="section-heading">
-            <h2>Kabar masuk terbaru</h2>
-            <Link to="/inbox">Lihat semua</Link>
-          </div>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.9fr)]">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex-row items-center justify-between gap-4 border-b border-line py-4">
+            <div>
+              <CardTitle>Kabar masuk terbaru</CardTitle>
+              <p className="mb-0 mt-1 text-xs text-muted-foreground">
+                Laporan terkini untuk wilayah ini
+              </p>
+            </div>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/inbox">
+                Lihat semua <Icon name="arrow" size={14} />
+              </Link>
+            </Button>
+          </CardHeader>
           {reports.isPending ? (
-            <div className="loading">Memuat laporan…</div>
+            <div className="space-y-3 p-5" role="status">
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <span className="sr-only">Memuat laporan…</span>
+            </div>
           ) : reports.isError ? (
-            <Notice tone="error">Laporan tidak dapat dimuat.</Notice>
+            <div className="p-5">
+              <Notice tone="error">Laporan tidak dapat dimuat.</Notice>
+            </div>
           ) : reports.data?.items.length ? (
             <ReportTable reports={reports.data.items.slice(0, 6)} />
           ) : (
-            <Empty title="Belum ada laporan">
-              Ketiadaan laporan tidak menandakan wilayah aman.
-            </Empty>
+            <div className="p-5">
+              <Empty title="Belum ada laporan">
+                Ketiadaan laporan tidak menandakan wilayah aman.
+              </Empty>
+            </div>
           )}
-        </section>
-        <aside className="stack">
-          <section className="panel">
-            <p className="eyebrow">Saran ringkasan · deterministik</p>
-            <h2>Catatan 24 jam terakhir</h2>
-            <p>{summary.data?.summary ?? 'Ringkasan belum tersedia.'}</p>
-            <p className="meta">
-              Perlu tinjauan manusia · {formatTime(summary.data?.generatedAt ?? null)}
-            </p>
-            <details>
-              <summary>Referensi laporan</summary>
-              {summary.data?.sourceIds.map((id) => (
-                <p key={id}>
-                  <Link to={'/reports/' + id}>{id.slice(0, 8)}</Link>
+        </Card>
+        <aside className="space-y-5">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="mb-1 flex items-center justify-between gap-3">
+                <p className="mb-0 text-xs font-semibold tracking-wide text-brand">
+                  RINGKASAN BANTUAN
                 </p>
-              ))}
-            </details>
-          </section>
-          <section className="panel">
-            <p className="eyebrow">Kualitas informasi</p>
-            <h2>Yang belum diketahui juga perlu terlihat.</h2>
-            <p className="muted">
-              Lihat bagian wilayah yang belum memiliki pengamatan terbaru dengan lokasi dan waktu
-              yang jelas.
-            </p>
-            <Link to="/map">Periksa cakupan informasi →</Link>
-          </section>
-          <section className="panel">
-            <p className="eyebrow">Sumber informasi</p>
-            {sources.data?.map((s) => (
-              <div key={s.id} className="source-details">
-                <div>
-                  <h3>{s.name}</h3>
-                  <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
-                    {s.enabled
-                      ? s.lastError
-                        ? 'Gagal memperbarui'
-                        : s.mode === 'simulation'
-                          ? 'Simulasi aktif'
-                          : 'Aktif'
-                      : 'Dinonaktifkan'}
-                  </Badge>
-                </div>
+                <Badge tone="neutral">Deterministik</Badge>
               </div>
-            ))}
-            <Link to="/sources">Status & atribusi sumber →</Link>
-          </section>
+              <CardTitle>Catatan 24 jam terakhir</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              {summary.isPending ? (
+                <div
+                  className="h-12 animate-pulse rounded bg-[#f0f3f0]"
+                  role="status"
+                  aria-label="Memuat ringkasan"
+                />
+              ) : summary.isError ? (
+                <Notice tone="error">Ringkasan belum dapat dimuat.</Notice>
+              ) : (
+                <p className="mb-0 leading-relaxed">
+                  {summary.data?.summary ?? 'Ringkasan belum tersedia.'}
+                </p>
+              )}
+              <p className="mb-0 text-xs text-muted-foreground">
+                Perlu tinjauan manusia · {formatTime(summary.data?.generatedAt ?? null)}
+              </p>
+              {!!summary.data?.sourceIds.length && (
+                <details className="border-t border-line pt-3 text-xs">
+                  <summary className="cursor-pointer font-semibold text-brand">
+                    Referensi laporan ({summary.data.sourceIds.length})
+                  </summary>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {summary.data.sourceIds.map((id) => (
+                      <Link className="rounded bg-soft px-2 py-1" key={id} to={'/reports/' + id}>
+                        {id.slice(0, 8)}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <p className="mb-0 text-xs font-semibold tracking-wide text-brand">
+                KUALITAS INFORMASI
+              </p>
+              <CardTitle>Cakupan pengamatan</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p className="mb-0 leading-relaxed text-muted-foreground">
+                Periksa area yang belum memiliki pengamatan terbaru dengan lokasi dan waktu yang
+                jelas.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/map">
+                  Buka peta situasi <Icon name="arrow" size={14} />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle>Sumber informasi</CardTitle>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/sources">Detail</Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {sources.data?.map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between gap-3 border-t border-line py-3 first:border-t-0"
+                >
+                  <div className="min-w-0">
+                    <h3 className="mb-1 truncate text-sm font-medium">{s.name}</h3>
+                    <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
+                      {s.enabled
+                        ? s.lastError
+                          ? 'Gagal memperbarui'
+                          : s.mode === 'simulation'
+                            ? 'Simulasi aktif'
+                            : 'Aktif'
+                        : 'Dinonaktifkan'}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </aside>
       </div>
-    </>
+    </div>
+  );
+}
+function MetricCard({
+  icon,
+  label,
+  value,
+  note,
+  href,
+  tone,
+}: {
+  icon: 'inbox' | 'help' | 'source';
+  label: string;
+  value: number | string;
+  note: string;
+  href: string;
+  tone: 'neutral' | 'teal' | 'amber';
+}) {
+  const iconTone = {
+    neutral: 'bg-[#f0f3f0] text-muted-foreground',
+    teal: 'bg-[#edf5ef] text-brand',
+    amber: 'bg-[#fff7e8] text-[#744b15]',
+  }[tone];
+  return (
+    <Card className="transition-colors hover:border-[#bfd0c4]">
+      <CardContent className="flex items-start justify-between gap-4 py-4">
+        <div className="min-w-0">
+          <p className="mb-2 text-sm font-medium text-muted-foreground">{label}</p>
+          <p className="mb-1 text-3xl font-semibold tabular-nums tracking-[-1px] text-ink">
+            {value}
+          </p>
+          <Link
+            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-brand hover:underline"
+            to={href}
+          >
+            {note}
+          </Link>
+        </div>
+        <span className={`grid size-9 shrink-0 place-items-center rounded-md ${iconTone}`}>
+          <Icon name={icon} size={18} />
+        </span>
+      </CardContent>
+    </Card>
   );
 }
 function ReportTable({ reports }: { reports: Report[] }) {
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Laporan & lokasi</th>
-            <th>Jenis</th>
-            <th>Status</th>
-            <th>Diterima</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((r) => (
-            <tr key={r.id}>
-              <td>
-                <Link className="table-title" to={'/reports/' + r.id}>
-                  {r.description.slice(0, 100)}
-                  {r.description.length > 100 ? '…' : ''}
-                </Link>
-                <span className="muted">{r.landmarkText || 'Lokasi belum jelas'}</span>
-                {r.followUpRequested && (
-                  <div>
-                    <Badge tone="amber">Bantuan · akses terbatas</Badge>
-                  </div>
-                )}
-              </td>
-              <td>
-                {categories[r.category]}
-                <div className="meta">Laporan warga · simulasi</div>
-              </td>
-              <td>
-                <Badge
-                  tone={r.state === 'reviewed' ? 'teal' : r.state === 'rejected' ? 'red' : 'amber'}
-                >
-                  {statuses[r.state]}
-                </Badge>
-              </td>
-              <td>
-                {formatTime(r.createdAt)}
-                <div className="meta">Pengamatan {formatTime(r.observationTime)}</div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table className="min-w-[760px]">
+      <TableHeader>
+        <TableRow className="bg-[#f8faf7] hover:bg-[#f8faf7]">
+          <TableHead>Laporan & lokasi</TableHead>
+          <TableHead>Jenis</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Diterima</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {reports.map((r) => (
+          <TableRow key={r.id}>
+            <TableCell className="min-w-[250px]">
+              <Link
+                className="mb-1 block max-w-[40ch] font-semibold leading-snug text-ink no-underline hover:text-brand hover:underline"
+                to={'/reports/' + r.id}
+              >
+                {r.description.slice(0, 100)}
+                {r.description.length > 100 ? '…' : ''}
+              </Link>
+              <span className="text-xs text-muted-foreground">
+                {r.landmarkText || 'Lokasi belum jelas'}
+              </span>
+              {r.followUpRequested && (
+                <div className="mt-1.5">
+                  <Badge tone="amber">Bantuan · akses terbatas</Badge>
+                </div>
+              )}
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+              {categories[r.category]}
+              <div className="mt-1 text-xs text-muted-foreground">Laporan warga · simulasi</div>
+            </TableCell>
+            <TableCell>
+              <Badge
+                tone={r.state === 'reviewed' ? 'teal' : r.state === 'rejected' ? 'red' : 'amber'}
+              >
+                {statuses[r.state]}
+              </Badge>
+            </TableCell>
+            <TableCell className="whitespace-nowrap text-xs tabular-nums">
+              <span className="text-ink">{formatTime(r.createdAt)}</span>
+              <div className="mt-1 text-muted-foreground">
+                Pengamatan {formatTime(r.observationTime)}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 export function Inbox({ region, user }: { region: Region; user: User }) {
@@ -255,7 +395,8 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
       >
         <label className="field search">
           Cari teks / patokan
-          <input
+          <Input
+            type="search"
             value={draftQ}
             onChange={(e) => setDraftQ(e.target.value)}
             maxLength={100}
@@ -303,10 +444,10 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
             <option value="oldest">Terlama</option>
           </select>
         </label>
-        <button type="submit">Cari</button>
-        <button type="button" onClick={() => void reports.refetch()}>
+        <Button type="submit">Cari</Button>
+        <Button type="button" variant="outline" onClick={() => void reports.refetch()}>
           Perbarui
-        </button>
+        </Button>
       </form>
       {reports.isPending ? (
         <div className="loading">Memuat kotak laporan…</div>
@@ -314,18 +455,30 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
         <Notice tone="error">Tidak dapat memuat laporan. Coba perbarui atau masuk kembali.</Notice>
       ) : reports.data?.items.length ? (
         <>
-          <ReportTable reports={reports.data.items} />
+          <Card className="overflow-hidden">
+            <ReportTable reports={reports.data.items} />
+          </Card>
           <div className="pagination">
             <span>
               {reports.data.total} laporan · halaman {page}
             </span>
             <div className="actions">
-              <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
                 Sebelumnya
-              </button>
-              <button disabled={page * 20 >= reports.data.total} onClick={() => setPage(page + 1)}>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page * 20 >= reports.data.total}
+                onClick={() => setPage(page + 1)}
+              >
                 Berikutnya
-              </button>
+              </Button>
             </div>
           </div>
         </>

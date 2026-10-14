@@ -1,5 +1,47 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
+import {
+  ArrowRight,
+  BookOpen,
+  Check,
+  ClipboardCheck,
+  Download,
+  FileText,
+  GraduationCap,
+  Home,
+  Inbox,
+  LifeBuoy,
+  LogOut,
+  Map,
+  MapPin,
+  Search,
+  Settings,
+  ShieldCheck,
+  Wifi,
+} from 'lucide-react';
+import { cva } from 'class-variance-authority';
+import { cn } from './lib/utils.js';
+export { Button } from './components/button.js';
+export type { ButtonProps } from './components/button.js';
+export {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './components/card.js';
+export { Input } from './components/input.js';
+export { Separator } from './components/separator.js';
+export {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './components/table.js';
+export { cn } from './lib/utils.js';
 
 /** Generate a UUID in browsers that lack randomUUID outside secure contexts. */
 export function createUuid(): string {
@@ -49,43 +91,28 @@ export function Icon({
   size?: number;
   className?: string;
 }) {
-  const paths: Record<typeof name, string> = {
-    home: 'M3 10 12 3l9 7M5 9v12h14V9M9 21v-8h6v8',
-    plan: 'M5 3h10l4 4v14H5zM14 3v5h5M8 12h8M8 16h6',
-    report: 'M12 3v12M6 9l6-6 6 6M4 15v6h16v-6',
-    check: 'm4 12 5 5L20 6',
-    training: 'm2 9 10-5 10 5-10 5zM6 11v6c4 3 8 3 12 0v-6M22 9v8',
-    help: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M9 9a3 3 0 0 1 6 0c0 2-3 2-3 5M12 17h.01',
-    arrow: 'M4 12h16m-6-6 6 6-6 6',
-    pin: 'M12 22s8-8 8-14a8 8 0 1 0-16 0c0 6 8 14 8 14M12 5a3 3 0 1 0 0 6 3 3 0 0 0 0-6',
-    wifi: 'M3 8c5-5 13-5 18 0M6 12c3-3 9-3 12 0M9 16c2-2 4-2 6 0M12 20h.01',
-    download: 'M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4',
-    inbox: 'M5 4h14l3 12v5H2v-5zM2 16h6l2 3h4l2-3h6',
-    map: 'm3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2zM9 3v16M15 5v16',
-    source: 'M4 5h16v14H4zM8 9h8M8 13h5M8 17h3',
-    audit: 'M5 3h14v18H5zM9 7h6M9 11h6M9 15h4',
-    settings:
-      'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2',
-    logout: 'M9 3H3v18h6M8 12h13m-5-5 5 5-5 5',
-    search: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14m5 12 6 6',
-    shield: 'M12 2 3 6v6c0 6 9 10 9 10s9-4 9-10V6zM8 12l3 3 5-6',
+  const icons = {
+    home: Home,
+    plan: BookOpen,
+    report: FileText,
+    check: Check,
+    training: GraduationCap,
+    help: LifeBuoy,
+    arrow: ArrowRight,
+    pin: MapPin,
+    wifi: Wifi,
+    download: Download,
+    inbox: Inbox,
+    map: Map,
+    source: ClipboardCheck,
+    audit: FileText,
+    settings: Settings,
+    logout: LogOut,
+    search: Search,
+    shield: ShieldCheck,
   };
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d={paths[name]} />
-    </svg>
-  );
+  const IconComponent = icons[name];
+  return <IconComponent size={size} strokeWidth={1.8} aria-hidden="true" className={className} />;
 }
 export function Brand({ audience, className = '' }: { audience: string; className?: string }) {
   return (
@@ -123,13 +150,27 @@ export function Notice({
 }
 export function Empty({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-line px-5 py-9 text-center text-muted">
-      <Icon name="inbox" size={28} className="mb-2.5 text-muted" />
+    <div className="rounded-lg border border-dashed border-line px-5 py-9 text-center text-muted-foreground">
+      <Icon name="inbox" size={28} className="mb-2.5 text-muted-foreground" />
       <h3 className="text-ink">{title}</h3>
       <p>{children}</p>
     </div>
   );
 }
+const badgeVariants = cva(
+  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold leading-5 tracking-[0.05px] transition-colors focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2',
+  {
+    variants: {
+      tone: {
+        neutral: 'border-line bg-[#f2f4f1] text-[#53635d]',
+        teal: 'border-[#c7ddd0] bg-[#edf5ef] text-[#185d4b]',
+        amber: 'border-[#e7d3ae] bg-[#fff7e8] text-[#744b15]',
+        red: 'border-[#e7c3be] bg-[#fff1ef] text-[#92372e]',
+      },
+    },
+    defaultVariants: { tone: 'neutral' },
+  },
+);
 export function Field({
   label,
   children,
@@ -143,7 +184,7 @@ export function Field({
     <label className="mb-[18px] flex flex-col gap-1.5">
       <span>{label}</span>
       {children}
-      {hint && <small className="text-[13px] font-normal text-muted">{hint}</small>}
+      {hint && <small className="text-[13px] font-normal text-muted-foreground">{hint}</small>}
     </label>
   );
 }
@@ -154,19 +195,7 @@ export function Badge({
   children: ReactNode;
   tone?: 'neutral' | 'teal' | 'amber' | 'red';
 }) {
-  const toneClasses = {
-    neutral: 'border-line bg-[#f0f2ed] text-[#4e6059]',
-    teal: 'border-[#bdd8c7] bg-[#e9f3ec] text-[#185d4b]',
-    amber: 'border-[#e4cfac] bg-[#fff3dc] text-[#744b15]',
-    red: 'border-[#e4b8b0] bg-[#fff0ee] text-[#98372f]',
-  };
-  return (
-    <span
-      className={`inline-flex items-center gap-[5px] whitespace-normal rounded-[4px] border px-[7px] py-[3px] text-[11px] font-semibold tracking-[0.15px] ${toneClasses[tone]}`}
-    >
-      {children}
-    </span>
-  );
+  return <span className={cn(badgeVariants({ tone }))}>{children}</span>;
 }
 export function PageHeader({
   eyebrow,
@@ -180,13 +209,19 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-7 flex items-center justify-between gap-6">
-      <div>
-        <p className="eyebrow">{eyebrow}</p>
-        <h1>{title}</h1>
-        {description && <p className="lead">{description}</p>}
+    <div className="mb-6 flex flex-col items-start justify-between gap-4 border-b border-line pb-5 sm:flex-row sm:items-end">
+      <div className="min-w-0">
+        <p className="mb-1.5 text-xs font-semibold tracking-wide text-brand">{eyebrow}</p>
+        <h1 className="mb-1 text-2xl font-semibold leading-tight tracking-[-0.65px] sm:text-[28px]">
+          {title}
+        </h1>
+        {description && (
+          <p className="mb-0 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        )}
       </div>
-      {action}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
