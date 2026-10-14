@@ -27,12 +27,7 @@ const nav = [
   ['/map', 'Peta situasi', 'map'],
   ['/plans', 'Rencana lokal', 'plan'],
   ['/assistance', 'Tindak lanjut', 'help'],
-  ['/training', 'Latihan', 'training'],
   ['/sources', 'Sumber informasi', 'source'],
-  ['/ai', 'Asisten Posko', 'help'],
-  ['/security', 'Keamanan akun', 'settings'],
-  ['/audit', 'Jejak audit', 'audit'],
-  ['/notifications', 'Pembaruan', 'source'],
 ] as const;
 export function PoskoApp() {
   const client = useQueryClient();
