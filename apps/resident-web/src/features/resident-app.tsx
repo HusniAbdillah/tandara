@@ -204,13 +204,23 @@ export function ResidentApp() {
       <a className="skip-link" href="#main">
         Lewati ke konten
       </a>
-      <header className="citizen-header">
-        <div className="citizen-header-inner">
+      <header className="citizen-header border-b border-line bg-white print:hidden">
+        <div className="mx-auto flex max-w-[1184px] items-center justify-between gap-6 px-8 py-5 min-[1600px]:max-w-[1280px] max-md:px-5 max-md:py-4">
           <Brand audience="Warga" />
-          <nav className="citizen-nav" aria-label="Navigasi warga">
+          <nav
+            className="citizen-nav flex gap-1 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:justify-around max-md:gap-0 max-md:border-t max-md:border-line max-md:bg-white max-md:px-1 max-md:pt-1 max-md:pb-[max(4px,env(safe-area-inset-bottom))] print:hidden"
+            aria-label="Navigasi warga"
+          >
             {nav.map(([url, label, icon]) => (
-              <NavLink key={url} to={url} end={url === '/'}>
-                <Icon name={icon} />
+              <NavLink
+                key={url}
+                to={url}
+                end={url === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded-md px-3.5 py-2.5 text-[13px] font-semibold text-muted no-underline max-[1100px]:px-2.5 max-md:min-h-[54px] max-md:flex-1 max-md:flex-col max-md:gap-[3px] max-md:rounded-none max-md:px-0.5 max-md:py-[7px] max-md:text-[10px] ${isActive ? 'bg-soft text-brand max-md:bg-transparent' : ''}`
+                }
+              >
+                <Icon name={icon} className="max-[1100px]:hidden max-md:block max-md:size-[18px]" />
                 {label}
               </NavLink>
             ))}
@@ -218,15 +228,16 @@ export function ResidentApp() {
           {region?.simulation && <Badge tone="amber">WILAYAH DEMO</Badge>}
         </div>
       </header>
-      <div className="context-bar">
-        <div className="context-inner">
-          <label className="region-select">
+      <div className="context-bar border-b border-line bg-[#fafbf7] print:hidden">
+        <div className="mx-auto flex max-w-[1184px] items-center justify-between gap-4 px-8 py-3 min-[1600px]:max-w-[1280px] max-md:px-5 max-md:py-2.5">
+          <label className="flex max-w-[330px] items-center gap-2.5 text-brand">
             <Icon name="pin" />
             <span className="sr-only">Wilayah</span>
             <select
               aria-label="Wilayah"
               value={activeRegion}
               onChange={(e) => choose(e.target.value)}
+              className="min-h-8 border-0 bg-transparent px-0 py-1 pr-6 text-[13px] font-semibold"
             >
               {regions.data?.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -235,13 +246,17 @@ export function ResidentApp() {
               ))}
             </select>
           </label>
-          <span className="connection">
+          <span className="flex items-center gap-1.5 text-xs text-muted max-md:text-[10px]">
             <Icon name="wifi" size={14} />
             {online ? 'Terhubung' : 'Offline · data tersimpan'}
           </span>
         </div>
       </div>
-      <main id="main" className="citizen-main" tabIndex={-1}>
+      <main
+        id="main"
+        className="citizen-main mx-auto max-w-[1184px] px-8 pt-9 min-[1600px]:max-w-[1280px] max-md:px-5 max-md:pb-[78px] max-md:pt-6 print:p-0"
+        tabIndex={-1}
+      >
         {update && (
           <Notice>
             Versi aplikasi baru tersedia. Draf antrean tetap disimpan. Selesaikan formulir yang
@@ -257,7 +272,7 @@ export function ResidentApp() {
         )}
         {regions.isError && <Notice tone="error">Daftar wilayah tidak tersedia.</Notice>}
         {content}
-        <footer className="safe-footer">
+        <footer className="safe-footer mt-12 border-t border-line py-6 text-xs text-muted print:hidden">
           <div className="actions">
             <Link to="/help">Bantuan & privasi</Link>
             <Link to="/tracking">Laporan saya</Link>
@@ -651,7 +666,7 @@ export function PlanView({
             ))}
           </>
         )}
-        <div className="button-row no-print">
+        <div className="button-row print:hidden">
           {onSave && (
             <button className="primary" onClick={onSave}>
               <Icon name="download" />

@@ -11,7 +11,7 @@ import {
   trainingSchema,
 } from '@tandara/contracts';
 import type { Region } from '@tandara/contracts';
-import { Badge, Empty, Field, Icon, Notice, PageHeader, formatTime } from '@tandara/ui';
+import { Badge, createUuid, Empty, Field, Icon, Notice, PageHeader, formatTime } from '@tandara/ui';
 import { residentDb } from '../offline/database.js';
 import type { Receipt, ReportDraft } from '../offline/database.js';
 import { enqueue, synchronize } from '../offline/sync.js';
@@ -84,7 +84,7 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
       contactPermission: permission,
       ...(online && permission && contact ? { contactDetails: contact } : {}),
       privacyConsent: true,
-      trackingToken: crypto.randomUUID() + crypto.randomUUID(),
+      trackingToken: createUuid() + createUuid(),
     });
     if (!payload.success) {
       setError(payload.error.issues.map((i) => i.message).join('; '));
@@ -102,7 +102,7 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
       }
       if (!attempt.current)
         attempt.current = {
-          key: crypto.randomUUID(),
+          key: createUuid(),
           payload: payload.data,
           durable: !payload.data.contactDetails && !payload.data.location,
         };
@@ -507,7 +507,7 @@ export function TrainingPage({ region }: { region: Region }) {
   const [message, setMessage] = useState('');
   const [result, setResult] = useState<{ score: number; total: number } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [key] = useState(crypto.randomUUID());
+  const [key] = useState(createUuid);
   const scenario = query.data?.[0];
   return (
     <div className="narrow">

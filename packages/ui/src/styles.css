@@ -1,46 +1,64 @@
-@import './design.css';
-.ai-workspace-grid {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.5fr);
-  gap: 24px;
-  align-items: start;
+@import '@fontsource/plus-jakarta-sans/latin-400.css';
+@import '@fontsource/plus-jakarta-sans/latin-500.css';
+@import '@fontsource/plus-jakarta-sans/latin-600.css';
+@import '@fontsource/plus-jakarta-sans/latin-700.css';
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@import './design.css' layer(components);
+@source "../../../apps/resident-web/src";
+@source "../../../apps/coordinator-web/src";
+@source "./**/*.{ts,tsx}";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --color-ink: #203735;
+  --color-muted: #5a6c67;
+  --color-brand: #126653;
+  --color-dark: #174a40;
+  --color-paper: #fff;
+  --color-line: #dce3dc;
+  --color-soft: #edf3ee;
+  --color-amber: #855614;
+  --color-red: #a4382f;
+  --color-focus: #946018;
 }
-.ai-workspace-grid > .panel {
-  position: sticky;
-  top: 20px;
-}
-.ai-result {
-  margin-bottom: 20px;
-  overflow-wrap: anywhere;
-}
-.ai-claim {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line, #d8e0da);
-}
-.ai-translation {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.ai-result details,
-.ai-result form {
-  margin-top: 14px;
-}
-.ai-result blockquote {
-  margin: 10px 0;
-  padding-left: 14px;
-  border-left: 3px solid #56766d;
-}
-@media (max-width: 950px) {
+
+/* Preflight is intentionally omitted during this compatibility stage. */
+@layer components {
   .ai-workspace-grid {
-    grid-template-columns: 1fr;
+    @apply grid grid-cols-[minmax(260px,0.8fr)_minmax(0,1.5fr)] items-start gap-6;
   }
   .ai-workspace-grid > .panel {
-    position: static;
+    @apply sticky top-5;
   }
-}
-@media (max-width: 600px) {
+  .ai-result {
+    @apply mb-5 [overflow-wrap:anywhere];
+  }
+  .ai-claim {
+    @apply border-b border-line py-3;
+  }
   .ai-translation {
-    grid-template-columns: 1fr;
+    @apply grid grid-cols-2 gap-5;
+  }
+  .ai-result details,
+  .ai-result form {
+    @apply mt-3.5;
+  }
+  .ai-result blockquote {
+    @apply my-2.5 border-l-[3px] border-[#56766d] pl-3.5;
+  }
+  @media (max-width: 950px) {
+    .ai-workspace-grid {
+      @apply grid-cols-1;
+    }
+    .ai-workspace-grid > .panel {
+      @apply static;
+    }
+  }
+  @media (max-width: 600px) {
+    .ai-translation {
+      @apply grid-cols-1;
+    }
   }
 }

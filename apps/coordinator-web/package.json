@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5174 --strictPort",
+    "dev": "vite --host 0.0.0.0 --port 5174 --strictPort",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview --host 127.0.0.1 --port 5174 --strictPort"
@@ -21,6 +21,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
     "@vitejs/plugin-react": "6.1.2",
     "vite": "8.3.4"
   }

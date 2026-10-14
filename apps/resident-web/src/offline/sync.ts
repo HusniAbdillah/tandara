@@ -1,15 +1,16 @@
 import { request, ApiError } from '@tandara/api-client';
 import { receiptSchema } from '@tandara/contracts';
 import type { CreateReport } from '@tandara/contracts';
+import { createUuid } from '@tandara/ui';
 import { residentDb } from './database.js';
 
 let running: Promise<void> | null = null;
 export async function enqueue(payload: CreateReport) {
-  const localId = crypto.randomUUID();
+  const localId = createUuid();
   await residentDb.drafts.put({
     localId,
     idempotencyKey: localId,
-    payload: { ...payload, trackingToken: crypto.randomUUID() + crypto.randomUUID() },
+    payload: { ...payload, trackingToken: createUuid() + createUuid() },
     state: 'queued',
     retryCount: 0,
     updatedAt: new Date().toISOString(),

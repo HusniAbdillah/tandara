@@ -1,9 +1,13 @@
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const apiProxyTarget = process.env['TANDARA_API_PROXY_TARGET'] ?? 'http://127.0.0.1:3000';
+
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     react(),
     VitePWA({
       registerType: 'prompt',
@@ -34,6 +38,6 @@ export default defineConfig({
       },
     }),
   ],
-  server: { proxy: { '/api': 'http://127.0.0.1:3000' } },
-  preview: { proxy: { '/api': 'http://127.0.0.1:3000' } },
+  server: { proxy: { '/api': apiProxyTarget } },
+  preview: { proxy: { '/api': apiProxyTarget } },
 });

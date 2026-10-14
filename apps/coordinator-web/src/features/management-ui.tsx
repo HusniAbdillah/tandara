@@ -119,7 +119,7 @@ export function PlansPage({ region, user, run }: ManagementProps) {
                     ini.
                   </p>
                 </details>
-                <div className="button-row no-print">
+                <div className="button-row print:hidden">
                   {['draft', 'changes_requested'].includes(p.state) && p.authorId === user.id && (
                     <>
                       <button disabled={busy} onClick={() => setEditing(p)}>

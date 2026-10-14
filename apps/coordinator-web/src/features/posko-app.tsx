@@ -144,29 +144,46 @@ export function PoskoApp() {
       <a className="skip-link" href="#main">
         Lewati ke konten
       </a>
-      <div className="posko-layout">
-        <aside className="sidebar">
-          <Brand audience="Posko" />
-          <p className="nav-label">RUANG KOORDINASI</p>
-          <nav aria-label="Navigasi Posko">
+      <div className="posko-layout grid min-h-screen grid-cols-[224px_minmax(0,1fr)] max-[1100px]:grid-cols-[200px_minmax(0,1fr)] max-md:block print:block">
+        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-line bg-[#fcfdf9] px-[18px] py-7 max-md:static max-md:h-auto max-md:border-0 max-md:p-0 print:hidden">
+          <Brand audience="Posko" className="mx-[10px] mb-[34px] max-md:hidden" />
+          <p className="mb-2.5 ml-3 mr-3 mt-5 text-[10px] font-bold tracking-[1.5px] text-[#53665a] max-md:hidden">
+            RUANG KOORDINASI
+          </p>
+          <nav
+            className="flex flex-col gap-1 max-md:flex-row max-md:gap-1.5 max-md:overflow-x-auto max-md:border-b max-md:border-line max-md:px-4 max-md:py-2"
+            aria-label="Navigasi Posko"
+          >
             {nav.map(([url, label, icon]) => (
-              <NavLink key={url} to={url} end={url === '/'}>
+              <NavLink
+                key={url}
+                to={url}
+                end={url === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-md px-3 py-[11px] text-[13px] font-[550] text-muted no-underline max-md:min-h-11 max-md:whitespace-nowrap max-md:px-[9px] max-md:text-xs ${isActive ? 'bg-[#e5eee5] font-[650] text-brand' : ''}`
+                }
+              >
                 <Icon name={icon} />
                 {label}
               </NavLink>
             ))}
             {user.role === 'admin' && (
-              <NavLink to="/admin">
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-md px-3 py-[11px] text-[13px] font-[550] text-muted no-underline max-md:min-h-11 max-md:whitespace-nowrap max-md:px-[9px] max-md:text-xs ${isActive ? 'bg-[#e5eee5] font-[650] text-brand' : ''}`
+                }
+              >
                 <Icon name="settings" />
                 Administrasi
               </NavLink>
             )}
           </nav>
-          <div className="sidebar-bottom">
-            <p>
+          <div className="mt-auto border-t border-line px-2.5 pt-5 max-md:hidden">
+            <p className="mb-1 text-xs">
               <strong>{user.name}</strong>
             </p>
-            <p className="muted">
+            <p className="muted mb-1 text-xs">
               {user.role === 'admin' ? 'Administrator' : 'Koordinator wilayah'}
             </p>
             <button
@@ -183,8 +200,8 @@ export function PoskoApp() {
           </div>
         </aside>
         <div>
-          <header className="posko-header">
-            <label className="region-select">
+          <header className="posko-header flex h-[78px] items-center justify-between gap-4 border-b border-line bg-[#fcfdf9] px-9 py-4 max-[1100px]:px-6 max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
+            <label className="flex min-w-[180px] max-w-[330px] items-center gap-2.5 text-brand">
               <Icon name="pin" />
               <select
                 aria-label="Wilayah Posko"
@@ -193,6 +210,7 @@ export function PoskoApp() {
                   setSelected(e.target.value);
                   setMessage('');
                 }}
+                className="min-h-8 border-0 bg-transparent px-0 py-1 pr-6 text-[13px] font-semibold"
               >
                 {available?.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -202,13 +220,13 @@ export function PoskoApp() {
               </select>
             </label>
             <div className="actions">
-              <span className="connection">
+              <span className="flex items-center gap-1.5 text-xs text-muted">
                 <Icon name="shield" size={15} />
                 Keputusan tetap pada manusia
               </span>
               {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
               <button
-                className="quiet small mobile-logout"
+                className="quiet small hidden max-md:inline-flex"
                 onClick={async () => {
                   await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
                   client.clear();
@@ -219,10 +237,14 @@ export function PoskoApp() {
               </button>
             </div>
           </header>
-          <main id="main" className="posko-main" tabIndex={-1}>
+          <main
+            id="main"
+            className="posko-main mx-auto max-w-[1600px] px-9 py-8 min-[1600px]:px-12 min-[1600px]:py-10 max-[1100px]:px-6 max-[1100px]:py-7 max-md:px-5 max-md:py-6 print:p-0"
+            tabIndex={-1}
+          >
             {message && <Notice>{message}</Notice>}
             <div key={region?.id}>{content}</div>
-            <footer className="safe-footer">
+            <footer className="safe-footer print:hidden">
               <p>
                 {region?.simulation ? 'Simulasi — bukan kejadian nyata. ' : ''}Laporan komunitas dan
                 saran AI bukan peringatan resmi. Area tanpa informasi tidak berarti aman.
