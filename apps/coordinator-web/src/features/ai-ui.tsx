@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { aiOperationsSchema, aiRunSchema, aiTaskSchema, type AiRun } from '@tandara/contracts';
-import { Badge, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import { Badge, createUuid, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 import { KnowledgeManagement } from './knowledge-ui.js';
 
@@ -72,7 +72,7 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
                       method: 'POST',
                       body: {
                         task,
-                        requestKey: crypto.randomUUID(),
+                        requestKey: createUuid(),
                         hours,
                         language,
                         ...(question.trim() ? { question } : {}),

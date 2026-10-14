@@ -1,9 +1,10 @@
-# Tandara — 3-Day Implementation Plan  
+# Tandara — 3-Day Implementation Plan
+
 ## Hackathon MVP Execution Plan for 3 Technical Members + 1 Non-Technical Member
 
 **Team assumption:**
 
-- **Person A — Product, UX/UI, Research, QA, Pitch** *(non-technical primary role)*
+- **Person A — Product, UX/UI, Research, QA, Pitch** _(non-technical primary role)_
 - **Person B — Frontend & PWA Engineer**
 - **Person C — Backend, Database & Infrastructure Engineer**
 - **Person D — Full-Stack Dashboard, AI & Integration Engineer**
@@ -40,26 +41,26 @@ This single story should be visible through the entire demo.
 
 These features are mandatory for the hackathon prototype.
 
-| ID | Feature | Why it matters |
-|---|---|---|
-| MVP-01 | Tandara Warga landing/home page | Establishes the resident experience and trust model |
-| MVP-02 | Region selection | Shows that Tandara is locally configurable |
-| MVP-03 | Published preparedness plan | Solves the “what should I do next?” problem |
-| MVP-04 | Preparedness checklist | Connects information to practical action |
-| MVP-05 | Offline plan access | Strong sustainability/resilience differentiator |
-| MVP-06 | Community report form | Allows residents to submit local conditions |
-| MVP-07 | Offline report draft/queue | Demonstrates poor-connectivity resilience |
-| MVP-08 | Coordinator login | Demonstrates role separation |
-| MVP-09 | Coordinator report inbox | Shows a real operational workflow |
-| MVP-10 | Report detail page | Shows original report, evidence, and AI output |
-| MVP-11 | AI triage suggestion | Demonstrates structured AI assistance |
-| MVP-12 | Duplicate-report candidate | Demonstrates useful intelligence, not generic chatbot AI |
-| MVP-13 | Human review workflow | Shows safety-first human-in-the-loop design |
-| MVP-14 | Restricted help request | Demonstrates privacy and role-based access |
-| MVP-15 | Local-plan metadata | Owner, source, status, review date, and disclaimer |
-| MVP-16 | Demo map or location list | Demonstrates spatial context without claiming route safety |
-| MVP-17 | Clear status labeling | Official/plan/community report/AI/simulation distinctions |
-| MVP-18 | Seeded simulation data | Makes demo reliable without live external API dependency |
+| ID     | Feature                         | Why it matters                                             |
+| ------ | ------------------------------- | ---------------------------------------------------------- |
+| MVP-01 | Tandara Warga landing/home page | Establishes the resident experience and trust model        |
+| MVP-02 | Region selection                | Shows that Tandara is locally configurable                 |
+| MVP-03 | Published preparedness plan     | Solves the “what should I do next?” problem                |
+| MVP-04 | Preparedness checklist          | Connects information to practical action                   |
+| MVP-05 | Offline plan access             | Strong sustainability/resilience differentiator            |
+| MVP-06 | Community report form           | Allows residents to submit local conditions                |
+| MVP-07 | Offline report draft/queue      | Demonstrates poor-connectivity resilience                  |
+| MVP-08 | Coordinator login               | Demonstrates role separation                               |
+| MVP-09 | Coordinator report inbox        | Shows a real operational workflow                          |
+| MVP-10 | Report detail page              | Shows original report, evidence, and AI output             |
+| MVP-11 | AI triage suggestion            | Demonstrates structured AI assistance                      |
+| MVP-12 | Duplicate-report candidate      | Demonstrates useful intelligence, not generic chatbot AI   |
+| MVP-13 | Human review workflow           | Shows safety-first human-in-the-loop design                |
+| MVP-14 | Restricted help request         | Demonstrates privacy and role-based access                 |
+| MVP-15 | Local-plan metadata             | Owner, source, status, review date, and disclaimer         |
+| MVP-16 | Demo map or location list       | Demonstrates spatial context without claiming route safety |
+| MVP-17 | Clear status labeling           | Official/plan/community report/AI/simulation distinctions  |
+| MVP-18 | Seeded simulation data          | Makes demo reliable without live external API dependency   |
 
 ---
 
@@ -67,18 +68,18 @@ These features are mandatory for the hackathon prototype.
 
 Implement only if all Must-Have items are done and tested.
 
-| ID | Feature | Priority |
-|---|---|---|
-| NTH-01 | Photo upload with MinIO | Medium |
-| NTH-02 | Full map with MapLibre markers | Medium |
-| NTH-03 | Drill/simulation mini quiz | Medium |
-| NTH-04 | Dark mode | Low |
-| NTH-05 | Detailed analytics dashboard | Low |
-| NTH-06 | Full plan editing workflow | Low |
-| NTH-07 | Notifications | Low |
-| NTH-08 | Real AI provider integration | Medium; use only if stable |
-| NTH-09 | External BMKG/PetaBencana integration | Do not prioritize |
-| NTH-10 | Multi-region administration panel | Low |
+| ID     | Feature                               | Priority                   |
+| ------ | ------------------------------------- | -------------------------- |
+| NTH-01 | Photo upload with MinIO               | Medium                     |
+| NTH-02 | Full map with MapLibre markers        | Medium                     |
+| NTH-03 | Drill/simulation mini quiz            | Medium                     |
+| NTH-04 | Dark mode                             | Low                        |
+| NTH-05 | Detailed analytics dashboard          | Low                        |
+| NTH-06 | Full plan editing workflow            | Low                        |
+| NTH-07 | Notifications                         | Low                        |
+| NTH-08 | Real AI provider integration          | Medium; use only if stable |
+| NTH-09 | External BMKG/PetaBencana integration | Do not prioritize          |
+| NTH-10 | Multi-region administration panel     | Low                        |
 
 ---
 
@@ -86,20 +87,20 @@ Implement only if all Must-Have items are done and tested.
 
 Do **not** build these in the 3-day MVP.
 
-| Feature | Reason |
-|---|---|
-| Real official-alert API integration | Legal, reliability, and licensing concerns; adds demo risk |
-| Full user registration / password reset | Login with seeded coordinator account is enough for demo |
-| Real emergency dispatch | Unsafe and operationally impossible |
-| Dynamic evacuation routing | High safety risk and out of scope |
-| Full native mobile app | PWA is sufficient |
-| Kubernetes | Massive infrastructure overkill |
-| Advanced multi-tenant organization management | Not necessary for one pilot-region demo |
-| Complete MinIO malware scanning | Valuable but not hackathon-critical |
-| Full database encryption-at-rest implementation | Infrastructure-level concern; document it for pilot |
-| Comprehensive admin console | Use simple seeded configuration |
-| Full real-time WebSocket architecture | Poll/refetch after action is sufficient |
-| Every PRD feature | Impossible in three days without sacrificing quality |
+| Feature                                         | Reason                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| Real official-alert API integration             | Legal, reliability, and licensing concerns; adds demo risk |
+| Full user registration / password reset         | Login with seeded coordinator account is enough for demo   |
+| Real emergency dispatch                         | Unsafe and operationally impossible                        |
+| Dynamic evacuation routing                      | High safety risk and out of scope                          |
+| Full native mobile app                          | PWA is sufficient                                          |
+| Kubernetes                                      | Massive infrastructure overkill                            |
+| Advanced multi-tenant organization management   | Not necessary for one pilot-region demo                    |
+| Complete MinIO malware scanning                 | Valuable but not hackathon-critical                        |
+| Full database encryption-at-rest implementation | Infrastructure-level concern; document it for pilot        |
+| Comprehensive admin console                     | Use simple seeded configuration                            |
+| Full real-time WebSocket architecture           | Poll/refetch after action is sufficient                    |
+| Every PRD feature                               | Impossible in three days without sacrificing quality       |
 
 ---
 
@@ -107,34 +108,34 @@ Do **not** build these in the 3-day MVP.
 
 ## 3.1 Tandara Warga Pages
 
-| Page | Route | Must build? | Purpose |
-|---|---|---:|---|
-| Welcome / Region Selection | `/` | Yes | Select simulated neighborhood |
-| Home | `/home` | Yes | Status overview and quick actions |
-| Preparedness Plan | `/plan` | Yes | Show verified local plan |
-| Preparedness Checklist | `/checklist` | Yes | Household readiness actions |
-| Submit Report | `/report` | Yes | Submit flood condition |
-| Report Submission Status | `/report/status/:id` | Yes | Confirm queued/submitted/reviewed state |
-| Offline Information | `/offline` | Yes | Explain cached/offline state |
-| Local Contacts | `/contacts` | Optional | Emergency/local contacts and disclaimer |
-| Drill / Quiz | `/drill` | Nice-to-have | Demonstrate learning outcome |
+| Page                       | Route                |  Must build? | Purpose                                 |
+| -------------------------- | -------------------- | -----------: | --------------------------------------- |
+| Welcome / Region Selection | `/`                  |          Yes | Select simulated neighborhood           |
+| Home                       | `/home`              |          Yes | Status overview and quick actions       |
+| Preparedness Plan          | `/plan`              |          Yes | Show verified local plan                |
+| Preparedness Checklist     | `/checklist`         |          Yes | Household readiness actions             |
+| Submit Report              | `/report`            |          Yes | Submit flood condition                  |
+| Report Submission Status   | `/report/status/:id` |          Yes | Confirm queued/submitted/reviewed state |
+| Offline Information        | `/offline`           |          Yes | Explain cached/offline state            |
+| Local Contacts             | `/contacts`          |     Optional | Emergency/local contacts and disclaimer |
+| Drill / Quiz               | `/drill`             | Nice-to-have | Demonstrate learning outcome            |
 
 ---
 
 ## 3.2 Tandara Posko Pages
 
-| Page | Route | Must build? | Purpose |
-|---|---|---:|---|
-| Login | `/login` | Yes | Coordinator authentication |
-| Dashboard | `/dashboard` | Yes | Overview of incoming reports |
-| Report Inbox | `/reports` | Yes | Filterable report list |
-| Report Detail | `/reports/:id` | Yes | Raw report + AI + human review |
-| Duplicate Candidates | `/duplicates` | Yes | Show possible duplicate reports |
-| Help Requests | `/help-requests` | Yes | Restricted sensitive requests |
-| Local Plan Overview | `/plans` | Yes | Show existing published plan metadata |
-| Plan Editor | `/plans/:id/edit` | Optional | Only if time remains |
-| Drill Insights | `/drills` | Nice-to-have | Aggregate drill results |
-| Settings | `/settings` | Do not build | Use static seeded config instead |
+| Page                 | Route             |  Must build? | Purpose                               |
+| -------------------- | ----------------- | -----------: | ------------------------------------- |
+| Login                | `/login`          |          Yes | Coordinator authentication            |
+| Dashboard            | `/dashboard`      |          Yes | Overview of incoming reports          |
+| Report Inbox         | `/reports`        |          Yes | Filterable report list                |
+| Report Detail        | `/reports/:id`    |          Yes | Raw report + AI + human review        |
+| Duplicate Candidates | `/duplicates`     |          Yes | Show possible duplicate reports       |
+| Help Requests        | `/help-requests`  |          Yes | Restricted sensitive requests         |
+| Local Plan Overview  | `/plans`          |          Yes | Show existing published plan metadata |
+| Plan Editor          | `/plans/:id/edit` |     Optional | Only if time remains                  |
+| Drill Insights       | `/drills`         | Nice-to-have | Aggregate drill results               |
+| Settings             | `/settings`       | Do not build | Use static seeded config instead      |
 
 ---
 
@@ -142,34 +143,34 @@ Do **not** build these in the 3-day MVP.
 
 ## 4.1 Recommended Team Roles
 
-| Person | Role | Primary Ownership |
-|---|---|---|
-| Person A | Product/UX/UI/Research/QA/Pitch | Product scope, Figma, copy, seed data, usability QA, pitch deck, demo script |
-| Person B | Frontend & PWA Engineer | Tandara Warga, offline cache, IndexedDB, responsive UI, accessibility |
-| Person C | Backend & Infrastructure Engineer | API, PostgreSQL/PostGIS, authentication, report workflow, Docker/VPS |
+| Person   | Role                                 | Primary Ownership                                                              |
+| -------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| Person A | Product/UX/UI/Research/QA/Pitch      | Product scope, Figma, copy, seed data, usability QA, pitch deck, demo script   |
+| Person B | Frontend & PWA Engineer              | Tandara Warga, offline cache, IndexedDB, responsive UI, accessibility          |
+| Person C | Backend & Infrastructure Engineer    | API, PostgreSQL/PostGIS, authentication, report workflow, Docker/VPS           |
 | Person D | Dashboard, AI & Integration Engineer | Tandara Posko, AI triage UI/API integration, duplicate logic, coordinator flow |
 
 ---
 
 ## 4.2 Responsibility Matrix
 
-| Area | A: Product | B: Frontend | C: Backend | D: Dashboard/AI |
-|---|---:|---:|---:|---:|
-| Problem framing | **Owner** | Support | Support | Support |
-| UI flow and wireframe | **Owner** | Support | — | Support |
-| Design system | **Owner** | Implement | — | Implement |
-| Resident PWA | QA | **Owner** | API support | Support |
-| Offline-first flow | QA | **Owner** | Support | — |
-| Database schema | Review | — | **Owner** | Support |
-| API implementation | Review | Support | **Owner** | Support |
-| Auth and authorization | Review | — | **Owner** | Support |
-| Coordinator dashboard | QA | Support | API support | **Owner** |
-| AI triage | Content review | Support | Queue/API support | **Owner** |
-| Demo seed data | **Owner** | Support | Support | Support |
-| VPS deployment | — | — | **Owner** | Support |
-| Testing and QA | **Owner** | Fix UI bugs | Fix backend bugs | Fix dashboard bugs |
-| Pitch deck | **Owner** | Technical slides | Architecture slides | AI slides |
-| Final demo | **Owner/narrator** | Resident flow | System/API fallback | Coordinator flow |
+| Area                   |         A: Product |      B: Frontend |          C: Backend |    D: Dashboard/AI |
+| ---------------------- | -----------------: | ---------------: | ------------------: | -----------------: |
+| Problem framing        |          **Owner** |          Support |             Support |            Support |
+| UI flow and wireframe  |          **Owner** |          Support |                   — |            Support |
+| Design system          |          **Owner** |        Implement |                   — |          Implement |
+| Resident PWA           |                 QA |        **Owner** |         API support |            Support |
+| Offline-first flow     |                 QA |        **Owner** |             Support |                  — |
+| Database schema        |             Review |                — |           **Owner** |            Support |
+| API implementation     |             Review |          Support |           **Owner** |            Support |
+| Auth and authorization |             Review |                — |           **Owner** |            Support |
+| Coordinator dashboard  |                 QA |          Support |         API support |          **Owner** |
+| AI triage              |     Content review |          Support |   Queue/API support |          **Owner** |
+| Demo seed data         |          **Owner** |          Support |             Support |            Support |
+| VPS deployment         |                  — |                — |           **Owner** |            Support |
+| Testing and QA         |          **Owner** |      Fix UI bugs |    Fix backend bugs | Fix dashboard bugs |
+| Pitch deck             |          **Owner** | Technical slides | Architecture slides |          AI slides |
+| Final demo             | **Owner/narrator** |    Resident flow | System/API fallback |   Coordinator flow |
 
 ---
 
@@ -179,12 +180,12 @@ Because the timeline is only three days, avoid long meetings.
 
 ### Mandatory schedule
 
-| Time | Activity | Duration |
-|---|---|---:|
-| Morning | Daily stand-up: blockers, priorities, scope changes | 10 minutes |
-| Midday | Integration checkpoint | 15 minutes |
-| Evening | Demo test and bug triage | 30–45 minutes |
-| End of day | Freeze unstable features, update task board | 15 minutes |
+| Time       | Activity                                            |      Duration |
+| ---------- | --------------------------------------------------- | ------------: |
+| Morning    | Daily stand-up: blockers, priorities, scope changes |    10 minutes |
+| Midday     | Integration checkpoint                              |    15 minutes |
+| Evening    | Demo test and bug triage                            | 30–45 minutes |
+| End of day | Freeze unstable features, update task board         |    15 minutes |
 
 ### Stand-up format
 
@@ -348,29 +349,29 @@ Create a TypeScript monorepo that supports two frontend applications, one backen
 
 ### Recommended Tandara Palette
 
-| Token | Color | Usage |
-|---|---|---|
-| `navy-900` | `#102A43` | Primary text/navigation |
-| `teal-600` | `#167D7F` | Trust/readiness primary |
-| `teal-100` | `#DFF4F1` | Soft background |
-| `amber-500` | `#E8A317` | Attention/review needed |
-| `red-600` | `#C83E4D` | Critical/restricted/error |
-| `blue-600` | `#2563EB` | Information |
-| `gray-900` | `#1F2937` | Text |
-| `gray-100` | `#F3F4F6` | Background |
-| `white` | `#FFFFFF` | Surface |
+| Token       | Color     | Usage                     |
+| ----------- | --------- | ------------------------- |
+| `navy-900`  | `#102A43` | Primary text/navigation   |
+| `teal-600`  | `#167D7F` | Trust/readiness primary   |
+| `teal-100`  | `#DFF4F1` | Soft background           |
+| `amber-500` | `#E8A317` | Attention/review needed   |
+| `red-600`   | `#C83E4D` | Critical/restricted/error |
+| `blue-600`  | `#2563EB` | Information               |
+| `gray-900`  | `#1F2937` | Text                      |
+| `gray-100`  | `#F3F4F6` | Background                |
+| `white`     | `#FFFFFF` | Surface                   |
 
 ### Status Visual Rules
 
-| Status | Color | Text label |
-|---|---|---|
-| Published plan | Teal | Published Local Plan |
-| Submitted report | Blue | Submitted |
-| Awaiting review | Amber | Awaiting Review |
-| Reviewed report | Teal | Reviewed |
-| Restricted | Red | Restricted |
-| Offline | Gray | Saved Offline |
-| Simulation | Purple/outlined | Simulation |
+| Status           | Color           | Text label           |
+| ---------------- | --------------- | -------------------- |
+| Published plan   | Teal            | Published Local Plan |
+| Submitted report | Blue            | Submitted            |
+| Awaiting review  | Amber           | Awaiting Review      |
+| Reviewed report  | Teal            | Reviewed             |
+| Restricted       | Red             | Restricted           |
+| Offline          | Gray            | Saved Offline        |
+| Simulation       | Purple/outlined | Simulation           |
 
 ---
 
@@ -726,9 +727,7 @@ close_inappropriate
     "conditionText": "road flooded",
     "assistanceRequested": false
   },
-  "missingInformation": [
-    "exact observation time"
-  ],
+  "missingInformation": ["exact observation time"],
   "summary": "A resident reports road flooding near the community hall.",
   "safetyNote": "AI suggestion only. Requires coordinator review."
 }
@@ -765,13 +764,13 @@ For a hackathon, use a deterministic mock AI engine as fallback.
 
 ### Rule Examples
 
-| Keywords | Suggested category |
-|---|---|
-| road, vehicle, motorcycle, cannot pass | `road_flooding` |
-| house, home, entering | `water_entering_homes` |
-| elderly, senior, disabled, needs help | `follow_up_needed` |
-| tree, debris | `debris` |
-| unclear/nothing specific | `unknown` |
+| Keywords                               | Suggested category     |
+| -------------------------------------- | ---------------------- |
+| road, vehicle, motorcycle, cannot pass | `road_flooding`        |
+| house, home, entering                  | `water_entering_homes` |
+| elderly, senior, disabled, needs help  | `follow_up_needed`     |
+| tree, debris                           | `debris`               |
+| unclear/nothing specific               | `unknown`              |
 
 ### Definition of Done
 
@@ -887,6 +886,7 @@ Hard-code or calculate Report A ↔ Report B as duplicate candidate.
    - Offline/online state.
 
 2. Trust banner:
+
    > Tandara supports community preparedness. Follow official authorities during emergencies.
 
 3. Main readiness card:
@@ -1002,16 +1002,16 @@ Offline section
 
 ### Form Fields
 
-| Field | Required |
-|---|---:|
-| Category | Yes |
-| Description | Yes |
-| Observation time | No; user can select Unknown |
-| Landmark text | No |
-| Optional map/GPS location | No |
-| Follow-up request | No |
-| Contact permission | No |
-| Simulation notice | Yes in demo mode |
+| Field                     |                    Required |
+| ------------------------- | --------------------------: |
+| Category                  |                         Yes |
+| Description               |                         Yes |
+| Observation time          | No; user can select Unknown |
+| Landmark text             |                          No |
+| Optional map/GPS location |                          No |
+| Follow-up request         |                          No |
+| Contact permission        |                          No |
+| Simulation notice         |            Yes in demo mode |
 
 ### UX Requirements
 
@@ -1481,16 +1481,16 @@ Never rely on live internet, live AI, or external government APIs during the fin
 
 ### Fallback Assets
 
-| Risk | Fallback |
-|---|---|
-| Internet failure | Local network/hotspot + recorded walkthrough |
-| VPS failure | Local Docker Compose deployment |
-| AI API failure | Deterministic mock AI mode |
-| Database failure | Seeded backup database or local environment |
-| Browser offline demo failure | Pre-recorded offline screen capture |
-| Map tile failure | Static screenshot / text list location view |
-| Login failure | Fresh demo account and browser profile |
-| Accidental data changes | Reset database seed script |
+| Risk                         | Fallback                                     |
+| ---------------------------- | -------------------------------------------- |
+| Internet failure             | Local network/hotspot + recorded walkthrough |
+| VPS failure                  | Local Docker Compose deployment              |
+| AI API failure               | Deterministic mock AI mode                   |
+| Database failure             | Seeded backup database or local environment  |
+| Browser offline demo failure | Pre-recorded offline screen capture          |
+| Map tile failure             | Static screenshot / text list location view  |
+| Login failure                | Fresh demo account and browser profile       |
+| Accidental data changes      | Reset database seed script                   |
 
 ### Definition of Done
 
@@ -1507,17 +1507,17 @@ Never rely on live internet, live AI, or external government APIs during the fin
 
 This preparation should happen before the official three-day coding period if possible.
 
-| Task | Owner |
-|---|---|
-| Confirm scope and remove non-MVP items | All |
-| Create GitHub repository | Person C |
-| Create Figma design system | Person A |
-| Create task board | Person A |
-| Prepare seed data content | Person A |
-| Buy/configure domain or subdomain | Person C |
-| Create shared communication channel | All |
-| Decide exact demo narrative | Person A |
-| Confirm UI copy and labels | Person A |
+| Task                                   | Owner    |
+| -------------------------------------- | -------- |
+| Confirm scope and remove non-MVP items | All      |
+| Create GitHub repository               | Person C |
+| Create Figma design system             | Person A |
+| Create task board                      | Person A |
+| Prepare seed data content              | Person A |
+| Buy/configure domain or subdomain      | Person C |
+| Create shared communication channel    | All      |
+| Decide exact demo narrative            | Person A |
+| Confirm UI copy and labels             | Person A |
 
 ---
 
@@ -1533,15 +1533,15 @@ This is the most important milestone.
 
 ## Day 1 Morning: 08:00–12:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-001 Monorepo setup | C | Apps boot locally |
-| T-101 Postgres/PostGIS setup | C | DB working |
-| T-102 Initial schema | C | Core migrations ready |
-| T-002 Design system | A | Tokens + core components |
-| T-003 Seed data draft | A | Demo data finalized |
-| Resident app shell | B | Basic routes + layout |
-| Coordinator app shell | D | Login page + dashboard shell |
+| Task                         | Owner | Target                       |
+| ---------------------------- | ----- | ---------------------------- |
+| T-001 Monorepo setup         | C     | Apps boot locally            |
+| T-101 Postgres/PostGIS setup | C     | DB working                   |
+| T-102 Initial schema         | C     | Core migrations ready        |
+| T-002 Design system          | A     | Tokens + core components     |
+| T-003 Seed data draft        | A     | Demo data finalized          |
+| Resident app shell           | B     | Basic routes + layout        |
+| Coordinator app shell        | D     | Login page + dashboard shell |
 
 ### Day 1 Morning Checkpoint
 
@@ -1563,14 +1563,14 @@ And see:
 
 ## Day 1 Afternoon: 13:00–18:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-103 Auth/RBAC | C | Coordinator login API works |
-| T-105 Report submission API | C | POST report works |
-| T-305 Resident report form | B | User can submit report |
-| T-106 Report inbox API | C | Reports retrievable |
-| T-403 Coordinator inbox | D | Submitted reports visible |
-| T-501 Status system | A + B + D | Unified labels |
+| Task                        | Owner     | Target                      |
+| --------------------------- | --------- | --------------------------- |
+| T-103 Auth/RBAC             | C         | Coordinator login API works |
+| T-105 Report submission API | C         | POST report works           |
+| T-305 Resident report form  | B         | User can submit report      |
+| T-106 Report inbox API      | C         | Reports retrievable         |
+| T-403 Coordinator inbox     | D         | Submitted reports visible   |
+| T-501 Status system         | A + B + D | Unified labels              |
 
 ### Day 1 Non-Negotiable Milestone
 
@@ -1592,13 +1592,13 @@ If this is not working, do not start advanced AI, maps, drill features, or photo
 
 ## Day 1 Evening: 19:00–22:00
 
-| Task | Owner | Target |
-|---|---|---|
-| Integrate form → API → inbox | B, C, D | Full slice tested |
-| T-603 initial QA | A | Core bugs documented |
-| Fix critical issues | All | Green path works |
-| Create first demo walkthrough | A | 2-minute test narration |
-| Commit stable state | All | Day 1 tag/branch |
+| Task                          | Owner   | Target                  |
+| ----------------------------- | ------- | ----------------------- |
+| Integrate form → API → inbox  | B, C, D | Full slice tested       |
+| T-603 initial QA              | A       | Core bugs documented    |
+| Fix critical issues           | All     | Green path works        |
+| Create first demo walkthrough | A       | 2-minute test narration |
+| Commit stable state           | All     | Day 1 tag/branch        |
 
 ---
 
@@ -1612,16 +1612,16 @@ If this is not working, do not start advanced AI, maps, drill features, or photo
 
 ## Day 2 Morning: 08:00–12:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-104 Plan API | C | Published plan endpoint |
-| T-302 Resident home | B | Home page operational |
-| T-303 Preparedness plan | B | Plan viewer operational |
-| T-304 Checklist | B | Checklist persists locally |
-| T-201 AI contract | D | Zod schema + provider interface |
-| T-202 Mock AI engine | D | Predictable AI output |
-| T-107 Review API | C | Coordinator status action works |
-| T-404 Report detail | D | Raw report + AI layout |
+| Task                    | Owner | Target                          |
+| ----------------------- | ----- | ------------------------------- |
+| T-104 Plan API          | C     | Published plan endpoint         |
+| T-302 Resident home     | B     | Home page operational           |
+| T-303 Preparedness plan | B     | Plan viewer operational         |
+| T-304 Checklist         | B     | Checklist persists locally      |
+| T-201 AI contract       | D     | Zod schema + provider interface |
+| T-202 Mock AI engine    | D     | Predictable AI output           |
+| T-107 Review API        | C     | Coordinator status action works |
+| T-404 Report detail     | D     | Raw report + AI layout          |
 
 ### Day 2 Morning Checkpoint
 
@@ -1641,15 +1641,15 @@ Coordinator marks report reviewed
 
 ## Day 2 Afternoon: 13:00–18:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-306 Offline report queue | B | Draft/queue functionality |
-| Offline plan caching | B | Saved plan opens offline |
-| T-204 Duplicate logic | D + C | A/B candidate shown |
-| T-405 Duplicate page | D | Human decision works |
-| T-406 Restricted help request | D + C | Protected view works |
-| T-502 Safety disclaimers | A + B + D | Safety copy visible |
-| QA trust labels | A | Labels checked |
+| Task                          | Owner     | Target                    |
+| ----------------------------- | --------- | ------------------------- |
+| T-306 Offline report queue    | B         | Draft/queue functionality |
+| Offline plan caching          | B         | Saved plan opens offline  |
+| T-204 Duplicate logic         | D + C     | A/B candidate shown       |
+| T-405 Duplicate page          | D         | Human decision works      |
+| T-406 Restricted help request | D + C     | Protected view works      |
+| T-502 Safety disclaimers      | A + B + D | Safety copy visible       |
+| QA trust labels               | A         | Labels checked            |
 
 ### Day 2 Non-Negotiable Milestone
 
@@ -1673,14 +1673,14 @@ Restricted help request is protected
 
 ## Day 2 Evening: 19:00–22:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-601 Docker Compose | C | All services containerized |
-| Integration fixes | All | No broken flow |
+| Task                     | Owner     | Target                     |
+| ------------------------ | --------- | -------------------------- |
+| T-601 Docker Compose     | C         | All services containerized |
+| Integration fixes        | All       | No broken flow             |
 | Accessibility quick pass | A + B + D | Labels, contrast, keyboard |
-| Demo data reset script | C | Database reset works |
-| Pitch slide draft | A | Product + flow draft |
-| Test offline mode | B + A | Screenshots/video fallback |
+| Demo data reset script   | C         | Database reset works       |
+| Pitch slide draft        | A         | Product + flow draft       |
+| Test offline mode        | B + A     | Screenshots/video fallback |
 
 ---
 
@@ -1696,14 +1696,14 @@ No major feature additions after midday.
 
 ## Day 3 Morning: 08:00–12:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-602 VPS deployment | C | Public URLs work |
-| Deployment validation | All | End-to-end on VPS |
-| UI polish | B + D | Consistent spacing, empty states |
-| Dashboard overview | D | Summary cards |
-| Demo copy refinements | A | Clear story and safety language |
-| Final seed setup | A + C | Demo scenario ready |
+| Task                  | Owner | Target                           |
+| --------------------- | ----- | -------------------------------- |
+| T-602 VPS deployment  | C     | Public URLs work                 |
+| Deployment validation | All   | End-to-end on VPS                |
+| UI polish             | B + D | Consistent spacing, empty states |
+| Dashboard overview    | D     | Summary cards                    |
+| Demo copy refinements | A     | Clear story and safety language  |
+| Final seed setup      | A + C | Demo scenario ready              |
 
 ### Feature Freeze Rule
 
@@ -1723,32 +1723,32 @@ After that point, only allow:
 
 ## Day 3 Afternoon: 13:00–17:00
 
-| Task | Owner | Target |
-|---|---|---|
-| T-603 full QA checklist | A | All flows verified |
-| Fix critical bugs | B/C/D | Stable app |
-| Run offline demo | B | Confirm cached plan and queue |
-| Run AI fallback demo | D | Confirm mock mode |
-| Run deployment health checks | C | Stable containers |
-| Pitch deck completion | A | Final deck |
-| Architecture slide | C | Technical credibility |
-| AI safety slide | D | Explain human-in-loop |
-| Product story slide | A | Problem → solution → impact |
+| Task                         | Owner | Target                        |
+| ---------------------------- | ----- | ----------------------------- |
+| T-603 full QA checklist      | A     | All flows verified            |
+| Fix critical bugs            | B/C/D | Stable app                    |
+| Run offline demo             | B     | Confirm cached plan and queue |
+| Run AI fallback demo         | D     | Confirm mock mode             |
+| Run deployment health checks | C     | Stable containers             |
+| Pitch deck completion        | A     | Final deck                    |
+| Architecture slide           | C     | Technical credibility         |
+| AI safety slide              | D     | Explain human-in-loop         |
+| Product story slide          | A     | Problem → solution → impact   |
 
 ---
 
 ## Day 3 Evening: 18:00–Final
 
-| Task | Owner | Target |
-|---|---|---|
-| Full demo rehearsal #1 | All | Identify issues |
-| Fix only demo-blocking issues | All | Stable |
-| Full demo rehearsal #2 | All | Smooth timing |
-| Record fallback video | A + B | Backup |
-| Prepare browser tabs | All | Demo environment ready |
-| Reset seeded database | C | Clean data |
-| Final task board review | A | No hidden blockers |
-| Sleep / stop risky changes | All | Protect stability |
+| Task                          | Owner | Target                 |
+| ----------------------------- | ----- | ---------------------- |
+| Full demo rehearsal #1        | All   | Identify issues        |
+| Fix only demo-blocking issues | All   | Stable                 |
+| Full demo rehearsal #2        | All   | Smooth timing          |
+| Record fallback video         | A + B | Backup                 |
+| Prepare browser tabs          | All   | Demo environment ready |
+| Reset seeded database         | C     | Clean data             |
+| Final task board review       | A     | No hidden blockers     |
+| Sleep / stop risky changes    | All   | Protect stability      |
 
 ---
 
@@ -1918,20 +1918,20 @@ If not true: stop polishing and fix only flow-breaking issues.
 
 # 12. Risk Management
 
-| Risk | Likelihood | Impact | Mitigation |
-|---|---:|---:|---|
-| Team attempts too many features | High | High | Strict MVP list and Day 3 feature freeze |
-| AI API fails | Medium | High | Deterministic mock AI provider |
-| VPS deployment fails | Medium | High | Local Docker fallback and deploy early |
-| Offline mode is unreliable | Medium | High | Test early on Day 2; use simple IndexedDB queue |
-| Map consumes too much time | High | Medium | Use text location list; map is optional |
-| Auth takes too long | Medium | Medium | Use one seeded coordinator login |
-| Database migrations conflict | Medium | High | Person C owns migrations; no parallel schema changes without review |
-| UI inconsistency | Medium | Medium | Person A owns design tokens and copy |
-| Git merge conflicts | High | Medium | Clear code ownership and small commits |
-| Demo data gets modified | Medium | High | Seed reset script and backup database |
-| External APIs are unstable | High | Medium | Use simulation data only |
-| Unclear team communication | Medium | High | 10-minute stand-ups and task board |
+| Risk                            | Likelihood | Impact | Mitigation                                                          |
+| ------------------------------- | ---------: | -----: | ------------------------------------------------------------------- |
+| Team attempts too many features |       High |   High | Strict MVP list and Day 3 feature freeze                            |
+| AI API fails                    |     Medium |   High | Deterministic mock AI provider                                      |
+| VPS deployment fails            |     Medium |   High | Local Docker fallback and deploy early                              |
+| Offline mode is unreliable      |     Medium |   High | Test early on Day 2; use simple IndexedDB queue                     |
+| Map consumes too much time      |       High | Medium | Use text location list; map is optional                             |
+| Auth takes too long             |     Medium | Medium | Use one seeded coordinator login                                    |
+| Database migrations conflict    |     Medium |   High | Person C owns migrations; no parallel schema changes without review |
+| UI inconsistency                |     Medium | Medium | Person A owns design tokens and copy                                |
+| Git merge conflicts             |       High | Medium | Clear code ownership and small commits                              |
+| Demo data gets modified         |     Medium |   High | Seed reset script and backup database                               |
+| External APIs are unstable      |       High | Medium | Use simulation data only                                            |
+| Unclear team communication      |     Medium |   High | 10-minute stand-ups and task board                                  |
 
 ---
 
@@ -2019,10 +2019,10 @@ then reduce scope further.
 
 ## Team Structure
 
-| Person | Scope |
-|---|---|
-| Person A | Product, UI/UX, QA, pitch, seed data |
-| Person B | Frontend for Warga + Posko |
+| Person   | Scope                                     |
+| -------- | ----------------------------------------- |
+| Person A | Product, UI/UX, QA, pitch, seed data      |
+| Person B | Frontend for Warga + Posko                |
 | Person C | Backend + database + AI mock + deployment |
 
 ## Features to Remove First

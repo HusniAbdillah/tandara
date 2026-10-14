@@ -15,6 +15,8 @@ export default [
       'playwright-report/**',
       'test-results/**',
       '**/coverage/**',
+      'logo/doc-page.js',
+      'logo/support.js',
     ],
   },
   js.configs.recommended,

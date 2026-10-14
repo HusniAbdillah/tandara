@@ -1,5 +1,18 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
+
+/** Generate a UUID in browsers that lack randomUUID outside secure contexts. */
+export function createUuid(): string {
+  const secureCrypto = globalThis.crypto;
+  if (typeof secureCrypto.randomUUID === 'function') return secureCrypto.randomUUID();
+
+  const bytes = secureCrypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export function useClock() {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -12,6 +25,7 @@ export function useClock() {
 export function Icon({
   name,
   size = 20,
+  className,
 }: {
   name:
     | 'home'
@@ -33,6 +47,7 @@ export function Icon({
     | 'search'
     | 'shield';
   size?: number;
+  className?: string;
 }) {
   const paths: Record<typeof name, string> = {
     home: 'M3 10 12 3l9 7M5 9v12h14V9M9 21v-8h6v8',
@@ -66,18 +81,16 @@ export function Icon({
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      className={className}
     >
       <path d={paths[name]} />
     </svg>
   );
 }
-export function Brand({ audience }: { audience: string }) {
+export function Brand({ audience, className = '' }: { audience: string; className?: string }) {
   return (
-    <a href="/" className="brand" aria-label={'Tandara ' + audience + ', beranda'}>
-      <svg viewBox="0 0 40 40" width="36" height="36" aria-hidden="true">
-        <rect width="40" height="40" rx="9" fill="currentColor" />
-        <path d="M9 15h22M13 20h14M17 25h6" stroke="white" strokeWidth="3" strokeLinecap="round" />
-      </svg>
+    <a href="/" className={`brand ${className}`} aria-label={'Tandara ' + audience + ', beranda'}>
+      <img src="/icon.svg" width="36" height="36" alt="" className="shrink-0" />
       <span>
         tandara<span className="brand-audience">{audience}</span>
       </span>
@@ -92,16 +105,27 @@ export function Notice({
   tone?: 'info' | 'warning' | 'error' | 'success';
 }) {
   return (
-    <div className={'notice ' + tone} role={tone === 'error' ? 'alert' : 'status'}>
+    <div
+      className={`my-4 border-l-[3px] px-4 py-3 text-sm ${
+        tone === 'warning'
+          ? 'border-amber bg-[#fff3db] text-[#674719]'
+          : tone === 'error'
+            ? 'border-red bg-[#fff0ec] text-[#92372e]'
+            : tone === 'success'
+              ? 'border-brand bg-[#e3f1e5] text-[#185d4b]'
+              : 'border-brand bg-[#eaf2ec] text-[#2b5245]'
+      }`}
+      role={tone === 'error' ? 'alert' : 'status'}
+    >
       {children}
     </div>
   );
 }
 export function Empty({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="empty">
-      <Icon name="inbox" size={28} />
-      <h3>{title}</h3>
+    <div className="rounded-lg border border-dashed border-line px-5 py-9 text-center text-muted">
+      <Icon name="inbox" size={28} className="mb-2.5 text-muted" />
+      <h3 className="text-ink">{title}</h3>
       <p>{children}</p>
     </div>
   );
@@ -116,10 +140,10 @@ export function Field({
   hint?: string;
 }) {
   return (
-    <label className="field">
+    <label className="mb-[18px] flex flex-col gap-1.5">
       <span>{label}</span>
       {children}
-      {hint && <small>{hint}</small>}
+      {hint && <small className="text-[13px] font-normal text-muted">{hint}</small>}
     </label>
   );
 }
@@ -130,7 +154,19 @@ export function Badge({
   children: ReactNode;
   tone?: 'neutral' | 'teal' | 'amber' | 'red';
 }) {
-  return <span className={'badge ' + tone}>{children}</span>;
+  const toneClasses = {
+    neutral: 'border-line bg-[#f0f2ed] text-[#4e6059]',
+    teal: 'border-[#bdd8c7] bg-[#e9f3ec] text-[#185d4b]',
+    amber: 'border-[#e4cfac] bg-[#fff3dc] text-[#744b15]',
+    red: 'border-[#e4b8b0] bg-[#fff0ee] text-[#98372f]',
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-[5px] whitespace-normal rounded-[4px] border px-[7px] py-[3px] text-[11px] font-semibold tracking-[0.15px] ${toneClasses[tone]}`}
+    >
+      {children}
+    </span>
+  );
 }
 export function PageHeader({
   eyebrow,
@@ -144,7 +180,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="page-heading">
+    <div className="mb-7 flex items-center justify-between gap-6">
       <div>
         <p className="eyebrow">{eyebrow}</p>
         <h1>{title}</h1>
@@ -178,14 +214,12 @@ export function AppShell({
       </a>
       <header className="site-header">
         <a className="brand" href="/" aria-label={`Tandara ${audience}, beranda`}>
-          <span className="brand-mark" aria-hidden="true">
-            T
-          </span>
+          <img src="/icon.svg" width="36" height="36" alt="" className="shrink-0" />
           <span>
             Tandara <small>{audience}</small>
           </span>
         </a>
-        <span className="badge">Simulasi</span>
+        <Badge>Simulasi</Badge>
       </header>
       <main id="main" tabIndex={-1}>
         {children}
