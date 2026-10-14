@@ -284,9 +284,7 @@ function Login({
           Tinjau laporan warga, pahami informasi yang belum lengkap, dan kelola rencana komunitas
           dengan keputusan yang dapat ditelusuri.
         </p>
-        <Badge tone="amber">
-          {simulation ? 'Lingkungan simulasi · ' : ''}Bukan layanan darurat
-        </Badge>
+        {simulation && <Badge tone="amber">SIMULASI</Badge>}
       </section>
       <main className="login-form">
         <Brand audience="Posko" />

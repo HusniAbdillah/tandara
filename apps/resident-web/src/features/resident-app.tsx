@@ -219,7 +219,7 @@ export function ResidentApp() {
               </NavLink>
             ))}
           </nav>
-          {region?.simulation && <Badge tone="amber">WILAYAH DEMO</Badge>}
+          {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
         </div>
       </header>
       <div className="context-bar border-b border-line bg-[#fafbf7] print:hidden">
