@@ -269,6 +269,7 @@ function Login({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [needsCode, setNeedsCode] = useState(false);
   const [busy, setBusy] = useState(false);
   return (
     <div className="login-layout">
@@ -304,7 +305,13 @@ function Login({
                 }),
               );
             } catch (err) {
-              setError(err instanceof Error ? err.message : 'Tidak dapat masuk.');
+              const message = err instanceof Error ? err.message : 'Tidak dapat masuk.';
+              if (message.includes('Kode autentikator diperlukan')) {
+                setNeedsCode(true);
+                setError('Masukkan kode dari aplikasi autentikator untuk melanjutkan.');
+              } else {
+                setError(message);
+              }
             } finally {
               setBusy(false);
             }
@@ -329,16 +336,19 @@ function Login({
             />
           </Field>
           {error && <Notice tone="error">{error}</Notice>}
-          <Field label="Kode autentikator (jika diaktifkan)">
-            <input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              pattern="[0-9]{6}"
-              maxLength={6}
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-          </Field>
+          {needsCode && (
+            <Field label="Kode autentikator">
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                autoFocus
+              />
+            </Field>
+          )}
           <button className="primary" style={{ width: '100%' }} disabled={busy}>
             {busy ? 'Memeriksa…' : 'Masuk'}
             <Icon name="arrow" />

@@ -130,10 +130,13 @@ hr {
   @apply mb-0 max-w-[65ch] text-base text-muted;
 }
 .brand {
-  @apply flex items-center gap-2.5 text-[25px] font-[750] leading-[1.15] tracking-[-0.8px] text-brand no-underline;
+  @apply flex min-h-11 items-center gap-2.5 text-[25px] font-[750] leading-none tracking-[-0.8px] text-brand no-underline;
+}
+.brand > span {
+  @apply flex flex-col leading-none;
 }
 .brand-audience {
-  @apply mt-1 block text-[9px] font-[650] tracking-[2px] text-muted uppercase;
+  @apply mt-[3px] block pb-px text-[9px] leading-[1.2] font-[650] tracking-[2px] text-muted uppercase;
 }
 .actions {
   @apply flex flex-wrap items-center gap-2.5;
