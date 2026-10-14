@@ -560,7 +560,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
         }
       />
       {error && <Notice tone="error">{error}</Notice>}
-      <div className="split mt-6 grid items-start gap-4 lg:grid-cols-[1fr_1fr]">
+      <div className="split mt-6 grid items-start gap-4 xl:grid-cols-[1fr_1fr]">
         <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
           <div className="panel-heading mb-4 border-b border-line pb-3">
             <h2 className="mb-0 text-lg">Laporan asli</h2>
@@ -762,7 +762,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           </button>
         </section>
       </div>
-      <div className="split mt-5 grid items-start gap-4 lg:grid-cols-[1.35fr_0.85fr]">
+      <div className="split mt-5 grid items-start gap-4 xl:grid-cols-[1.35fr_0.85fr]">
         <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
           <h2 className="mb-2 text-lg">Keputusan koordinator</h2>
           <p className="hint">

@@ -94,7 +94,7 @@ export function PlansPage({ region, user, run }: ManagementProps) {
             <Notice tone="error">Rencana tidak dapat dimuat.</Notice>
           ) : query.data?.length ? (
             <div className="overflow-hidden rounded-lg border border-[#e3dfd6] bg-white">
-              <div className="hidden gap-3 bg-[#f7f6f2] px-4 py-3 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase sm:grid sm:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] sm:items-center">
+              <div className="hidden gap-3 bg-[#f7f6f2] px-4 py-3 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase xl:grid xl:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] xl:items-center">
                 <span>Rencana</span>
                 <span>Versi</span>
                 <span>Pemilik</span>
@@ -106,12 +106,35 @@ export function PlansPage({ region, user, run }: ManagementProps) {
                   className="overflow-hidden border-t border-[#e3dfd6] bg-white first:border-t-0"
                   key={p.id}
                 >
-                  <div className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] sm:items-center">
-                    <div className="font-semibold text-ink">{p.content.title}</div>
-                    <div className="font-mono text-xs tabular-nums">v{p.version}</div>
-                    <div className="text-sm">{p.owner}</div>
-                    <div className="text-sm">{formatTime(p.content.expiresAt)}</div>
+                  <div className="grid gap-3 px-4 py-4 xl:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] xl:items-center">
+                    <div className="font-semibold text-ink">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Rencana
+                      </span>
+                      {p.content.title}
+                    </div>
+                    <div className="text-sm xl:text-xs">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Versi
+                      </span>
+                      <span className="font-mono tabular-nums">v{p.version}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Pemilik
+                      </span>
+                      {p.owner}
+                    </div>
+                    <div className="text-sm">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Tinjauan berikut
+                      </span>
+                      {formatTime(p.content.expiresAt)}
+                    </div>
                     <div>
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Status
+                      </span>
                       <Badge tone={p.state === 'published' ? 'teal' : 'amber'}>
                         {{
                           draft: 'Draf',
@@ -592,7 +615,7 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
             <Notice tone="error">Tidak dapat membaca status sumber.</Notice>
           ) : (
             query.data?.map((s) => (
-              <div key={s.id} className="source-details px-5 py-5 sm:flex-row sm:items-center">
+              <div key={s.id} className="source-details px-5 py-5 lg:flex-row lg:items-center">
                 <div>
                   <h3 className="mb-2 text-base font-semibold">{s.name}</h3>
                   <div className="actions">
@@ -943,7 +966,7 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
                 <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
               </div>
             </div>
-            <div className="grid gap-5 px-5 py-5 sm:grid-cols-[1.2fr_0.8fr] sm:px-6">
+            <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
               <div>
                 <h3 className="mb-3 text-sm">Tahapan latihan</h3>
                 <ol className="m-0 space-y-2 pl-5 text-sm">
@@ -954,7 +977,7 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
                   ))}
                 </ol>
               </div>
-              <details className="border-t border-[#e3dfd6] pt-4 sm:border-t-0 sm:border-l sm:pl-5 sm:pt-0">
+              <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
                 <summary className="cursor-pointer text-sm font-semibold">
                   Feedback untuk perbaikan materi
                 </summary>

@@ -402,28 +402,49 @@ td a {
   @apply mt-4 flex flex-wrap gap-2.5;
 }
 .login-layout {
-  @apply grid min-h-screen grid-cols-2;
+  @apply grid min-h-screen grid-cols-[minmax(0,0.9fr)_minmax(460px,1.1fr)] bg-paper;
 }
 .login-story {
-  @apply flex flex-col justify-center bg-dark px-[10%] py-[12vh] text-white;
+  @apply flex flex-col justify-center bg-dark px-[12%] py-16 text-white;
 }
 .login-story h1 {
-  @apply max-w-[12ch] text-[48px];
+  @apply mb-4 max-w-[14ch] text-[40px] leading-[1.16] tracking-[-1.2px];
 }
 .login-story p {
-  @apply max-w-[45ch] text-[#d3e4da];
+  @apply max-w-[45ch] text-sm leading-relaxed text-[#d3e4da];
 }
 .login-story .eyebrow {
+  @apply mb-3 text-[10px] tracking-[0.12em] text-[#b8d6c1];
+}
+.login-story .login-brand {
+  @apply mb-12 text-white;
+}
+.login-story .login-brand small {
   @apply text-[#b8d6c1];
 }
 .login-form {
-  @apply mx-auto flex w-full max-w-[540px] flex-col justify-center p-12;
-}
-.login-form .brand {
-  @apply mb-12;
+  @apply mx-auto flex w-full max-w-[580px] flex-col justify-center px-12 py-10;
 }
 .login-form h1 {
-  @apply text-[28px];
+  @apply mb-2 text-[28px] tracking-[-0.55px];
+}
+.login-form > p {
+  @apply mb-6;
+}
+.login-form form {
+  @apply w-full;
+}
+.login-form form .field {
+  @apply mb-4;
+}
+.login-form form button {
+  @apply mt-1;
+}
+.login-form .meta {
+  @apply mt-5;
+}
+.login-form > a {
+  @apply mt-1 inline-flex min-h-10 items-center text-sm font-semibold no-underline;
 }
 .hero {
   @apply mb-[30px] grid grid-cols-[1.3fr_1fr] overflow-hidden rounded-[10px] bg-dark text-white;
@@ -576,19 +597,29 @@ td a {
     @apply min-w-[640px];
   }
   .login-layout {
-    @apply block;
+    @apply block min-h-screen;
   }
   .login-story {
-    @apply min-h-[280px] px-6 py-9;
+    @apply min-h-0 flex-row items-center justify-between gap-3 px-5 py-3;
   }
   .login-story h1 {
-    @apply max-w-[20ch] text-[34px];
+    @apply hidden;
+  }
+  .login-story > p:not(.eyebrow),
+  .login-story .eyebrow {
+    @apply hidden;
+  }
+  .login-story .login-brand {
+    @apply m-0 py-0 text-xl;
+  }
+  .login-story .login-brand img {
+    @apply size-8;
   }
   .login-form {
-    @apply px-6 py-8;
+    @apply max-w-[520px] px-5 py-8;
   }
-  .login-form .brand {
-    @apply mb-7;
+  .login-form h1 {
+    @apply text-2xl;
   }
   .map-panel {
     @apply h-[330px];

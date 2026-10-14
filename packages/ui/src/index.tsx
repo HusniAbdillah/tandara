@@ -221,7 +221,7 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-col items-start justify-between gap-4 border-b border-line pb-5 sm:flex-row sm:items-end">
+    <div className="mb-6 flex flex-col items-start justify-between gap-4 border-b border-line pb-5 lg:flex-row lg:items-end">
       <div className="min-w-0">
         <p className="mb-1.5 text-xs font-semibold tracking-wide text-brand">{eyebrow}</p>
         <h1 className="mb-1 text-2xl font-semibold leading-tight tracking-[-0.65px] sm:text-[28px]">

@@ -294,12 +294,9 @@ function Login({
   return (
     <div className="login-layout">
       <section className="login-story">
+        <Brand audience="Posko" className="login-brand" />
         <p className="eyebrow">TANDARA / RUANG KOORDINASI</p>
-        <h1>
-          Dari kabar lokal,
-          <br />
-          ke kesiapan bersama.
-        </h1>
+        <h1>Dari kabar lokal, ke kesiapan bersama.</h1>
         <p>
           Tinjau laporan warga, pahami informasi yang belum lengkap, dan kelola rencana komunitas
           dengan keputusan yang dapat ditelusuri.
@@ -307,7 +304,6 @@ function Login({
         {simulation && <Badge tone="amber">SIMULASI</Badge>}
       </section>
       <main className="login-form">
-        <Brand audience="Posko" />
         <h1>Masuk ke Posko</h1>
         <p className="muted">Akses untuk koordinator dan administrator berwenang.</p>
         <form
@@ -372,7 +368,7 @@ function Login({
             <Icon name="arrow" />
           </button>
         </form>
-        <p className="meta">
+        <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
           Gunakan akun {simulation ? 'simulasi ' : ''}yang diberikan pengelola lingkungan ini.
         </p>
         {residentOrigin && <a href={residentOrigin}>Buka Tandara Warga →</a>}
