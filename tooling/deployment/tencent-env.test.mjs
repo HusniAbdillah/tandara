@@ -43,12 +43,17 @@ function resolve(extra = '') {
   }
 }
 
-test('Tencent defaults keep paid models off and forward every configurable runtime field', () => {
+test('selected Tencent profile enables Vikey/Gemini and forwards every configurable runtime field', () => {
   const config = resolve();
   const api = config.services.api.environment;
-  assert.equal(api.AI_MODE, 'heuristic');
-  assert.equal(api.AI_EMBEDDING_MODE, 'disabled');
-  assert.equal(api.AI_DAILY_BUDGET_MICRO_USD, '0');
+  assert.equal(api.AI_MODE, 'compatible');
+  assert.equal(api.AI_PROVIDER, 'vikey');
+  assert.equal(api.AI_EMBEDDING_MODE, 'compatible');
+  assert.equal(api.AI_EMBEDDING_PROVIDER, 'gemini');
+  assert.equal(api.AI_DAILY_BUDGET_MICRO_USD, '1000000');
+  assert.equal(api.AI_MONTHLY_BUDGET_MICRO_USD, '3000000');
+  assert.equal(api.AI_RUN_MAX_MICRO_USD, '1000000');
+  assert.equal(api.AI_MAX_OUTPUT_TOKENS, '1024');
   assert.equal(api.APP_MODE, 'simulation');
   assert.equal(api.SESSION_SECURE, 'true');
   const applicationKeys = [

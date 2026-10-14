@@ -13,16 +13,19 @@ yang berbeda dan tidak dapat ditempel begitu saja ke deployment demo ini.
 
 Deployment ini menetapkan `NODE_ENV=production`, tetapi `APP_MODE=simulation`
 untuk akun/data latihan. Compose yang diperbaiki pada pekerjaan ini meneruskan
-konfigurasi chat, embedding, budget, MFA dan telemetry dari env. Default tetap
-`AI_MODE=heuristic` dan embedding `disabled`, tanpa pemanggilan model berbayar.
+konfigurasi chat, embedding, budget, MFA dan telemetry dari env. Profil Tencent yang dipilih tim sekarang memakai
+`AI_MODE=compatible` dan `AI_EMBEDDING_MODE=compatible`: Vikey dan Gemini
+benar-benar dipanggil jika key, budget dan prasyarat workflow valid. Fallback
+Compose untuk env lama tetap heuristic; pasang profil aktif ini agar pilihan
+tersebut tidak digunakan.
 `APP_MODE` tetap ditetapkan Compose, sehingga jalur demo tidak berubah menjadi
 onboarding produksi penuh hanya dengan menambahkan variable. Mode produksi penuh memiliki persyaratan lain,
 termasuk onboarding akun, MFA dan database TLS; panduan ini mempertahankan
 deployment demo penjurian yang sudah dipilih.
 
 Isi lengkap env operator berikut berdasarkan `.env.example`,
-`.env.production.example` dan schema runtime. Default model dimatikan sampai
-operator memasukkan key serta budget/kuota yang tersedia:
+`.env.production.example` dan schema runtime. Profil menggunakan model
+sungguhan; key di contoh harus diganti secara privat dengan key yang ada:
 
 ```dotenv
 # Install as /opt/tandara/.env, chmod 600. Never commit the filled file.
@@ -46,31 +49,31 @@ ALLOW_LIVE_SOURCES=false
 MFA_ENCRYPTION_KEY=''
 LOG_LEVEL=info
 
-# Model services are opt-in. These defaults do not call paid chat/embedding APIs.
-# To reuse existing provider quota: compatible modes, real keys/models and funded budgets.
-AI_MODE=heuristic
+# Selected deployment profile: real Vikey chat and Gemini embeddings.
+# Replace key placeholders privately or apply the prepared .local/tencent-ai.env overlay.
+AI_MODE=compatible
 AI_PROVIDER=vikey
 AI_BASE_URL=''
-AI_MODEL=''
-AI_API_KEY=''
+AI_MODEL='deepseek/deepseek-v4-flash'
+AI_API_KEY='REPLACE_WITH_EXISTING_VIKEY_KEY'
 AI_TIMEOUT_MS=30000
-AI_MAX_OUTPUT_TOKENS=2048
-AI_EMBEDDING_MODE=disabled
+AI_MAX_OUTPUT_TOKENS=1024
+AI_EMBEDDING_MODE=compatible
 AI_EMBEDDING_PROVIDER=gemini
 AI_EMBEDDING_BASE_URL=''
 AI_EMBEDDING_MODEL=gemini-embedding-001
-AI_EMBEDDING_API_KEY=''
+AI_EMBEDDING_API_KEY='REPLACE_WITH_EXISTING_GEMINI_KEY'
 AI_EMBEDDING_DIMENSIONS=1536
 
 # Estimates below are illustrative, not current provider price quotes.
-# Zero budgets block paid runs until an operator sets funded caps (micro USD).
+# Small demo application caps: USD 1/day, USD 3/month, USD 1/run. Not provider balances.
 AI_INPUT_MICRO_USD_PER_MILLION_TOKENS=1000000
 AI_OUTPUT_MICRO_USD_PER_MILLION_TOKENS=3000000
 AI_EMBEDDING_MICRO_USD_PER_MILLION_TOKENS=10000000
-AI_DAILY_BUDGET_MICRO_USD=0
-AI_ORG_DAILY_BUDGET_MICRO_USD=0
-AI_MONTHLY_BUDGET_MICRO_USD=0
-AI_RUN_MAX_MICRO_USD=1500000
+AI_DAILY_BUDGET_MICRO_USD=1000000
+AI_ORG_DAILY_BUDGET_MICRO_USD=1000000
+AI_MONTHLY_BUDGET_MICRO_USD=3000000
+AI_RUN_MAX_MICRO_USD=1000000
 AI_MAX_PENDING_PER_REGION=100
 AI_MAX_CONCURRENT=1
 AI_DATA_PROCESSING_APPROVED=false
@@ -208,26 +211,26 @@ while True:
 
 defaults = {'MFA_ENCRYPTION_KEY': '',
  'LOG_LEVEL': 'info',
- 'AI_MODE': 'heuristic',
+ 'AI_MODE': 'compatible',
  'AI_PROVIDER': 'vikey',
  'AI_BASE_URL': '',
- 'AI_MODEL': '',
- 'AI_API_KEY': '',
+ 'AI_MODEL': 'deepseek/deepseek-v4-flash',
+ 'AI_API_KEY': 'REPLACE_WITH_EXISTING_VIKEY_KEY',
  'AI_TIMEOUT_MS': '30000',
- 'AI_MAX_OUTPUT_TOKENS': '2048',
- 'AI_EMBEDDING_MODE': 'disabled',
+ 'AI_MAX_OUTPUT_TOKENS': '1024',
+ 'AI_EMBEDDING_MODE': 'compatible',
  'AI_EMBEDDING_PROVIDER': 'gemini',
  'AI_EMBEDDING_BASE_URL': '',
  'AI_EMBEDDING_MODEL': 'gemini-embedding-001',
- 'AI_EMBEDDING_API_KEY': '',
+ 'AI_EMBEDDING_API_KEY': 'REPLACE_WITH_EXISTING_GEMINI_KEY',
  'AI_EMBEDDING_DIMENSIONS': '1536',
  'AI_INPUT_MICRO_USD_PER_MILLION_TOKENS': '1000000',
  'AI_OUTPUT_MICRO_USD_PER_MILLION_TOKENS': '3000000',
  'AI_EMBEDDING_MICRO_USD_PER_MILLION_TOKENS': '10000000',
- 'AI_DAILY_BUDGET_MICRO_USD': '0',
- 'AI_ORG_DAILY_BUDGET_MICRO_USD': '0',
- 'AI_MONTHLY_BUDGET_MICRO_USD': '0',
- 'AI_RUN_MAX_MICRO_USD': '1500000',
+ 'AI_DAILY_BUDGET_MICRO_USD': '1000000',
+ 'AI_ORG_DAILY_BUDGET_MICRO_USD': '1000000',
+ 'AI_MONTHLY_BUDGET_MICRO_USD': '3000000',
+ 'AI_RUN_MAX_MICRO_USD': '1000000',
  'AI_MAX_PENDING_PER_REGION': '100',
  'AI_MAX_CONCURRENT': '1',
  'AI_DATA_PROCESSING_APPROVED': 'false',
@@ -257,6 +260,21 @@ for line in old.splitlines():
     if any(c in value for c in "'\\") or any(ord(c) < 32 for c in value):
         raise SystemExit('STOP: periksa format literal pada ' + key)
     values[key] = value
+values.update({'AI_MODE': 'compatible', 'AI_PROVIDER': 'vikey',
+               'AI_EMBEDDING_MODE': 'compatible', 'AI_EMBEDDING_PROVIDER': 'gemini',
+               'AI_MAX_CONCURRENT': '1'})
+for key in ['AI_MODEL', 'AI_EMBEDDING_MODEL']:
+    if not values.get(key):
+        values[key] = defaults[key]
+for key in ['AI_DAILY_BUDGET_MICRO_USD', 'AI_ORG_DAILY_BUDGET_MICRO_USD', 'AI_MONTHLY_BUDGET_MICRO_USD', 'AI_RUN_MAX_MICRO_USD', 'AI_MAX_OUTPUT_TOKENS']:
+    values[key] = defaults[key]
+for key in ['AI_API_KEY', 'AI_EMBEDDING_API_KEY']:
+    while not values.get(key) or values[key].startswith('REPLACE_'):
+        candidate = getpass.getpass(key + ' (key yang sudah ada, input tersembunyi): ')
+        if not candidate or candidate.startswith('REPLACE_') or any(c in candidate for c in "'\\") or any(ord(c) < 32 for c in candidate):
+            print('Key kosong/placeholder atau format tidak valid; coba lagi.')
+            continue
+        values[key] = candidate
 if not values.get('MFA_ENCRYPTION_KEY'):
     values['MFA_ENCRYPTION_KEY'] = secrets.token_hex(32)
 values.update({
@@ -457,7 +475,8 @@ Posko. Jangan mengirim `.env`, password atau private key ke chat/repository.
 Tim memilih menggunakan kedua layanan dengan key/kuota yang sudah ada.
 Profil privat sudah disiapkan di `.local/tencent-ai.env`, diabaikan Git.
 File ini berisi key dari env lokal, model, mode `compatible` untuk kedua
-layanan dan batas budget aplikasi yang sudah dikonfigurasi lokal. Konkurensi
+layanan dan batas aplikasi US$1/hari, US$1/organisasi/hari, US$3/bulan serta
+US$1/permintaan. Output dibatasi 1.024 token. Konkurensi
 ditetapkan satu pekerjaan untuk VPS 2 GB. Key tidak dicetak ke chat atau
 disimpan dalam contoh/dokumen ini.
 
