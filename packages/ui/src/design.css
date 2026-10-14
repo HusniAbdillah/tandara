@@ -324,7 +324,7 @@ td a {
   @apply flex-[2_1_0%];
 }
 .pagination {
-  @apply flex items-center justify-between pt-[18px] text-[13px];
+  @apply flex flex-wrap items-center justify-between gap-3 pt-[18px] text-[13px];
 }
 .metrics {
   @apply mb-7 grid grid-cols-3 gap-0 rounded-lg border border-line bg-white;
@@ -557,6 +557,9 @@ td a {
   .form-grid {
     @apply grid-cols-1;
   }
+  .location-grid {
+    @apply grid-cols-1;
+  }
   .metrics {
     @apply grid-cols-1;
   }
@@ -604,6 +607,9 @@ td a {
   }
   .filters .search {
     @apply basis-full;
+  }
+  .sidebar .brand-audience {
+    @apply text-muted-foreground;
   }
 }
 @media (prefers-reduced-motion: reduce) {

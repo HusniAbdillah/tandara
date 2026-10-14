@@ -158,7 +158,7 @@ export function Empty({ title, children }: { title: string; children: ReactNode 
   );
 }
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold leading-5 tracking-[0.05px] transition-colors focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2',
+  'inline-flex shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold leading-5 tracking-[0.05px] transition-colors focus:outline-none focus:ring-2 focus:ring-focus focus:ring-offset-2',
   {
     variants: {
       tone: {

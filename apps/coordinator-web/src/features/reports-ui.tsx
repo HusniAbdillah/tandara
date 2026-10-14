@@ -176,7 +176,7 @@ export function Overview({ region, user }: { region: Region; user: User }) {
               </p>
               <CardTitle className="text-lg">Informasi terkini</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
+            <CardContent className="space-y-4 text-sm">
               {summary.isPending ? (
                 <div
                   className="h-12 animate-pulse rounded bg-[#f0f3f0]"
@@ -186,13 +186,18 @@ export function Overview({ region, user }: { region: Region; user: User }) {
               ) : summary.isError ? (
                 <Notice tone="error">Ringkasan belum dapat dimuat.</Notice>
               ) : (
-                <p className="mb-0 leading-relaxed">
+                <p className="mb-0 rounded-md bg-paper px-3.5 py-3 leading-relaxed">
                   {summary.data?.summary ?? 'Ringkasan belum tersedia.'}
                 </p>
               )}
-              <p className="mb-0 text-xs text-muted-foreground">
-                Perlu tinjauan manusia · {formatTime(summary.data?.generatedAt ?? null)}
-              </p>
+              {summary.data && (
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+                  <span className="font-medium text-muted-foreground">Perlu tinjauan manusia</span>
+                  <time className="font-mono text-[11px] text-muted-foreground">
+                    {formatTime(summary.data.generatedAt)}
+                  </time>
+                </div>
+              )}
               {!!summary.data?.sourceIds.length && (
                 <details className="border-t border-line pt-3 text-xs">
                   <summary className="cursor-pointer font-semibold text-brand">
@@ -225,7 +230,7 @@ export function Overview({ region, user }: { region: Region; user: User }) {
                         key={source.id}
                         className="flex items-center justify-between gap-3 py-2.5 first:pt-1"
                       >
-                        <span className="truncate text-sm">{source.name}</span>
+                        <span className="min-w-0 flex-1 truncate text-sm">{source.name}</span>
                         {source.mode === 'simulation' && source.enabled && !source.lastError ? (
                           <Badge
                             tone="neutral"
@@ -332,7 +337,7 @@ function ReportTable({ reports }: { reports: Report[] }) {
               {categories[r.category]}
               <div className="mt-1 text-xs text-muted-foreground">Laporan warga · simulasi</div>
             </TableCell>
-            <TableCell>
+            <TableCell className="whitespace-nowrap">
               <Badge
                 tone={r.state === 'reviewed' ? 'teal' : r.state === 'rejected' ? 'red' : 'amber'}
               >

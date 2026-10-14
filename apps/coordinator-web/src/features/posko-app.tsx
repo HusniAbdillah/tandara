@@ -146,7 +146,10 @@ export function PoskoApp() {
       </a>
       <div className="posko-layout grid min-h-screen grid-cols-[232px_minmax(0,1fr)] max-[1100px]:grid-cols-[210px_minmax(0,1fr)] max-md:block print:block">
         <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-[#244b56] bg-[#10303d] px-4 py-6 text-[#f7f5f0] max-md:static max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 max-md:text-ink print:hidden">
-          <Brand audience="Posko" className="mx-2 mb-8 text-[#f7f5f0] max-md:hidden" />
+          <Brand
+            audience="Posko"
+            className="mx-2 mb-8 text-[#f7f5f0] max-md:mb-1 max-md:mt-2 max-md:flex max-md:px-1 max-md:text-brand"
+          />
           <p className="mb-2.5 ml-3 mr-3 mt-2 text-[10px] font-medium tracking-[1.5px] text-[#7fb3b8] max-md:hidden">
             RUANG KOORDINASI
           </p>
