@@ -174,14 +174,14 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           )}
         </Card>
         <aside>
-          <Card>
-            <CardHeader className="gap-1 pb-3">
-              <p className="mb-1 font-mono text-[11px] font-medium tracking-wide text-muted-foreground">
+          <Card className="overflow-hidden">
+            <CardHeader className="gap-1 px-5 pt-5 pb-2">
+              <p className="mb-0.5 font-mono text-[11px] font-medium tracking-wide text-muted-foreground">
                 RINGKASAN · 24 JAM
               </p>
-              <CardTitle className="text-lg">Informasi terkini</CardTitle>
+              <CardTitle className="text-[17px]">Informasi terkini</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+            <CardContent className="space-y-3 px-5 pb-5 text-sm">
               {summary.isPending ? (
                 <div
                   className="h-12 animate-pulse rounded bg-[#f0f3f0]"
@@ -191,7 +191,7 @@ export function Overview({ region, user }: { region: Region; user: User }) {
               ) : summary.isError ? (
                 <Notice tone="error">Ringkasan belum dapat dimuat.</Notice>
               ) : (
-                <p className="mb-0 rounded-md bg-paper px-3.5 py-3 leading-relaxed">
+                <p className="mb-0 border-l-2 border-brand bg-paper px-3.5 py-3 leading-relaxed">
                   {summary.data?.summary ?? 'Ringkasan belum tersedia.'}
                 </p>
               )}
@@ -293,7 +293,7 @@ function MetricCard({
           {label}
         </p>
         <p
-          className={`mb-2 text-[34px] leading-10 font-semibold tabular-nums tracking-[-0.68px] ${valueTone}`}
+          className={`mb-2 font-sans text-[34px] leading-10 font-semibold tabular-nums tracking-[-0.68px] ${valueTone}`}
         >
           {value}
         </p>
@@ -545,20 +545,25 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
   const suggestion = d.suggestions[0];
   return (
     <>
-      <div className="breadcrumb">
+      <div className="breadcrumb mb-3 flex items-center gap-2 text-xs">
         <Link to="/inbox">Kotak laporan</Link> / {id.slice(0, 8)}
       </div>
       <PageHeader
         eyebrow="Detail laporan warga"
-        title={categories[r.category] ?? r.category}
+        title={'Laporan #' + id.slice(0, 8)}
         description={r.landmarkText || 'Lokasi belum cukup jelas'}
-        action={<Badge tone={r.state === 'reviewed' ? 'teal' : 'amber'}>{statuses[r.state]}</Badge>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Badge>{categories[r.category] ?? r.category}</Badge>
+            <Badge tone={r.state === 'reviewed' ? 'teal' : 'amber'}>{statuses[r.state]}</Badge>
+          </div>
+        }
       />
       {error && <Notice tone="error">{error}</Notice>}
-      <div className="split">
-        <section className="panel">
-          <div className="panel-heading">
-            <h2>Laporan asli</h2>
+      <div className="split mt-6 grid items-start gap-4 lg:grid-cols-[1fr_1fr]">
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <div className="panel-heading mb-4 border-b border-line pb-3">
+            <h2 className="mb-0 text-lg">Laporan asli</h2>
             {r.simulation && <Badge tone="amber">Simulasi</Badge>}
           </div>
           <p className="raw-report">{r.description}</p>
@@ -595,10 +600,10 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
             </>
           )}
         </section>
-        <section className="panel ai-panel">
-          <p className="eyebrow">Saran pendukung / Perlu tinjauan manusia</p>
-          <div className="panel-heading">
-            <h2>Asisten triase</h2>
+        <section className="panel m-0 rounded-lg border-dashed border-[#b8c5c4] bg-white p-5 sm:p-6">
+          <p className="eyebrow mb-3">Saran pendukung / Perlu tinjauan manusia</p>
+          <div className="panel-heading mb-3">
+            <h2 className="mb-0 text-lg">Asisten triase</h2>
             <Badge>{suggestion?.state ?? 'Menunggu proses'}</Badge>
           </div>
           {suggestion ? (
@@ -757,9 +762,9 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           </button>
         </section>
       </div>
-      <div className="split" style={{ marginTop: 24 }}>
-        <section className="panel">
-          <h2>Keputusan koordinator</h2>
+      <div className="split mt-5 grid items-start gap-4 lg:grid-cols-[1.35fr_0.85fr]">
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <h2 className="mb-2 text-lg">Keputusan koordinator</h2>
           <p className="hint">
             Catat alasan. Ringkasan publik terpisah dari laporan mentah dan tidak menjadi peringatan
             resmi.
@@ -843,8 +848,8 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
             </button>
           </form>
         </section>
-        <section className="panel">
-          <h2>Riwayat & tanggung jawab</h2>
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <h2 className="mb-4 text-lg">Riwayat & tanggung jawab</h2>
           <ul className="timeline">
             {d.history.map((h) => (
               <li key={h.id}>
