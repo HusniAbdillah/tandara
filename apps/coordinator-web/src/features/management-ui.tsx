@@ -12,7 +12,19 @@ import {
   trainingSchema,
 } from '@tandara/contracts';
 import type { Plan, PlanContent, Source, Training } from '@tandara/contracts';
-import { Badge, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import {
+  Badge,
+  Empty,
+  Field,
+  Notice,
+  PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  formatTime,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 import { ok } from './reports-ui.js';
 
@@ -45,7 +57,7 @@ export function PlansPage({ region, user, run }: ManagementProps) {
     <>
       <PageHeader
         eyebrow="Rencana lokal / versi & tinjauan"
-        title="Rencana yang punya pemilik."
+        title="Rencana lokal"
         description="Draf disimpan terpisah. Peninjau harus berbeda dari penulis. Versi terbit tetap berlaku hingga digantikan atau diarsipkan."
         action={
           <button className="primary" onClick={() => setEditing(null)}>
@@ -64,8 +76,10 @@ export function PlansPage({ region, user, run }: ManagementProps) {
         />
       ) : (
         <>
-          <label className="field">
-            <span>Alasan tindakan rencana</span>
+          <label className="field mb-4 max-w-2xl">
+            <span className="text-xs font-semibold text-muted-foreground">
+              Alasan tindakan rencana
+            </span>
             <input
               value={reason}
               minLength={5}
@@ -79,97 +93,148 @@ export function PlansPage({ region, user, run }: ManagementProps) {
           ) : query.isError ? (
             <Notice tone="error">Rencana tidak dapat dimuat.</Notice>
           ) : query.data?.length ? (
-            query.data.map((p) => (
-              <section className="panel" key={p.id}>
-                <div className="panel-heading">
-                  <h2>{p.content.title}</h2>
-                  <Badge tone={p.state === 'published' ? 'teal' : 'amber'}>
-                    v{p.version} · {p.state}
-                  </Badge>
-                </div>
-                <p className="meta">
-                  {p.owner} · dibuat {formatTime(p.createdAt)} · ditinjau{' '}
-                  {p.reviewer ?? 'Belum ditinjau'} · masa berlaku {formatTime(p.content.expiresAt)}
-                </p>
-                <details>
-                  <summary>Instruksi, titik, dan sumber versi ini</summary>
-                  <ol className="rule-list">
-                    {p.content.instructions.map((s, i) => (
-                      <li key={i}>{s}</li>
-                    ))}
-                  </ol>
-                  {p.content.points.map((point, i) => (
-                    <div className="point" key={i}>
-                      <div>
-                        <h3>{point.name}</h3>
-                        <p>{point.description}</p>
-                        <small>
-                          {point.accessibility} · {point.latitude}, {point.longitude}
-                        </small>
-                      </div>
+            <div className="overflow-hidden rounded-lg border border-[#e3dfd6] bg-white">
+              <div className="hidden gap-3 bg-[#f7f6f2] px-4 py-3 text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase xl:grid xl:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] xl:items-center">
+                <span>Rencana</span>
+                <span>Versi</span>
+                <span>Pemilik</span>
+                <span>Tinjauan berikut</span>
+                <span>Status</span>
+              </div>
+              {query.data.map((p) => (
+                <section
+                  className="overflow-hidden border-t border-[#e3dfd6] bg-white first:border-t-0"
+                  key={p.id}
+                >
+                  <div className="grid gap-3 px-4 py-4 xl:grid-cols-[minmax(0,1.8fr)_0.45fr_0.8fr_0.85fr_0.8fr] xl:items-center">
+                    <div className="font-semibold text-ink">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Rencana
+                      </span>
+                      {p.content.title}
                     </div>
-                  ))}
-                  {p.content.routes.map((r, i) => (
-                    <p key={i}>
-                      {r.name}: {r.description} · {r.reviewNote}
-                    </p>
-                  ))}
-                  <p>
-                    {p.simulation ? 'Simulasi — ' : ''}Rencana tidak menjamin keamanan rute saat
-                    ini.
-                  </p>
-                </details>
-                <div className="button-row print:hidden">
-                  {['draft', 'changes_requested'].includes(p.state) && p.authorId === user.id && (
-                    <>
-                      <button disabled={busy} onClick={() => setEditing(p)}>
-                        Edit draf
+                    <div className="text-sm xl:text-xs">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Versi
+                      </span>
+                      <span className="font-mono tabular-nums">v{p.version}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Pemilik
+                      </span>
+                      {p.owner}
+                    </div>
+                    <div className="text-sm">
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Tinjauan berikut
+                      </span>
+                      {formatTime(p.content.expiresAt)}
+                    </div>
+                    <div>
+                      <span className="mb-1 block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase xl:hidden">
+                        Status
+                      </span>
+                      <Badge tone={p.state === 'published' ? 'teal' : 'amber'}>
+                        {{
+                          draft: 'Draf',
+                          in_review: 'Dalam tinjauan',
+                          approved: 'Disetujui',
+                          published: 'Terbit',
+                          changes_requested: 'Perlu perbaikan',
+                          archived: 'Arsip',
+                        }[p.state] ?? p.state}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="border-t border-[#e3dfd6] px-4 py-3 text-xs text-muted-foreground">
+                    Terakhir dibuat {formatTime(p.createdAt)} · Ditinjau{' '}
+                    {p.reviewer ?? 'Belum ditinjau'}
+                  </div>
+                  <details>
+                    <summary className="cursor-pointer border-t border-[#e3dfd6] px-4 py-3 text-sm font-semibold text-brand">
+                      Instruksi, titik, dan sumber versi ini
+                    </summary>
+                    <div className="space-y-3 px-4 pb-4">
+                      <ol className="rule-list">
+                        {p.content.instructions.map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ol>
+                      {p.content.points.map((point, i) => (
+                        <div className="point" key={i}>
+                          <div>
+                            <h3>{point.name}</h3>
+                            <p>{point.description}</p>
+                            <small>
+                              {point.accessibility} · {point.latitude}, {point.longitude}
+                            </small>
+                          </div>
+                        </div>
+                      ))}
+                      {p.content.routes.map((r, i) => (
+                        <p key={i}>
+                          {r.name}: {r.description} · {r.reviewNote}
+                        </p>
+                      ))}
+                      <p>
+                        {p.simulation ? 'Simulasi — ' : ''}Rencana tidak menjamin keamanan rute saat
+                        ini.
+                      </p>
+                    </div>
+                  </details>
+                  <div className="button-row mt-0 border-t border-[#e3dfd6] px-4 py-3 print:hidden">
+                    {['draft', 'changes_requested'].includes(p.state) && p.authorId === user.id && (
+                      <>
+                        <button disabled={busy} onClick={() => setEditing(p)}>
+                          Edit draf
+                        </button>
+                        <button
+                          disabled={busy || reason.length < 5}
+                          onClick={() => void transition(p, 'in_review')}
+                        >
+                          Minta tinjauan
+                        </button>
+                      </>
+                    )}
+                    {p.state === 'in_review' && p.authorId !== user.id && (
+                      <>
+                        <button
+                          disabled={busy || reason.length < 5}
+                          onClick={() => void transition(p, 'approved')}
+                        >
+                          Setujui versi
+                        </button>
+                        <button
+                          disabled={busy || reason.length < 5}
+                          onClick={() => void transition(p, 'changes_requested')}
+                        >
+                          Minta perbaikan
+                        </button>
+                      </>
+                    )}
+                    {p.state === 'approved' && (
+                      <button
+                        className="primary"
+                        disabled={busy || reason.length < 5}
+                        onClick={() => void transition(p, 'published')}
+                      >
+                        Terbitkan versi ditinjau
                       </button>
+                    )}
+                    {p.state !== 'archived' && (
                       <button
                         disabled={busy || reason.length < 5}
-                        onClick={() => void transition(p, 'in_review')}
+                        onClick={() => void transition(p, 'archived')}
                       >
-                        Minta tinjauan
+                        Arsipkan versi
                       </button>
-                    </>
-                  )}
-                  {p.state === 'in_review' && p.authorId !== user.id && (
-                    <>
-                      <button
-                        disabled={busy || reason.length < 5}
-                        onClick={() => void transition(p, 'approved')}
-                      >
-                        Setujui versi
-                      </button>
-                      <button
-                        disabled={busy || reason.length < 5}
-                        onClick={() => void transition(p, 'changes_requested')}
-                      >
-                        Minta perbaikan
-                      </button>
-                    </>
-                  )}
-                  {p.state === 'approved' && (
-                    <button
-                      className="primary"
-                      disabled={busy || reason.length < 5}
-                      onClick={() => void transition(p, 'published')}
-                    >
-                      Terbitkan versi ditinjau
-                    </button>
-                  )}
-                  {p.state !== 'archived' && (
-                    <button
-                      disabled={busy || reason.length < 5}
-                      onClick={() => void transition(p, 'archived')}
-                    >
-                      Arsipkan versi
-                    </button>
-                  )}
-                  <button onClick={() => window.print()}>Cetak dengan metadata</button>
-                </div>
-              </section>
-            ))
+                    )}
+                    <button onClick={() => window.print()}>Cetak dengan metadata</button>
+                  </div>
+                </section>
+              ))}
+            </div>
           ) : (
             <Empty title="Belum ada rencana">Buat draf untuk memulai proses tinjauan lokal.</Empty>
           )}
@@ -469,20 +534,30 @@ function AssistanceCard({
         >
           <div className="form-grid">
             <Field label="Status tindak lanjut">
-              <select value={state} onChange={(e) => setState(e.target.value)}>
-                <option value="assigned">Ditugaskan</option>
-                <option value="in_progress">Dalam tindak lanjut</option>
-                <option value="closed">Ditutup</option>
-              </select>
+              <Select value={state} onValueChange={setState}>
+                <SelectTrigger aria-label="Status tindak lanjut">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="assigned">Ditugaskan</SelectItem>
+                  <SelectItem value="in_progress">Dalam tindak lanjut</SelectItem>
+                  <SelectItem value="closed">Ditutup</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Penanggung jawab">
-              <select
+              <Select
                 value={assigned ? 'yes' : 'no'}
-                onChange={(e) => setAssigned(e.target.value === 'yes')}
+                onValueChange={(value) => setAssigned(value === 'yes')}
               >
-                <option value="no">Belum ditugaskan</option>
-                <option value="yes">{region.organization}</option>
-              </select>
+                <SelectTrigger aria-label="Penanggung jawab">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">Belum ditugaskan</SelectItem>
+                  <SelectItem value="yes">{region.organization}</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
           </div>
           <Field label="Catatan tindak lanjut">
@@ -514,7 +589,7 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
     <>
       <PageHeader
         eyebrow="Integrasi / atribusi / kesegaran"
-        title="Sumber yang dapat ditelusuri."
+        title="Sumber informasi"
         description="Prakiraan cuaca, laporan urun daya, dan simulasi tetap dipisahkan. Kegagalan satu sumber tidak mematikan alur pelaporan."
         action={
           user.role === 'admin' ? (
@@ -533,16 +608,16 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
           onClose={() => setEditing(undefined)}
         />
       ) : (
-        <section className="panel">
+        <section className="panel overflow-hidden rounded-lg border-[#e3dfd6] p-0">
           {query.isPending ? (
             <div className="loading">Memuat sumber…</div>
           ) : query.isError ? (
             <Notice tone="error">Tidak dapat membaca status sumber.</Notice>
           ) : (
             query.data?.map((s) => (
-              <div key={s.id} className="source-details">
+              <div key={s.id} className="source-details px-5 py-5 lg:flex-row lg:items-center">
                 <div>
-                  <h3>{s.name}</h3>
+                  <h3 className="mb-2 text-base font-semibold">{s.name}</h3>
                   <div className="actions">
                     <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
                       {s.enabled ? s.mode : 'Dinonaktifkan'}
@@ -552,9 +627,16 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
                     </a>
                   </div>
                   <p>{s.licenseNote}</p>
-                  <p className="meta">
-                    Percobaan {formatTime(s.lastAttemptAt)} · berhasil {formatTime(s.lastSuccessAt)}
-                  </p>
+                  <div className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
+                    <p className="m-0">
+                      Percobaan terakhir{' '}
+                      <span className="font-medium text-ink">{formatTime(s.lastAttemptAt)}</span>
+                    </p>
+                    <p className="m-0">
+                      Berhasil terakhir{' '}
+                      <span className="font-medium text-ink">{formatTime(s.lastSuccessAt)}</span>
+                    </p>
+                  </div>
                   {s.lastError && (
                     <Notice tone="warning">
                       {s.lastError}. Data lama tetap memiliki waktu asli; tidak tampil sebagai
@@ -562,7 +644,7 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
                     </Notice>
                   )}
                 </div>
-                <div className="actions">
+                <div className="actions shrink-0 sm:justify-end">
                   <button
                     disabled={!s.enabled}
                     onClick={async () => {
@@ -661,18 +743,30 @@ function SourceEditor({
       </Field>
       <div className="form-grid">
         <Field label="Provider">
-          <select value={provider} onChange={(e) => setProvider(e.target.value as typeof provider)}>
-            {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
+          <Select value={provider} onValueChange={(value) => setProvider(value as typeof provider)}>
+            <SelectTrigger aria-label="Provider sumber">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label="Mode">
-          <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
-            <option value="simulation">Simulasi</option>
-            <option value="disabled">Dinonaktifkan</option>
-            <option value="live">Live (memerlukan izin)</option>
-          </select>
+          <Select value={mode} onValueChange={(value) => setMode(value as typeof mode)}>
+            <SelectTrigger aria-label="Mode sumber">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="simulation">Simulasi</SelectItem>
+              <SelectItem value="disabled">Dinonaktifkan</SelectItem>
+              <SelectItem value="live">Live (memerlukan izin)</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
       </div>
       <Field label="URL sumber / dokumentasi">
@@ -827,7 +921,7 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
     <>
       <PageHeader
         eyebrow="Latihan / kesiapsiagaan"
-        title="Belajar sebelum dibutuhkan."
+        title="Latihan"
         description="Seluruh skenario merupakan simulasi. Hasil hanya membantu memperbaiki materi, tidak membuktikan kesiapan atau keamanan individu."
         action={
           <button className="primary" onClick={() => setCreating(!creating)}>
@@ -844,56 +938,87 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
         <Notice tone="error">Hasil latihan tidak dapat dimuat.</Notice>
       ) : (
         query.data?.map((s) => (
-          <section className="panel" key={s.id}>
-            <div className="panel-heading">
-              <h2>{s.content.title}</h2>
+          <section
+            className="mb-4 overflow-hidden rounded-lg border border-[#e3dfd6] bg-white"
+            key={s.id}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#e3dfd6] px-5 py-4 sm:px-6">
+              <div>
+                <p className="mb-1 font-mono text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                  SIMULASI / LATIHAN
+                </p>
+                <h2 className="mb-1 text-lg">{s.content.title}</h2>
+                <p className="mb-0 text-sm text-muted-foreground">{s.content.description}</p>
+              </div>
               <Badge tone="amber">Simulasi</Badge>
             </div>
-            <p>{s.content.description}</p>
-            <p className="meta">
-              Jadwal {formatTime(s.content.scheduledAt)} · {s.completed} penyelesaian (anonim)
-            </p>
-            <ol>
-              {s.content.steps.map((step, i) => (
-                <li key={i}>{step.question}</li>
-              ))}
-            </ol>
-            <details>
-              <summary>Feedback untuk perbaikan materi</summary>
-              {s.feedback.length ? (
-                s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
-              ) : (
-                <p className="hint">Belum ada feedback.</p>
-              )}
-            </details>
-            <button
-              onClick={() => {
-                const blob = new Blob(
-                  [
-                    JSON.stringify(
-                      {
-                        simulation: true,
-                        region: region.name,
-                        title: s.content.title,
-                        scheduledAt: s.content.scheduledAt,
-                        completed: s.completed,
-                        feedback: s.feedback,
-                      },
-                      null,
-                      2,
-                    ),
-                  ],
-                  { type: 'application/json' },
-                );
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'tandara-latihan.json';
-                link.click();
-                URL.revokeObjectURL(link.href);
-              }}
-            >
-              Ekspor ringkasan latihan
-            </button>
+            <div className="grid gap-4 bg-[#f7f6f2] px-5 py-3 text-sm sm:grid-cols-2 sm:px-6">
+              <div>
+                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  Jadwal
+                </span>
+                <span className="font-medium">{formatTime(s.content.scheduledAt)}</span>
+              </div>
+              <div>
+                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  Penyelesaian anonim
+                </span>
+                <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
+              </div>
+            </div>
+            <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
+              <div>
+                <h3 className="mb-3 text-sm">Tahapan latihan</h3>
+                <ol className="m-0 space-y-2 pl-5 text-sm">
+                  {s.content.steps.map((step, i) => (
+                    <li className="pl-1 leading-relaxed" key={i}>
+                      {step.question}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Feedback untuk perbaikan materi
+                </summary>
+                {s.feedback.length ? (
+                  s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
+                ) : (
+                  <p className="hint">Belum ada feedback.</p>
+                )}
+              </details>
+            </div>
+            <div className="border-t border-[#e3dfd6] px-5 py-3 sm:px-6">
+              <button
+                className="small"
+                onClick={() => {
+                  const blob = new Blob(
+                    [
+                      JSON.stringify(
+                        {
+                          simulation: true,
+                          region: region.name,
+                          title: s.content.title,
+                          scheduledAt: s.content.scheduledAt,
+                          completed: s.completed,
+                          feedback: s.feedback,
+                        },
+                        null,
+                        2,
+                      ),
+                    ],
+                    { type: 'application/json' },
+                  );
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = 'tandara-latihan.json';
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+              >
+                Ekspor ringkasan latihan
+              </button>
+            </div>
           </section>
         ))
       )}
@@ -993,16 +1118,21 @@ function TrainingEditor({
             </Field>
           ))}
           <Field label="Jawaban sesuai materi">
-            <select
-              value={s.answer}
-              onChange={(e) => update(i, { answer: Number(e.target.value) })}
+            <Select
+              value={String(s.answer)}
+              onValueChange={(value) => update(i, { answer: Number(value) })}
             >
-              {s.options.map((_, j) => (
-                <option key={j} value={j}>
-                  Pilihan {j + 1}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger aria-label={'Jawaban sesuai materi, pertanyaan ' + (i + 1)}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {s.options.map((_, j) => (
+                  <SelectItem key={j} value={String(j)}>
+                    Pilihan {j + 1}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Penjelasan setelah latihan">
             <textarea

@@ -4,7 +4,19 @@ import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { operationsSchema, organizationSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
-import { Badge, Field, Notice, PageHeader, formatTime, useClock } from '@tandara/ui';
+import {
+  Badge,
+  Field,
+  Notice,
+  PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  formatTime,
+  useClock,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 import { categories, ok } from './reports-ui.js';
 
@@ -435,10 +447,15 @@ function UserEditor({
           />
         </Field>
         <Field label="Peran">
-          <select value={role} onChange={(e) => setRole(e.target.value as typeof role)}>
-            <option value="coordinator">Koordinator wilayah</option>
-            <option value="admin">Administrator platform</option>
-          </select>
+          <Select value={role} onValueChange={(value) => setRole(value as typeof role)}>
+            <SelectTrigger aria-label="Peran pengguna">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="coordinator">Koordinator wilayah</SelectItem>
+              <SelectItem value="admin">Administrator platform</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
       </div>
       <fieldset>
@@ -545,13 +562,18 @@ function RegionEditor({
           <input required minLength={3} value={name} onChange={(e) => setName(e.target.value)} />
         </Field>
         <Field label="Organisasi pemilik">
-          <select required value={org} onChange={(e) => setOrg(e.target.value)}>
-            {orgs.map((o) => (
-              <option value={o.id} key={o.id}>
-                {o.name}
-              </option>
-            ))}
-          </select>
+          <Select required {...(org ? { value: org } : {})} onValueChange={setOrg}>
+            <SelectTrigger aria-label="Organisasi pemilik">
+              <SelectValue placeholder="Pilih organisasi" />
+            </SelectTrigger>
+            <SelectContent>
+              {orgs.map((o) => (
+                <SelectItem value={o.id} key={o.id}>
+                  {o.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label="Jendela cakupan (jam)">
           <input

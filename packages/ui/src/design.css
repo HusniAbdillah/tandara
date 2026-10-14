@@ -1,5 +1,5 @@
 :root {
-  @apply bg-[#f6f7f3] font-sans leading-[1.55] text-ink;
+  @apply bg-paper font-sans leading-[1.5] text-ink;
   font-synthesis: none;
 }
 * {
@@ -54,6 +54,40 @@ textarea,
 select {
   @apply min-h-11 w-full rounded-md border border-[#b5c3ba] bg-white px-3 py-[11px] text-ink;
 }
+select:not([multiple]) {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2355656B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+select:not([multiple]):hover:not(:disabled) {
+  border-color: #7fb3b8;
+  background-color: #fff;
+}
+select:not([multiple]):focus-visible {
+  border-color: #1f6f7a;
+  box-shadow: 0 0 0 3px rgb(31 111 122 / 16%);
+}
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.region-select {
+  min-width: 0;
+  border-color: #e3dfd6;
+  border-radius: 0.625rem;
+  background-color: #fff;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  color: #10303d;
+  font-weight: 600;
+}
 textarea {
   @apply min-h-[110px] resize-y;
 }
@@ -70,7 +104,7 @@ label.field {
 }
 .field small,
 .hint {
-  @apply text-[13px] font-normal text-muted;
+  @apply text-[13px] font-normal text-muted-foreground;
 }
 .checkbox {
   @apply flex items-start gap-3 font-normal;
@@ -103,40 +137,46 @@ p {
   @apply mt-0;
 }
 h1 {
-  @apply mb-3 text-[34px] leading-[1.2] tracking-[-1.1px];
+  @apply mb-3 text-[32px] leading-[1.25] tracking-[-0.48px];
 }
 h2 {
-  @apply mb-4 text-[21px] leading-[1.3] tracking-[-0.35px];
+  @apply mb-4 text-2xl leading-[1.33] tracking-[-0.24px];
 }
 h3 {
-  @apply mb-2 text-base leading-[1.4];
+  @apply mb-2 text-lg leading-[1.45];
 }
 p {
   @apply mb-3.5;
 }
 small {
-  @apply text-[13px];
+  @apply text-sm;
 }
 hr {
   @apply my-6 border-0 border-t border-line;
 }
 .muted {
-  @apply text-muted;
+  @apply text-muted-foreground;
 }
 .eyebrow {
-  @apply mb-2.5 text-[11px] font-[750] tracking-[1.6px] text-brand uppercase;
+  @apply mb-2.5 text-xs font-medium tracking-[0.02em] text-brand uppercase;
 }
 .lead {
-  @apply mb-0 max-w-[65ch] text-base text-muted;
+  @apply mb-0 max-w-[65ch] text-base text-muted-foreground;
 }
 .brand {
-  @apply flex min-h-12 items-center gap-2.5 py-1 text-[25px] font-[750] leading-none tracking-[-0.8px] text-brand no-underline;
+  @apply flex min-h-12 items-center gap-2.5 py-1 text-2xl font-bold leading-none tracking-[-0.48px] text-brand no-underline;
 }
 .brand > span {
   @apply flex flex-col leading-none;
 }
 .brand-audience {
-  @apply mt-[3px] block pb-0.5 text-[9px] leading-[1.3] font-[650] tracking-[2px] text-muted uppercase;
+  @apply mt-[3px] block pb-0.5 text-[9px] leading-[1.3] font-medium tracking-[2px] text-muted-foreground uppercase;
+}
+.sidebar .brand-audience {
+  @apply text-[#7fb3b8];
+}
+.sidebar .muted {
+  @apply text-[#b7c9cb];
 }
 .actions {
   @apply flex flex-wrap items-center gap-2.5;
@@ -157,7 +197,7 @@ hr {
   @apply m-0;
 }
 .loading {
-  @apply px-6 py-[60px] text-center text-muted;
+  @apply px-6 py-[60px] text-center text-muted-foreground;
 }
 .split {
   @apply grid grid-cols-2 gap-6;
@@ -169,7 +209,7 @@ hr {
   @apply flex flex-col gap-4;
 }
 .meta {
-  @apply mt-3 flex flex-wrap gap-2.5 text-xs text-muted;
+  @apply mt-3 flex flex-wrap gap-2.5 font-mono text-xs text-muted-foreground;
 }
 .meta strong {
   @apply font-semibold text-ink;
@@ -214,7 +254,7 @@ hr {
   @apply flex items-start gap-3 border-b border-line py-4 text-[15px] font-normal;
 }
 .checklist-item.checked span {
-  @apply text-muted line-through;
+  @apply text-muted-foreground line-through;
 }
 .progress {
   @apply my-4 h-1.5 overflow-hidden rounded bg-soft;
@@ -236,7 +276,7 @@ hr {
   @apply my-1.5 text-sm;
 }
 .timeline small {
-  @apply text-muted;
+  @apply text-muted-foreground;
 }
 .raw-report {
   @apply border-l-[3px] border-line pl-[18px] text-[17px] leading-[1.7] whitespace-pre-wrap [overflow-wrap:anywhere];
@@ -251,7 +291,7 @@ hr {
   @apply mb-2.5 border border-line bg-white p-3 text-[13px] [overflow-wrap:anywhere];
 }
 .evidence strong {
-  @apply mb-1 block text-[11px] font-bold tracking-[0.8px] text-muted uppercase;
+  @apply mb-1 block text-[11px] font-bold tracking-[0.8px] text-muted-foreground uppercase;
 }
 .json-editor {
   @apply min-h-[260px] font-mono text-[13px];
@@ -263,7 +303,7 @@ table {
   @apply w-full border-collapse text-left text-[13px];
 }
 th {
-  @apply whitespace-nowrap bg-[#f0f3ed] px-4 py-3.5 text-[10px] font-bold tracking-[1px] text-muted uppercase;
+  @apply whitespace-nowrap bg-[#f0f3ed] px-4 py-3.5 text-[10px] font-bold tracking-[1px] text-muted-foreground uppercase;
 }
 td {
   @apply border-t border-line px-4 py-4 align-top;
@@ -284,7 +324,7 @@ td a {
   @apply flex-[2_1_0%];
 }
 .pagination {
-  @apply flex items-center justify-between pt-[18px] text-[13px];
+  @apply flex flex-wrap items-center justify-between gap-3 pt-[18px] text-[13px];
 }
 .metrics {
   @apply mb-7 grid grid-cols-3 gap-0 rounded-lg border border-line bg-white;
@@ -299,10 +339,10 @@ td a {
   @apply my-2 block text-[32px] font-[650] tracking-[-1px];
 }
 .metric p {
-  @apply m-0 text-xs text-muted;
+  @apply m-0 text-xs text-muted-foreground;
 }
 .metric h2 {
-  @apply m-0 text-[13px] font-medium text-muted;
+  @apply m-0 text-[13px] font-medium text-muted-foreground;
 }
 .map-panel {
   @apply relative h-[440px] overflow-hidden rounded-lg border border-line bg-[#edf1e8];
@@ -326,7 +366,7 @@ td a {
   @apply size-4 min-h-4;
 }
 .legend {
-  @apply my-3.5 flex flex-wrap gap-5 text-xs text-muted;
+  @apply my-3.5 flex flex-wrap gap-5 text-xs text-muted-foreground;
 }
 .legend i {
   @apply mr-1.5 inline-block size-[9px] bg-[#bb6e2c];
@@ -350,7 +390,7 @@ td a {
   @apply border-brand bg-soft;
 }
 .safe-footer {
-  @apply mt-12 border-t border-line py-6 text-xs text-muted;
+  @apply mt-12 border-t border-line py-6 text-xs text-muted-foreground;
 }
 .safe-footer p {
   @apply m-0;
@@ -362,28 +402,49 @@ td a {
   @apply mt-4 flex flex-wrap gap-2.5;
 }
 .login-layout {
-  @apply grid min-h-screen grid-cols-2;
+  @apply grid min-h-screen grid-cols-[minmax(0,0.9fr)_minmax(460px,1.1fr)] bg-paper;
 }
 .login-story {
-  @apply flex flex-col justify-center bg-dark px-[10%] py-[12vh] text-white;
+  @apply flex flex-col justify-center bg-dark px-[12%] py-16 text-white;
 }
 .login-story h1 {
-  @apply max-w-[12ch] text-[48px];
+  @apply mb-4 max-w-[14ch] text-[40px] leading-[1.16] tracking-[-1.2px];
 }
 .login-story p {
-  @apply max-w-[45ch] text-[#d3e4da];
+  @apply max-w-[45ch] text-sm leading-relaxed text-[#d3e4da];
 }
 .login-story .eyebrow {
+  @apply mb-3 text-[10px] tracking-[0.12em] text-[#b8d6c1];
+}
+.login-story .login-brand {
+  @apply mb-8 text-white;
+}
+.login-story .login-brand small {
   @apply text-[#b8d6c1];
 }
 .login-form {
-  @apply mx-auto flex w-full max-w-[540px] flex-col justify-center p-12;
-}
-.login-form .brand {
-  @apply mb-12;
+  @apply mx-auto flex w-full max-w-[580px] flex-col justify-center px-12 py-10;
 }
 .login-form h1 {
-  @apply text-[28px];
+  @apply mb-2 text-[28px] tracking-[-0.55px];
+}
+.login-form > p {
+  @apply mb-6;
+}
+.login-form form {
+  @apply w-full;
+}
+.login-form form .field {
+  @apply mb-4;
+}
+.login-form form button {
+  @apply mt-1;
+}
+.login-form .meta {
+  @apply mt-5;
+}
+.login-form > a {
+  @apply mt-1 inline-flex min-h-10 items-center text-sm font-semibold no-underline;
 }
 .hero {
   @apply mb-[30px] grid grid-cols-[1.3fr_1fr] overflow-hidden rounded-[10px] bg-dark text-white;
@@ -428,7 +489,7 @@ td a {
   @apply mb-1.5 text-base;
 }
 .quick-link p {
-  @apply m-0 text-[13px] text-muted;
+  @apply m-0 text-[13px] text-muted-foreground;
 }
 .intro-strip {
   @apply mb-[22px] flex items-center justify-between gap-4 border-b border-line pb-4;
@@ -437,7 +498,7 @@ td a {
   @apply mx-auto max-w-[760px];
 }
 .breadcrumb {
-  @apply mb-5 text-xs text-muted;
+  @apply mb-5 text-xs text-muted-foreground;
 }
 .source-details {
   @apply flex items-start justify-between gap-5 border-b border-line py-5;
@@ -517,6 +578,9 @@ td a {
   .form-grid {
     @apply grid-cols-1;
   }
+  .location-grid {
+    @apply grid-cols-1;
+  }
   .metrics {
     @apply grid-cols-1;
   }
@@ -533,19 +597,29 @@ td a {
     @apply min-w-[640px];
   }
   .login-layout {
-    @apply block;
+    @apply block min-h-screen;
   }
   .login-story {
-    @apply min-h-[280px] px-6 py-9;
+    @apply min-h-0 flex-row items-center justify-between gap-3 px-5 py-3;
   }
   .login-story h1 {
-    @apply max-w-[20ch] text-[34px];
+    @apply hidden;
+  }
+  .login-story > p:not(.eyebrow),
+  .login-story .eyebrow {
+    @apply hidden;
+  }
+  .login-story .login-brand {
+    @apply m-0 py-0 text-xl;
+  }
+  .login-story .login-brand img {
+    @apply size-8;
   }
   .login-form {
-    @apply px-6 py-8;
+    @apply max-w-[520px] px-5 py-8;
   }
-  .login-form .brand {
-    @apply mb-7;
+  .login-form h1 {
+    @apply text-2xl;
   }
   .map-panel {
     @apply h-[330px];
@@ -564,6 +638,9 @@ td a {
   }
   .filters .search {
     @apply basis-full;
+  }
+  .sidebar .brand-audience {
+    @apply text-muted-foreground;
   }
 }
 @media (prefers-reduced-motion: reduce) {

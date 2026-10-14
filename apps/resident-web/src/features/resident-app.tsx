@@ -211,7 +211,7 @@ export function ResidentApp() {
                 to={url}
                 end={url === '/'}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-md px-3.5 py-2.5 text-[13px] font-semibold text-muted no-underline max-[1100px]:px-2.5 max-md:min-h-[54px] max-md:flex-1 max-md:flex-col max-md:gap-[3px] max-md:rounded-none max-md:px-0.5 max-md:py-[7px] max-md:text-[10px] ${isActive ? 'bg-soft text-brand max-md:bg-transparent' : ''}`
+                  `flex items-center gap-2 rounded-md px-3.5 py-2.5 text-[13px] font-semibold text-muted-foreground no-underline max-[1100px]:px-2.5 max-md:min-h-[54px] max-md:flex-1 max-md:flex-col max-md:gap-[3px] max-md:rounded-none max-md:px-0.5 max-md:py-[7px] max-md:text-[10px] ${isActive ? 'bg-soft text-brand max-md:bg-transparent' : ''}`
                 }
               >
                 <Icon name={icon} className="max-[1100px]:hidden max-md:block max-md:size-[18px]" />
@@ -240,7 +240,7 @@ export function ResidentApp() {
               ))}
             </select>
           </label>
-          <span className="flex items-center gap-1.5 text-xs text-muted max-md:text-[10px]">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground max-md:text-[10px]">
             <Icon name="wifi" size={14} />
             {online ? 'Terhubung' : 'Offline · data tersimpan'}
           </span>
@@ -266,7 +266,7 @@ export function ResidentApp() {
         )}
         {regions.isError && <Notice tone="error">Daftar wilayah tidak tersedia.</Notice>}
         {content}
-        <footer className="safe-footer mt-12 border-t border-line py-6 text-xs text-muted print:hidden">
+        <footer className="safe-footer mt-12 border-t border-line py-6 text-xs text-muted-foreground print:hidden">
           <div className="actions">
             <Link to="/help">Bantuan & privasi</Link>
             <Link to="/tracking">Laporan saya</Link>

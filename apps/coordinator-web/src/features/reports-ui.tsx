@@ -11,7 +11,32 @@ import {
   triageSchema,
 } from '@tandara/contracts';
 import type { Region, User, Report } from '@tandara/contracts';
-import { Badge, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Empty,
+  Field,
+  Icon,
+  Input,
+  Notice,
+  PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  formatTime,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 
 export const categories: Record<string, string> = {
@@ -65,158 +90,275 @@ export function Overview({ region, user }: { region: Region; user: User }) {
       ),
   });
   return (
-    <>
-      <PageHeader
-        eyebrow="Ruang koordinasi"
-        title="Pahami kabar. Tentukan tindak lanjut."
-        description={
-          'Ringkasan informasi komunitas ' +
-          region.name +
-          '. Semua angka berasal dari catatan platform.'
-        }
-        action={
-          <Link className="button primary" to="/inbox">
-            Buka kotak laporan →
-          </Link>
-        }
-      />
-      <div className="metrics">
-        <div className="metric">
-          <h2>Menunggu tinjauan</h2>
-          <span className="number">{pending.data?.total ?? '—'}</span>
-          <p>Status laporan: submitted</p>
+    <div className="space-y-5">
+      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="mb-1 text-[30px] leading-10 font-bold tracking-[-0.6px]">Ringkasan</h1>
+          <p className="mb-0 text-sm text-muted-foreground">{region.name}</p>
         </div>
-        <div className="metric">
-          <h2>Tindak lanjut terbuka</h2>
-          <span className="number">
-            {assistance.data?.filter((a) => a.state !== 'closed').length ?? '—'}
-          </span>
-          <p>Antrean bantuan komunitas</p>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link to="/training">Kelola latihan</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/inbox">
+              Buka kotak laporan <Icon name="arrow" size={16} />
+            </Link>
+          </Button>
         </div>
-        <div className="metric">
-          <h2>Sumber bermasalah</h2>
-          <span className="number">
-            {sources.data?.filter((s) => s.enabled && s.lastError).length ?? '—'}
-          </span>
-          <p>Sumber aktif dengan kegagalan terakhir</p>
-        </div>
+      </header>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Laporan tercatat"
+          value={reports.data?.total ?? '—'}
+          note="Semua laporan warga"
+          href="/inbox"
+          tone="neutral"
+        />
+        <MetricCard
+          label="Menunggu tinjauan"
+          value={pending.data?.total ?? '—'}
+          note="Laporan baru"
+          href="/inbox"
+          tone="amber"
+        />
+        <MetricCard
+          label="Tindak lanjut terbuka"
+          value={assistance.data?.filter((a) => a.state !== 'closed').length ?? '—'}
+          note="Permintaan bantuan"
+          href="/assistance"
+          tone="teal"
+        />
+        <MetricCard
+          label="Sumber bermasalah"
+          value={sources.data?.filter((s) => s.enabled && s.lastError).length ?? '—'}
+          note="Sumber aktif dengan kendala"
+          href="/sources"
+          tone={sources.data?.some((s) => s.enabled && s.lastError) ? 'amber' : 'neutral'}
+        />
       </div>
-      <div className="wide-split">
-        <section>
-          <div className="section-heading">
-            <h2>Kabar masuk terbaru</h2>
-            <Link to="/inbox">Lihat semua</Link>
-          </div>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.85fr)]">
+        <Card className="min-w-0 overflow-hidden">
+          <CardHeader className="flex-row items-center justify-between gap-4 border-b border-line py-4">
+            <div>
+              <CardTitle className="text-lg">Laporan terbaru</CardTitle>
+              <p className="mb-0 mt-1 text-xs text-muted-foreground">
+                Laporan warga · {region.name}
+              </p>
+            </div>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/inbox">
+                Lihat semua <Icon name="arrow" size={14} />
+              </Link>
+            </Button>
+          </CardHeader>
           {reports.isPending ? (
-            <div className="loading">Memuat laporan…</div>
+            <div className="space-y-3 p-5" role="status">
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <div className="h-10 animate-pulse rounded bg-[#f0f3f0]" />
+              <span className="sr-only">Memuat laporan…</span>
+            </div>
           ) : reports.isError ? (
-            <Notice tone="error">Laporan tidak dapat dimuat.</Notice>
+            <div className="p-5">
+              <Notice tone="error">Laporan tidak dapat dimuat.</Notice>
+            </div>
           ) : reports.data?.items.length ? (
             <ReportTable reports={reports.data.items.slice(0, 6)} />
           ) : (
-            <Empty title="Belum ada laporan">
-              Ketiadaan laporan tidak menandakan wilayah aman.
-            </Empty>
+            <div className="p-5">
+              <Empty title="Belum ada laporan">
+                Ketiadaan laporan tidak menandakan wilayah aman.
+              </Empty>
+            </div>
           )}
-        </section>
-        <aside className="stack">
-          <section className="panel">
-            <p className="eyebrow">Saran ringkasan · deterministik</p>
-            <h2>Catatan 24 jam terakhir</h2>
-            <p>{summary.data?.summary ?? 'Ringkasan belum tersedia.'}</p>
-            <p className="meta">
-              Perlu tinjauan manusia · {formatTime(summary.data?.generatedAt ?? null)}
-            </p>
-            <details>
-              <summary>Referensi laporan</summary>
-              {summary.data?.sourceIds.map((id) => (
-                <p key={id}>
-                  <Link to={'/reports/' + id}>{id.slice(0, 8)}</Link>
+        </Card>
+        <aside>
+          <Card className="overflow-hidden">
+            <CardHeader className="gap-1 px-5 pt-5 pb-2">
+              <p className="mb-0.5 font-mono text-[11px] font-medium tracking-wide text-muted-foreground">
+                RINGKASAN · 24 JAM
+              </p>
+              <CardTitle className="text-[17px]">Informasi terkini</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 px-5 pb-5 text-sm">
+              {summary.isPending ? (
+                <div
+                  className="h-12 animate-pulse rounded bg-[#f0f3f0]"
+                  role="status"
+                  aria-label="Memuat ringkasan"
+                />
+              ) : summary.isError ? (
+                <Notice tone="error">Ringkasan belum dapat dimuat.</Notice>
+              ) : (
+                <p className="mb-0 border-l-2 border-brand bg-paper px-3.5 py-3 leading-relaxed">
+                  {summary.data?.summary ?? 'Ringkasan belum tersedia.'}
                 </p>
-              ))}
-            </details>
-          </section>
-          <section className="panel">
-            <p className="eyebrow">Kualitas informasi</p>
-            <h2>Yang belum diketahui juga perlu terlihat.</h2>
-            <p className="muted">
-              Lihat bagian wilayah yang belum memiliki pengamatan terbaru dengan lokasi dan waktu
-              yang jelas.
-            </p>
-            <Link to="/map">Periksa cakupan informasi →</Link>
-          </section>
-          <section className="panel">
-            <p className="eyebrow">Sumber informasi</p>
-            {sources.data?.map((s) => (
-              <div key={s.id} className="source-details">
-                <div>
-                  <h3>{s.name}</h3>
-                  <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
-                    {s.enabled
-                      ? s.lastError
-                        ? 'Gagal memperbarui'
-                        : s.mode === 'simulation'
-                          ? 'Simulasi aktif'
-                          : 'Aktif'
-                      : 'Dinonaktifkan'}
-                  </Badge>
+              )}
+              {summary.data && (
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+                  <span className="font-medium text-muted-foreground">Perlu tinjauan manusia</span>
+                  <time className="font-mono text-[11px] text-muted-foreground">
+                    {formatTime(summary.data.generatedAt)}
+                  </time>
                 </div>
+              )}
+              {!!summary.data?.sourceIds.length && (
+                <details className="border-t border-line pt-3 text-xs">
+                  <summary className="cursor-pointer font-semibold text-brand">
+                    Referensi laporan ({summary.data.sourceIds.length})
+                  </summary>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {summary.data.sourceIds.map((id) => (
+                      <Link className="rounded bg-soft px-2 py-1" key={id} to={'/reports/' + id}>
+                        {id.slice(0, 8)}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+              )}
+              <div className="border-t border-line pt-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="mb-0 text-sm font-semibold">Sumber informasi</p>
+                  <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                    <Link to="/sources">Kelola</Link>
+                  </Button>
+                </div>
+                {sources.isPending ? (
+                  <p className="mb-0 text-xs text-muted-foreground">Memuat status sumber…</p>
+                ) : sources.isError ? (
+                  <p className="mb-0 text-xs text-red">Status sumber tidak dapat dimuat.</p>
+                ) : sources.data?.length ? (
+                  <ul className="m-0 list-none divide-y divide-line p-0">
+                    {sources.data.slice(0, 3).map((source) => (
+                      <li
+                        key={source.id}
+                        className="flex items-center justify-between gap-3 py-2.5 first:pt-1"
+                      >
+                        <span className="min-w-0 flex-1 truncate text-sm">{source.name}</span>
+                        {source.mode === 'simulation' && source.enabled && !source.lastError ? (
+                          <Badge
+                            tone="neutral"
+                            className="border-dashed border-[#a23b72] bg-[#f8e6ef] text-[#a23b72]"
+                          >
+                            Simulasi
+                          </Badge>
+                        ) : (
+                          <Badge
+                            tone={source.lastError ? 'amber' : source.enabled ? 'teal' : 'neutral'}
+                          >
+                            {source.enabled
+                              ? source.lastError
+                                ? 'Perlu cek'
+                                : 'Aktif'
+                              : 'Nonaktif'}
+                          </Badge>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mb-0 text-xs text-muted-foreground">Belum ada sumber informasi.</p>
+                )}
               </div>
-            ))}
-            <Link to="/sources">Status & atribusi sumber →</Link>
-          </section>
+            </CardContent>
+          </Card>
         </aside>
       </div>
-    </>
+    </div>
+  );
+}
+function MetricCard({
+  label,
+  value,
+  note,
+  href,
+  tone,
+}: {
+  label: string;
+  value: number | string;
+  note: string;
+  href: string;
+  tone: 'neutral' | 'teal' | 'amber';
+}) {
+  const valueTone = {
+    neutral: 'text-ink',
+    teal: 'text-brand',
+    amber: 'text-[#8a5a0c]',
+  }[tone];
+  return (
+    <Card className="min-w-0 transition-colors hover:border-[#7fb3b8]">
+      <CardContent className="px-5 py-4">
+        <p className="mb-2 truncate font-mono text-[11px] leading-4 font-medium tracking-[0.04em] text-muted-foreground uppercase">
+          {label}
+        </p>
+        <p
+          className={`mb-2 font-sans text-[34px] leading-10 font-semibold tabular-nums tracking-[-0.68px] ${valueTone}`}
+        >
+          {value}
+        </p>
+        <Link
+          className="text-xs text-muted-foreground underline-offset-4 hover:text-brand hover:underline"
+          to={href}
+        >
+          {note}
+        </Link>
+      </CardContent>
+    </Card>
   );
 }
 function ReportTable({ reports }: { reports: Report[] }) {
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Laporan & lokasi</th>
-            <th>Jenis</th>
-            <th>Status</th>
-            <th>Diterima</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((r) => (
-            <tr key={r.id}>
-              <td>
-                <Link className="table-title" to={'/reports/' + r.id}>
-                  {r.description.slice(0, 100)}
-                  {r.description.length > 100 ? '…' : ''}
-                </Link>
-                <span className="muted">{r.landmarkText || 'Lokasi belum jelas'}</span>
-                {r.followUpRequested && (
-                  <div>
-                    <Badge tone="amber">Bantuan · akses terbatas</Badge>
-                  </div>
-                )}
-              </td>
-              <td>
-                {categories[r.category]}
-                <div className="meta">Laporan warga · simulasi</div>
-              </td>
-              <td>
-                <Badge
-                  tone={r.state === 'reviewed' ? 'teal' : r.state === 'rejected' ? 'red' : 'amber'}
-                >
-                  {statuses[r.state]}
-                </Badge>
-              </td>
-              <td>
-                {formatTime(r.createdAt)}
-                <div className="meta">Pengamatan {formatTime(r.observationTime)}</div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table className="min-w-[760px]">
+      <TableHeader>
+        <TableRow className="bg-paper hover:bg-paper">
+          <TableHead>Laporan & lokasi</TableHead>
+          <TableHead>Jenis</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Diterima</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {reports.map((r) => (
+          <TableRow key={r.id}>
+            <TableCell className="min-w-[250px]">
+              <Link
+                className="mb-1 block max-w-[40ch] font-semibold leading-snug text-ink no-underline hover:text-brand hover:underline"
+                to={'/reports/' + r.id}
+              >
+                {r.description.slice(0, 100)}
+                {r.description.length > 100 ? '…' : ''}
+              </Link>
+              <span className="text-sm text-muted-foreground">
+                {r.landmarkText || 'Lokasi belum jelas'}
+              </span>
+              {r.followUpRequested && (
+                <div className="mt-1.5">
+                  <Badge tone="amber">Bantuan · akses terbatas</Badge>
+                </div>
+              )}
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+              {categories[r.category]}
+              <div className="mt-1 text-xs text-muted-foreground">Laporan warga · simulasi</div>
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+              <Badge
+                tone={r.state === 'reviewed' ? 'teal' : r.state === 'rejected' ? 'red' : 'amber'}
+              >
+                {statuses[r.state]}
+              </Badge>
+            </TableCell>
+            <TableCell className="whitespace-nowrap font-mono text-xs tabular-nums">
+              <span className="text-ink">{formatTime(r.createdAt)}</span>
+              <div className="mt-1 font-sans text-xs text-muted-foreground">
+                Pengamatan {formatTime(r.observationTime)}
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 export function Inbox({ region, user }: { region: Region; user: User }) {
@@ -255,7 +397,8 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
       >
         <label className="field search">
           Cari teks / patokan
-          <input
+          <Input
+            type="search"
             value={draftQ}
             onChange={(e) => setDraftQ(e.target.value)}
             maxLength={100}
@@ -264,49 +407,64 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
         </label>
         <label className="field">
           Status
-          <select
-            value={state}
-            onChange={(e) => {
-              setState(e.target.value);
+          <Select
+            value={state || 'all'}
+            onValueChange={(value) => {
+              setState(value === 'all' ? '' : value);
               setPage(1);
             }}
           >
-            <option value="">Semua status</option>
-            {Object.entries(statuses).map(([s, l]) => (
-              <option key={s} value={s}>
-                {l}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Status laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua status</SelectItem>
+              {Object.entries(statuses).map(([s, l]) => (
+                <SelectItem key={s} value={s}>
+                  {l}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
         <label className="field">
           Jenis
-          <select
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
+          <Select
+            value={category || 'all'}
+            onValueChange={(value) => {
+              setCategory(value === 'all' ? '' : value);
               setPage(1);
             }}
           >
-            <option value="">Semua jenis</option>
-            {region.config.categories.map((c) => (
-              <option value={c} key={c}>
-                {categories[c]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Jenis laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua jenis</SelectItem>
+              {region.config.categories.map((c) => (
+                <SelectItem value={c} key={c}>
+                  {categories[c]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
         <label className="field">
           Urutan
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="newest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-          </select>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger aria-label="Urutkan laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Terbaru</SelectItem>
+              <SelectItem value="oldest">Terlama</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
-        <button type="submit">Cari</button>
-        <button type="button" onClick={() => void reports.refetch()}>
+        <Button type="submit">Cari</Button>
+        <Button type="button" variant="outline" onClick={() => void reports.refetch()}>
           Perbarui
-        </button>
+        </Button>
       </form>
       {reports.isPending ? (
         <div className="loading">Memuat kotak laporan…</div>
@@ -314,18 +472,30 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
         <Notice tone="error">Tidak dapat memuat laporan. Coba perbarui atau masuk kembali.</Notice>
       ) : reports.data?.items.length ? (
         <>
-          <ReportTable reports={reports.data.items} />
+          <Card className="overflow-hidden">
+            <ReportTable reports={reports.data.items} />
+          </Card>
           <div className="pagination">
             <span>
               {reports.data.total} laporan · halaman {page}
             </span>
             <div className="actions">
-              <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
                 Sebelumnya
-              </button>
-              <button disabled={page * 20 >= reports.data.total} onClick={() => setPage(page + 1)}>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page * 20 >= reports.data.total}
+                onClick={() => setPage(page + 1)}
+              >
                 Berikutnya
-              </button>
+              </Button>
             </div>
           </div>
         </>
@@ -375,20 +545,25 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
   const suggestion = d.suggestions[0];
   return (
     <>
-      <div className="breadcrumb">
+      <div className="breadcrumb mb-3 flex items-center gap-2 text-xs">
         <Link to="/inbox">Kotak laporan</Link> / {id.slice(0, 8)}
       </div>
       <PageHeader
         eyebrow="Detail laporan warga"
-        title={categories[r.category] ?? r.category}
+        title={'Laporan #' + id.slice(0, 8)}
         description={r.landmarkText || 'Lokasi belum cukup jelas'}
-        action={<Badge tone={r.state === 'reviewed' ? 'teal' : 'amber'}>{statuses[r.state]}</Badge>}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Badge>{categories[r.category] ?? r.category}</Badge>
+            <Badge tone={r.state === 'reviewed' ? 'teal' : 'amber'}>{statuses[r.state]}</Badge>
+          </div>
+        }
       />
       {error && <Notice tone="error">{error}</Notice>}
-      <div className="split">
-        <section className="panel">
-          <div className="panel-heading">
-            <h2>Laporan asli</h2>
+      <div className="split mt-6 grid items-start gap-4 xl:grid-cols-[1fr_1fr]">
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <div className="panel-heading mb-4 border-b border-line pb-3">
+            <h2 className="mb-0 text-lg">Laporan asli</h2>
             {r.simulation && <Badge tone="amber">Simulasi</Badge>}
           </div>
           <p className="raw-report">{r.description}</p>
@@ -425,10 +600,10 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
             </>
           )}
         </section>
-        <section className="panel ai-panel">
-          <p className="eyebrow">Saran pendukung / Perlu tinjauan manusia</p>
-          <div className="panel-heading">
-            <h2>Asisten triase</h2>
+        <section className="panel m-0 rounded-lg border-dashed border-[#b8c5c4] bg-white p-5 sm:p-6">
+          <p className="eyebrow mb-3">Saran pendukung / Perlu tinjauan manusia</p>
+          <div className="panel-heading mb-3">
+            <h2 className="mb-0 text-lg">Asisten triase</h2>
             <Badge>{suggestion?.state ?? 'Menunggu proses'}</Badge>
           </div>
           {suggestion ? (
@@ -587,9 +762,9 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           </button>
         </section>
       </div>
-      <div className="split" style={{ marginTop: 24 }}>
-        <section className="panel">
-          <h2>Keputusan koordinator</h2>
+      <div className="split mt-5 grid items-start gap-4 xl:grid-cols-[1.35fr_0.85fr]">
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <h2 className="mb-2 text-lg">Keputusan koordinator</h2>
           <p className="hint">
             Catat alasan. Ringkasan publik terpisah dari laporan mentah dan tidak menjadi peringatan
             resmi.
@@ -613,25 +788,38 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           >
             <div className="form-grid">
               <Field label="Status tujuan">
-                <select value={state} onChange={(e) => setState(e.target.value)}>
-                  {Object.entries(statuses)
-                    .filter(([s]) => s !== r.state && s !== 'submitted')
-                    .map(([s, l]) => (
-                      <option value={s} key={s}>
-                        {l}
-                      </option>
-                    ))}
-                </select>
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger aria-label="Status tujuan">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(statuses)
+                      .filter(([s]) => s !== r.state && s !== 'submitted')
+                      .map(([s, l]) => (
+                        <SelectItem value={s} key={s}>
+                          {l}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </Field>
               <Field label="Koreksi kategori (opsional)">
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Pertahankan kategori</option>
-                  {region.config.categories.map((c) => (
-                    <option key={c} value={c}>
-                      {categories[c]}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={category || 'keep'}
+                  onValueChange={(value) => setCategory(value === 'keep' ? '' : value)}
+                >
+                  <SelectTrigger aria-label="Koreksi kategori">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="keep">Pertahankan kategori</SelectItem>
+                    {region.config.categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {categories[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             </div>
             <Field label="Alasan keputusan">
@@ -660,8 +848,8 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
             </button>
           </form>
         </section>
-        <section className="panel">
-          <h2>Riwayat & tanggung jawab</h2>
+        <section className="panel m-0 rounded-lg border-[#e3dfd6] p-5 sm:p-6">
+          <h2 className="mb-4 text-lg">Riwayat & tanggung jawab</h2>
           <ul className="timeline">
             {d.history.map((h) => (
               <li key={h.id}>
