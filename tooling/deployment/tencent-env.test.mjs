@@ -46,6 +46,9 @@ function resolve(extra = '') {
 test('selected Tencent profile enables Vikey/Gemini and forwards every configurable runtime field', () => {
   const config = resolve();
   const api = config.services.api.environment;
+  const origins = api.WEB_ORIGINS.split(',');
+  assert.equal(origins[0], 'https://tandara.my.id');
+  assert.equal(origins[1], 'https://posko.tandara.my.id');
   assert.equal(api.AI_MODE, 'compatible');
   assert.equal(api.AI_PROVIDER, 'vikey');
   assert.equal(api.AI_EMBEDDING_MODE, 'compatible');

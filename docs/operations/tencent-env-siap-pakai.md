@@ -34,7 +34,7 @@ sungguhan; key di contoh harus diganti secara privat dengan key yang ada:
 # Generate the DB password only for a fresh database: openssl rand -hex 24
 # Preserve the original DB password when the Postgres volume already exists.
 API_DOMAIN=api.tandara.my.id
-WEB_ORIGINS='https://tandara.my.id,https://www.tandara.my.id,https://posko.tandara.my.id,https://tandara-warga.vercel.app,https://tandara-posko.vercel.app'
+WEB_ORIGINS='https://tandara.my.id,https://posko.tandara.my.id,https://www.tandara.my.id,https://tandara-warga.vercel.app,https://tandara-posko.vercel.app'
 POSTGRES_PASSWORD=REPLACE_WITH_RANDOM_HEX
 # Unique password, >=12 characters. Seed does not reset existing passwords.
 DEMO_PASSWORD='REPLACE_WITH_UNIQUE_DEMO_PASSWORD'
@@ -97,6 +97,10 @@ meminta password login secara privat, sehingga tidak perlu menebak nilainya.
 | DEMO_PASSWORD             | Password akun seed awal, minimal 12 dan maksimal 200 karakter agar dapat dipakai login; gunakan kalimat unik dengan kutip tunggal |
 | SEED_DEMO_ON_FIRST_DEPLOY | Izin seed pada deployment pertama saja; `deploy.sh` tidak menjalankan seed pada release berikutnya jika `current` ada             |
 | ALLOW_LIVE_SOURCES        | Opt-in konektor BMKG/PetaBencana; tetap perlu membuat dan mengaktifkan sumber per wilayah di Posko                                |
+
+`WEB_ORIGINS` juga dipakai endpoint `/deployment`: origin pertama adalah
+Warga, origin kedua Posko. Letakkan alias www/Vercel sesudah kedua origin
+utama agar tautan aplikasi tidak tertukar.
 
 `APP_IMAGE` dan `POSTGRES_IMAGE` dibuat workflow di `current/release.env`.
 `DATABASE_URL`, port API, secure cookies, worker dan mode aplikasi
@@ -279,7 +283,7 @@ if not values.get('MFA_ENCRYPTION_KEY'):
     values['MFA_ENCRYPTION_KEY'] = secrets.token_hex(32)
 values.update({
     'API_DOMAIN': 'api.tandara.my.id',
-    'WEB_ORIGINS': 'https://tandara.my.id,https://www.tandara.my.id,https://posko.tandara.my.id,https://tandara-warga.vercel.app,https://tandara-posko.vercel.app',
+    'WEB_ORIGINS': 'https://tandara.my.id,https://posko.tandara.my.id,https://www.tandara.my.id,https://tandara-warga.vercel.app,https://tandara-posko.vercel.app',
     'POSTGRES_PASSWORD': db_password,
     'DEMO_PASSWORD': password,
     'SEED_DEMO_ON_FIRST_DEPLOY': 'true',
@@ -373,10 +377,10 @@ set -Eeuo pipefail
 cd /opt/tandara
 dc=(docker compose --project-name tandara-demo --env-file /opt/tandara/.env --env-file /opt/tandara/current/release.env -f /opt/tandara/current/backend.compose.yml)
 "${dc[@]}" config --quiet
-"${dc[@]}" run --rm --no-deps -T seed node --input-type=module <<'JS'
+"${dc[@]}" run --rm --no-deps -T --workdir /app/api/node_modules/@tandara/backend seed node --input-type=module <<'JS'
 import { randomBytes, scryptSync } from 'node:crypto';
 import { createRequire } from 'node:module';
-const require = createRequire('/app/api/node_modules/@tandara/database/package.json');
+const require = createRequire(import.meta.resolve('@tandara/database'));
 const { Client } = require('pg');
 const password = process.env.DEMO_PASSWORD;
 if (!password || password.length < 12 || password.length > 200) throw new Error('Invalid demo password length.');
@@ -594,3 +598,80 @@ Periksa hasil/kutipan/provenance untuk membuktikan provider benar-benar berhasil
 Embedding juga memerlukan sumber pengetahuan yang diindeks; flag aktif saja
 belum membuktikan indeks sudah selesai. Deployment berikutnya memakai env
 server ini; tidak perlu mengirim key ulang setiap push.
+
+## 8. Login tetap UNAUTHORIZED setelah env password diubah
+
+Pesan `Email atau kata sandi tidak sesuai` dapat berarti akun tidak ditemukan,
+password berbeda dari hash database, atau akun suspended. Mengubah env tidak
+mereset akun existing. Salah `coordinatorOrigin` adalah masalah terpisah:
+dua origin pertama wajib Warga dan Posko, lalu alias www/Vercel.
+
+Untuk pemulihan akun seed, jalankan blok berikut di console Tencent. Script
+membuat backup lebih dahulu, meminta email (kosong berarti admin), mengecek
+akun dan mencocokkan password env dengan hash. Hanya akun seed yang dipilih
+dapat direset. Akun suspended tidak diaktifkan otomatis. Jika password sudah
+cocok, tidak ada perubahan. Jika berbeda, hash diperbarui dan sesi akun itu
+dicabut. Password, hash dan API key tidak dicetak. Tidak memerlukan rebuild.
+
+```bash
+sudo bash <<'SH'
+set -Eeuo pipefail
+exec 9>/opt/tandara/deploy.lock
+flock -n 9 || { echo 'Tunggu deployment selesai.'; exit 1; }
+bash /opt/tandara/current/backup.sh
+IFS= read -r -p 'Email login Posko (Enter = admin@demo.tandara.test): ' email </dev/tty
+email=${email:-admin@demo.tandara.test}
+dc=(docker compose --project-name tandara-demo --env-file /opt/tandara/.env --env-file /opt/tandara/current/release.env -f /opt/tandara/current/backend.compose.yml)
+"${dc[@]}" run --rm --no-deps -T --workdir /app/api/node_modules/@tandara/backend -e RESET_EMAIL="$email" seed node --input-type=module <<'JS'
+import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.resolve('@tandara/database'));
+const { Client } = require('pg');
+const email = process.env.RESET_EMAIL.trim().toLowerCase();
+const ids = {
+  'ciliwung@demo.tandara.test': '30000000-0000-4000-8000-000000000001',
+  'semarang@demo.tandara.test': '30000000-0000-4000-8000-000000000002',
+  'admin@demo.tandara.test': '30000000-0000-4000-8000-000000000003',
+};
+const password = process.env.DEMO_PASSWORD;
+if (process.env.APP_MODE !== 'simulation') throw new Error('Pemulihan ini khusus akun demo simulation.');
+if (!ids[email]) throw new Error('Pilih salah satu dari tiga email akun seed.');
+if (!password || password.length < 12 || password.length > 200) throw new Error('DEMO_PASSWORD harus 12–200 karakter.');
+const db = new Client({ connectionString: process.env.DATABASE_URL });
+await db.connect();
+try {
+  await db.query('BEGIN');
+  const result = await db.query('SELECT id,password_hash,suspended FROM users WHERE id=$1::uuid AND email=$2 FOR UPDATE', [ids[email], email]);
+  const row = result.rows[0];
+  if (!row) throw new Error('Akun seed tidak ditemukan; reset tidak dilakukan.');
+  if (row.suspended) throw new Error('Akun dinonaktifkan; reset tidak dilakukan.');
+  const [oldSalt, oldHash] = row.password_hash.split(':');
+  const expected = Buffer.from(oldHash ?? '', 'hex');
+  const actual = scryptSync(password, oldSalt || 'missing', 64);
+  const matches = expected.length === actual.length && timingSafeEqual(expected, actual);
+  if (!matches) {
+    const salt = randomBytes(16).toString('hex');
+    const encoded = salt + ':' + scryptSync(password, salt, 64).toString('hex');
+    await db.query('UPDATE users SET password_hash=$1 WHERE id=$2::uuid', [encoded, row.id]);
+    await db.query('DELETE FROM sessions WHERE user_id=$1::uuid', [row.id]);
+    await db.query("INSERT INTO audit_events(actor_id,action,entity_id) VALUES(NULL,'demo.password_rotated',$1)", [row.id]);
+  }
+  await db.query('COMMIT');
+  console.log(matches ? 'Password env SUDAH cocok dengan akun database; tidak diubah.' : 'Password akun disamakan dengan DEMO_PASSWORD; sesi akun dicabut.');
+} catch (error) {
+  await db.query('ROLLBACK');
+  if (['Akun seed tidak ditemukan; reset tidak dilakukan.', 'Akun dinonaktifkan; reset tidak dilakukan.'].includes(error.message)) console.error(error.message);
+  else console.error('Reset gagal; perubahan dibatalkan. Periksa koneksi/schema database.');
+  process.exitCode = 1;
+} finally {
+  await db.end();
+}
+JS
+SH
+```
+
+Login memakai email yang dipilih dan isi `DEMO_PASSWORD` tanpa kutip pembungkus
+env. Jika script menyatakan password sudah cocok tetapi UI tetap menolak,
+periksa URL request login di Network browser serta input password/spasi/kutip.
+Jangan membagikan request body, cookies atau token. Respons 429 setelah banyak
+percobaan merupakan rate limit; tunggu jendela 15 menit sebelum mencoba lagi.
