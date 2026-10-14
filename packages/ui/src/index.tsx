@@ -32,6 +32,16 @@ export {
   CardTitle,
 } from './components/card.js';
 export { Input } from './components/input.js';
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/select.js';
 export { Separator } from './components/separator.js';
 export {
   Table,

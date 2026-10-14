@@ -4,7 +4,20 @@ import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { aiOperationsSchema, aiRunSchema, aiTaskSchema, type AiRun } from '@tandara/contracts';
-import { Badge, createUuid, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import {
+  Badge,
+  createUuid,
+  Empty,
+  Field,
+  Notice,
+  PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  formatTime,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 import { KnowledgeManagement } from './knowledge-ui.js';
 
@@ -91,24 +104,37 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
             }}
           >
             <Field label="Jenis bantuan">
-              <select value={task} onChange={(e) => setTask(aiTaskSchema.parse(e.target.value))}>
-                {Object.entries(taskNames).map(([value, label]) => (
-                  <option value={value} key={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
+              <Select value={task} onValueChange={(value) => setTask(aiTaskSchema.parse(value))}>
+                <SelectTrigger aria-label="Jenis bantuan">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(taskNames).map(([value, label]) => (
+                    <SelectItem value={value} key={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             {['duplicates', 'clarification', 'public_summary'].includes(task) && (
               <Field label="Laporan sumber">
-                <select required value={reportId} onChange={(e) => setReportId(e.target.value)}>
-                  <option value="">Pilih laporan</option>
-                  {reports.data?.items.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.description.slice(0, 90)}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  required
+                  {...(reportId ? { value: reportId } : {})}
+                  onValueChange={setReportId}
+                >
+                  <SelectTrigger aria-label="Laporan sumber">
+                    <SelectValue placeholder="Pilih laporan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reports.data?.items.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.description.slice(0, 90)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
             {['answer', 'translation', 'plan_draft', 'training_draft'].includes(task) && (
@@ -127,24 +153,34 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
             )}
             {task === 'briefing' && (
               <Field label="Rentang laporan">
-                <select value={hours} onChange={(e) => setHours(Number(e.target.value))}>
-                  {[6, 24, 48, 168].map((h) => (
-                    <option value={h} key={h}>
-                      {h} jam terakhir
-                    </option>
-                  ))}
-                </select>
+                <Select value={String(hours)} onValueChange={(value) => setHours(Number(value))}>
+                  <SelectTrigger aria-label="Rentang laporan">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[6, 24, 48, 168].map((h) => (
+                      <SelectItem value={String(h)} key={h}>
+                        {h} jam terakhir
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
             {task === 'translation' && (
               <Field label="Bahasa tujuan">
-                <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-                  {region.config.languages.map((l) => (
-                    <option value={l} key={l}>
-                      {{ id: 'Indonesia', jv: 'Jawa', su: 'Sunda' }[l]}
-                    </option>
-                  ))}
-                </select>
+                <Select value={language} onValueChange={setLanguage}>
+                  <SelectTrigger aria-label="Bahasa tujuan">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {region.config.languages.map((l) => (
+                      <SelectItem value={l} key={l}>
+                        {{ id: 'Indonesia', jv: 'Jawa', su: 'Sunda' }[l]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             )}
             <Notice>
@@ -524,19 +560,24 @@ function AiOperations({ user, run }: ManagementProps) {
           </div>
           <form onSubmit={(e) => e.preventDefault()}>
             <Field label="Lingkup kendali">
-              <select
+              <Select
                 value={scope}
-                onChange={(e) => {
-                  setScope(e.target.value);
-                  setScopeId(e.target.value === 'global' ? '*' : '');
+                onValueChange={(value) => {
+                  setScope(value);
+                  setScopeId(value === 'global' ? '*' : '');
                 }}
               >
-                {['global', 'provider', 'task', 'organization', 'release'].map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger aria-label="Lingkup kendali">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {['global', 'provider', 'task', 'organization', 'release'].map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Identitas lingkup">
               <input

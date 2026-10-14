@@ -12,7 +12,19 @@ import {
   trainingSchema,
 } from '@tandara/contracts';
 import type { Plan, PlanContent, Source, Training } from '@tandara/contracts';
-import { Badge, Empty, Field, Notice, PageHeader, formatTime } from '@tandara/ui';
+import {
+  Badge,
+  Empty,
+  Field,
+  Notice,
+  PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  formatTime,
+} from '@tandara/ui';
 import type { ManagementProps } from './posko-app.js';
 import { ok } from './reports-ui.js';
 
@@ -469,20 +481,30 @@ function AssistanceCard({
         >
           <div className="form-grid">
             <Field label="Status tindak lanjut">
-              <select value={state} onChange={(e) => setState(e.target.value)}>
-                <option value="assigned">Ditugaskan</option>
-                <option value="in_progress">Dalam tindak lanjut</option>
-                <option value="closed">Ditutup</option>
-              </select>
+              <Select value={state} onValueChange={setState}>
+                <SelectTrigger aria-label="Status tindak lanjut">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="assigned">Ditugaskan</SelectItem>
+                  <SelectItem value="in_progress">Dalam tindak lanjut</SelectItem>
+                  <SelectItem value="closed">Ditutup</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Penanggung jawab">
-              <select
+              <Select
                 value={assigned ? 'yes' : 'no'}
-                onChange={(e) => setAssigned(e.target.value === 'yes')}
+                onValueChange={(value) => setAssigned(value === 'yes')}
               >
-                <option value="no">Belum ditugaskan</option>
-                <option value="yes">{region.organization}</option>
-              </select>
+                <SelectTrigger aria-label="Penanggung jawab">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">Belum ditugaskan</SelectItem>
+                  <SelectItem value="yes">{region.organization}</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
           </div>
           <Field label="Catatan tindak lanjut">
@@ -661,18 +683,30 @@ function SourceEditor({
       </Field>
       <div className="form-grid">
         <Field label="Provider">
-          <select value={provider} onChange={(e) => setProvider(e.target.value as typeof provider)}>
-            {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
-              <option key={p}>{p}</option>
-            ))}
-          </select>
+          <Select value={provider} onValueChange={(value) => setProvider(value as typeof provider)}>
+            <SelectTrigger aria-label="Provider sumber">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label="Mode">
-          <select value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
-            <option value="simulation">Simulasi</option>
-            <option value="disabled">Dinonaktifkan</option>
-            <option value="live">Live (memerlukan izin)</option>
-          </select>
+          <Select value={mode} onValueChange={(value) => setMode(value as typeof mode)}>
+            <SelectTrigger aria-label="Mode sumber">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="simulation">Simulasi</SelectItem>
+              <SelectItem value="disabled">Dinonaktifkan</SelectItem>
+              <SelectItem value="live">Live (memerlukan izin)</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
       </div>
       <Field label="URL sumber / dokumentasi">
@@ -993,16 +1027,21 @@ function TrainingEditor({
             </Field>
           ))}
           <Field label="Jawaban sesuai materi">
-            <select
-              value={s.answer}
-              onChange={(e) => update(i, { answer: Number(e.target.value) })}
+            <Select
+              value={String(s.answer)}
+              onValueChange={(value) => update(i, { answer: Number(value) })}
             >
-              {s.options.map((_, j) => (
-                <option key={j} value={j}>
-                  Pilihan {j + 1}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger aria-label={'Jawaban sesuai materi, pertanyaan ' + (i + 1)}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {s.options.map((_, j) => (
+                  <SelectItem key={j} value={String(j)}>
+                    Pilihan {j + 1}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Penjelasan setelah latihan">
             <textarea

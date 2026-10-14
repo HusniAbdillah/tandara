@@ -24,6 +24,11 @@ import {
   Input,
   Notice,
   PageHeader,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
@@ -402,44 +407,59 @@ export function Inbox({ region, user }: { region: Region; user: User }) {
         </label>
         <label className="field">
           Status
-          <select
-            value={state}
-            onChange={(e) => {
-              setState(e.target.value);
+          <Select
+            value={state || 'all'}
+            onValueChange={(value) => {
+              setState(value === 'all' ? '' : value);
               setPage(1);
             }}
           >
-            <option value="">Semua status</option>
-            {Object.entries(statuses).map(([s, l]) => (
-              <option key={s} value={s}>
-                {l}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Status laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua status</SelectItem>
+              {Object.entries(statuses).map(([s, l]) => (
+                <SelectItem key={s} value={s}>
+                  {l}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
         <label className="field">
           Jenis
-          <select
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
+          <Select
+            value={category || 'all'}
+            onValueChange={(value) => {
+              setCategory(value === 'all' ? '' : value);
               setPage(1);
             }}
           >
-            <option value="">Semua jenis</option>
-            {region.config.categories.map((c) => (
-              <option value={c} key={c}>
-                {categories[c]}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Jenis laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua jenis</SelectItem>
+              {region.config.categories.map((c) => (
+                <SelectItem value={c} key={c}>
+                  {categories[c]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
         <label className="field">
           Urutan
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="newest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-          </select>
+          <Select value={sort} onValueChange={setSort}>
+            <SelectTrigger aria-label="Urutkan laporan">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Terbaru</SelectItem>
+              <SelectItem value="oldest">Terlama</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
         <Button type="submit">Cari</Button>
         <Button type="button" variant="outline" onClick={() => void reports.refetch()}>
@@ -763,25 +783,38 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           >
             <div className="form-grid">
               <Field label="Status tujuan">
-                <select value={state} onChange={(e) => setState(e.target.value)}>
-                  {Object.entries(statuses)
-                    .filter(([s]) => s !== r.state && s !== 'submitted')
-                    .map(([s, l]) => (
-                      <option value={s} key={s}>
-                        {l}
-                      </option>
-                    ))}
-                </select>
+                <Select value={state} onValueChange={setState}>
+                  <SelectTrigger aria-label="Status tujuan">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(statuses)
+                      .filter(([s]) => s !== r.state && s !== 'submitted')
+                      .map(([s, l]) => (
+                        <SelectItem value={s} key={s}>
+                          {l}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </Field>
               <Field label="Koreksi kategori (opsional)">
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Pertahankan kategori</option>
-                  {region.config.categories.map((c) => (
-                    <option key={c} value={c}>
-                      {categories[c]}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={category || 'keep'}
+                  onValueChange={(value) => setCategory(value === 'keep' ? '' : value)}
+                >
+                  <SelectTrigger aria-label="Koreksi kategori">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="keep">Pertahankan kategori</SelectItem>
+                    {region.config.categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {categories[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             </div>
             <Field label="Alasan keputusan">

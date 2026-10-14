@@ -5,7 +5,20 @@ import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { deploymentSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
-import { Badge, Brand, Button, Field, Icon, Notice, cn } from '@tandara/ui';
+import {
+  Badge,
+  Brand,
+  Button,
+  Field,
+  Icon,
+  Notice,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  cn,
+} from '@tandara/ui';
 import { Inbox, Overview, ReportDetailPage } from './reports-ui.js';
 import {
   PlansPage,
@@ -210,24 +223,27 @@ export function PoskoApp() {
         </aside>
         <div>
           <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-paper/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
-            <label className="flex min-w-[180px] max-w-[360px] items-center gap-2.5 text-brand">
+            <div className="flex min-w-[180px] max-w-[360px] items-center gap-2.5 text-brand">
               <Icon name="pin" />
-              <select
-                aria-label="Wilayah Posko"
+              <Select
                 value={region?.id ?? ''}
-                onChange={(e) => {
-                  setSelected(e.target.value);
+                onValueChange={(value) => {
+                  setSelected(value);
                   setMessage('');
                 }}
-                className="region-select min-h-10 text-[13px]"
               >
-                {available?.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <SelectTrigger aria-label="Wilayah Posko" className="min-h-10 text-[13px]">
+                  <SelectValue placeholder="Pilih wilayah" />
+                </SelectTrigger>
+                <SelectContent>
+                  {available?.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="actions">
               {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
               <Button
