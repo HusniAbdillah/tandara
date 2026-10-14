@@ -64,6 +64,11 @@ export function PoskoApp() {
       throw e;
     }
   }
+  async function logout() {
+    await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
+    client.clear();
+    window.location.assign('/');
+  }
   if (auth.isPending)
     return (
       <main className="loading" role="status">
@@ -190,14 +195,10 @@ export function PoskoApp() {
               {user.role === 'admin' ? 'Administrator' : 'Koordinator wilayah'}
             </p>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="mt-3 justify-start px-2 text-[#c4d7d8] hover:bg-[#194b56] hover:text-white"
-              onClick={async () => {
-                await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
-                client.clear();
-                window.location.assign('/');
-              }}
+              className="mt-3 w-full justify-start border-[#54747c] bg-[#183f4b] px-3 text-white hover:border-[#7fb3b8] hover:bg-[#1f6f7a] hover:text-white focus-visible:ring-[#e3a33b]"
+              onClick={logout}
             >
               <Icon name="logout" size={16} />
               Keluar
@@ -206,7 +207,7 @@ export function PoskoApp() {
         </aside>
         <div>
           <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-paper/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
-            <label className="flex min-w-[180px] max-w-[330px] items-center gap-2.5 text-brand">
+            <label className="flex min-w-[180px] max-w-[360px] items-center gap-2.5 text-brand">
               <Icon name="pin" />
               <select
                 aria-label="Wilayah Posko"
@@ -215,7 +216,7 @@ export function PoskoApp() {
                   setSelected(e.target.value);
                   setMessage('');
                 }}
-                className="min-h-8 border-0 bg-transparent px-0 py-1 pr-6 text-[13px] font-semibold"
+                className="region-select min-h-10 text-[13px]"
               >
                 {available?.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -226,16 +227,15 @@ export function PoskoApp() {
             </label>
             <div className="actions">
               {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
-              <button
-                className="quiet small hidden max-md:inline-flex"
-                onClick={async () => {
-                  await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
-                  client.clear();
-                  window.location.assign('/');
-                }}
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden border-line bg-white text-ink hover:border-[#7fb3b8] hover:bg-[#dcedee] max-md:inline-flex"
+                onClick={logout}
               >
+                <Icon name="logout" size={16} />
                 Keluar
-              </button>
+              </Button>
             </div>
           </header>
           <main

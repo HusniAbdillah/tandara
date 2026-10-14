@@ -54,6 +54,40 @@ textarea,
 select {
   @apply min-h-11 w-full rounded-md border border-[#b5c3ba] bg-white px-3 py-[11px] text-ink;
 }
+select:not([multiple]) {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2355656B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+select:not([multiple]):hover:not(:disabled) {
+  border-color: #7fb3b8;
+  background-color: #fff;
+}
+select:not([multiple]):focus-visible {
+  border-color: #1f6f7a;
+  box-shadow: 0 0 0 3px rgb(31 111 122 / 16%);
+}
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.region-select {
+  min-width: 0;
+  border-color: #e3dfd6;
+  border-radius: 0.625rem;
+  background-color: #fff;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  color: #10303d;
+  font-weight: 600;
+}
 textarea {
   @apply min-h-[110px] resize-y;
 }
@@ -140,6 +174,9 @@ hr {
 }
 .sidebar .brand-audience {
   @apply text-[#7fb3b8];
+}
+.sidebar .muted {
+  @apply text-[#b7c9cb];
 }
 .actions {
   @apply flex flex-wrap items-center gap-2.5;

@@ -85,22 +85,25 @@ export function Overview({ region, user }: { region: Region; user: User }) {
       ),
   });
   return (
-    <div className="space-y-6">
-      <PageHeader
-        eyebrow="POSKO / RINGKASAN"
-        title="Ringkasan"
-        description={`Pantau laporan dan tindak lanjut untuk ${region.name}.`}
-        action={
+    <div className="space-y-5">
+      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="min-w-0">
+          <h1 className="mb-1 text-[30px] leading-10 font-bold tracking-[-0.6px]">Ringkasan</h1>
+          <p className="mb-0 text-sm text-muted-foreground">{region.name}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline">
+            <Link to="/training">Kelola latihan</Link>
+          </Button>
           <Button asChild>
             <Link to="/inbox">
               Buka kotak laporan <Icon name="arrow" size={16} />
             </Link>
           </Button>
-        }
-      />
+        </div>
+      </header>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          icon="inbox"
           label="Laporan tercatat"
           value={reports.data?.total ?? '—'}
           note="Semua laporan warga"
@@ -108,7 +111,6 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           tone="neutral"
         />
         <MetricCard
-          icon="inbox"
           label="Menunggu tinjauan"
           value={pending.data?.total ?? '—'}
           note="Laporan baru"
@@ -116,7 +118,6 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           tone="amber"
         />
         <MetricCard
-          icon="help"
           label="Tindak lanjut terbuka"
           value={assistance.data?.filter((a) => a.state !== 'closed').length ?? '—'}
           note="Permintaan bantuan"
@@ -124,7 +125,6 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           tone="teal"
         />
         <MetricCard
-          icon="source"
           label="Sumber bermasalah"
           value={sources.data?.filter((s) => s.enabled && s.lastError).length ?? '—'}
           note="Sumber aktif dengan kendala"
@@ -132,7 +132,7 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           tone={sources.data?.some((s) => s.enabled && s.lastError) ? 'amber' : 'neutral'}
         />
       </div>
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.9fr)]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.85fr)]">
         <Card className="min-w-0 overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-4 border-b border-line py-4">
             <div>
@@ -168,16 +168,13 @@ export function Overview({ region, user }: { region: Region; user: User }) {
             </div>
           )}
         </Card>
-        <aside className="space-y-5">
+        <aside>
           <Card>
-            <CardHeader className="pb-3">
-              <div className="mb-1 flex items-center justify-between gap-3">
-                <p className="mb-0 text-xs font-semibold tracking-wide text-brand">
-                  RINGKASAN BANTUAN
-                </p>
-                <Badge tone="neutral">Deterministik</Badge>
-              </div>
-              <CardTitle>Catatan 24 jam terakhir</CardTitle>
+            <CardHeader className="gap-1 pb-3">
+              <p className="mb-1 font-mono text-[11px] font-medium tracking-wide text-muted-foreground">
+                RINGKASAN · 24 JAM
+              </p>
+              <CardTitle className="text-lg">Informasi terkini</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {summary.isPending ? (
@@ -210,56 +207,50 @@ export function Overview({ region, user }: { region: Region; user: User }) {
                   </div>
                 </details>
               )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <p className="mb-0 text-xs font-semibold tracking-wide text-brand">
-                KUALITAS INFORMASI
-              </p>
-              <CardTitle>Cakupan pengamatan</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p className="mb-0 leading-relaxed text-muted-foreground">
-                Periksa area yang belum memiliki pengamatan terbaru dengan lokasi dan waktu yang
-                jelas.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/map">
-                  Buka peta situasi <Icon name="arrow" size={14} />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between gap-3">
-                <CardTitle>Sumber informasi</CardTitle>
-                <Button asChild variant="ghost" size="sm">
-                  <Link to="/sources">Detail</Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {sources.data?.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 border-t border-line py-3 first:border-t-0"
-                >
-                  <div className="min-w-0">
-                    <h3 className="mb-1 truncate text-sm font-medium">{s.name}</h3>
-                    <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
-                      {s.enabled
-                        ? s.lastError
-                          ? 'Gagal memperbarui'
-                          : s.mode === 'simulation'
-                            ? 'Simulasi aktif'
-                            : 'Aktif'
-                        : 'Dinonaktifkan'}
-                    </Badge>
-                  </div>
+              <div className="border-t border-line pt-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <p className="mb-0 text-sm font-semibold">Sumber informasi</p>
+                  <Button asChild variant="ghost" size="sm" className="h-8 px-2">
+                    <Link to="/sources">Kelola</Link>
+                  </Button>
                 </div>
-              ))}
+                {sources.isPending ? (
+                  <p className="mb-0 text-xs text-muted-foreground">Memuat status sumber…</p>
+                ) : sources.isError ? (
+                  <p className="mb-0 text-xs text-red">Status sumber tidak dapat dimuat.</p>
+                ) : sources.data?.length ? (
+                  <ul className="m-0 list-none divide-y divide-line p-0">
+                    {sources.data.slice(0, 3).map((source) => (
+                      <li
+                        key={source.id}
+                        className="flex items-center justify-between gap-3 py-2.5 first:pt-1"
+                      >
+                        <span className="truncate text-sm">{source.name}</span>
+                        {source.mode === 'simulation' && source.enabled && !source.lastError ? (
+                          <Badge
+                            tone="neutral"
+                            className="border-dashed border-[#a23b72] bg-[#f8e6ef] text-[#a23b72]"
+                          >
+                            Simulasi
+                          </Badge>
+                        ) : (
+                          <Badge
+                            tone={source.lastError ? 'amber' : source.enabled ? 'teal' : 'neutral'}
+                          >
+                            {source.enabled
+                              ? source.lastError
+                                ? 'Perlu cek'
+                                : 'Aktif'
+                              : 'Nonaktif'}
+                          </Badge>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mb-0 text-xs text-muted-foreground">Belum ada sumber informasi.</p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </aside>
@@ -268,43 +259,40 @@ export function Overview({ region, user }: { region: Region; user: User }) {
   );
 }
 function MetricCard({
-  icon,
   label,
   value,
   note,
   href,
   tone,
 }: {
-  icon: 'inbox' | 'help' | 'source';
   label: string;
   value: number | string;
   note: string;
   href: string;
   tone: 'neutral' | 'teal' | 'amber';
 }) {
-  const iconTone = {
-    neutral: 'bg-[#f0f3f0] text-muted-foreground',
-    teal: 'bg-[#edf5ef] text-brand',
-    amber: 'bg-[#fff7e8] text-[#744b15]',
+  const valueTone = {
+    neutral: 'text-ink',
+    teal: 'text-brand',
+    amber: 'text-[#8a5a0c]',
   }[tone];
   return (
-      <Card className="transition-colors hover:border-[#7fb3b8]">
-      <CardContent className="flex items-start justify-between gap-4 py-4">
-        <div className="min-w-0">
-          <p className="mb-2 font-mono text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">{label}</p>
-          <p className="mb-1 text-[32px] leading-10 font-semibold tabular-nums tracking-[-0.64px] text-ink">
-            {value}
-          </p>
-          <Link
-            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-brand hover:underline"
-            to={href}
-          >
-            {note}
-          </Link>
-        </div>
-        <span className={`grid size-9 shrink-0 place-items-center rounded-md ${iconTone}`}>
-          <Icon name={icon} size={18} />
-        </span>
+    <Card className="min-w-0 transition-colors hover:border-[#7fb3b8]">
+      <CardContent className="px-5 py-4">
+        <p className="mb-2 truncate font-mono text-[11px] leading-4 font-medium tracking-[0.04em] text-muted-foreground uppercase">
+          {label}
+        </p>
+        <p
+          className={`mb-2 text-[34px] leading-10 font-semibold tabular-nums tracking-[-0.68px] ${valueTone}`}
+        >
+          {value}
+        </p>
+        <Link
+          className="text-xs text-muted-foreground underline-offset-4 hover:text-brand hover:underline"
+          to={href}
+        >
+          {note}
+        </Link>
       </CardContent>
     </Card>
   );

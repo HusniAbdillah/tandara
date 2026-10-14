@@ -191,11 +191,13 @@ export function Field({
 export function Badge({
   children,
   tone = 'neutral',
+  className,
 }: {
   children: ReactNode;
   tone?: 'neutral' | 'teal' | 'amber' | 'red';
+  className?: string;
 }) {
-  return <span className={cn(badgeVariants({ tone }))}>{children}</span>;
+  return <span className={cn(badgeVariants({ tone }), className)}>{children}</span>;
 }
 export function PageHeader({
   eyebrow,
