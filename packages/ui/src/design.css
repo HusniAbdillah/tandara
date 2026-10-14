@@ -417,7 +417,7 @@ td a {
   @apply mb-3 text-[10px] tracking-[0.12em] text-[#b8d6c1];
 }
 .login-story .login-brand {
-  @apply mb-16 text-white;
+  @apply mb-8 text-white;
 }
 .login-story .login-brand small {
   @apply text-[#b8d6c1];
