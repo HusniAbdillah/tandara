@@ -87,13 +87,9 @@ export function Overview({ region, user }: { region: Region; user: User }) {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="RINGKASAN WILAYAH"
-        title="Pahami kabar. Tentukan tindak lanjut."
-        description={
-          'Ringkasan informasi komunitas ' +
-          region.name +
-          '. Semua angka berasal dari catatan platform.'
-        }
+        eyebrow="POSKO / RINGKASAN"
+        title="Ringkasan"
+        description={`Pantau laporan dan tindak lanjut untuk ${region.name}.`}
         action={
           <Button asChild>
             <Link to="/inbox">
@@ -102,7 +98,15 @@ export function Overview({ region, user }: { region: Region; user: User }) {
           </Button>
         }
       />
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          icon="inbox"
+          label="Laporan tercatat"
+          value={reports.data?.total ?? '—'}
+          note="Semua laporan warga"
+          href="/inbox"
+          tone="neutral"
+        />
         <MetricCard
           icon="inbox"
           label="Menunggu tinjauan"
@@ -132,9 +136,9 @@ export function Overview({ region, user }: { region: Region; user: User }) {
         <Card className="min-w-0 overflow-hidden">
           <CardHeader className="flex-row items-center justify-between gap-4 border-b border-line py-4">
             <div>
-              <CardTitle>Kabar masuk terbaru</CardTitle>
+              <CardTitle className="text-lg">Laporan terbaru</CardTitle>
               <p className="mb-0 mt-1 text-xs text-muted-foreground">
-                Laporan terkini untuk wilayah ini
+                Laporan warga · {region.name}
               </p>
             </div>
             <Button asChild variant="ghost" size="sm">
@@ -284,11 +288,11 @@ function MetricCard({
     amber: 'bg-[#fff7e8] text-[#744b15]',
   }[tone];
   return (
-    <Card className="transition-colors hover:border-[#bfd0c4]">
+      <Card className="transition-colors hover:border-[#7fb3b8]">
       <CardContent className="flex items-start justify-between gap-4 py-4">
         <div className="min-w-0">
-          <p className="mb-2 text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="mb-1 text-3xl font-semibold tabular-nums tracking-[-1px] text-ink">
+          <p className="mb-2 font-mono text-xs font-medium uppercase tracking-[0.04em] text-muted-foreground">{label}</p>
+          <p className="mb-1 text-[32px] leading-10 font-semibold tabular-nums tracking-[-0.64px] text-ink">
             {value}
           </p>
           <Link
@@ -309,7 +313,7 @@ function ReportTable({ reports }: { reports: Report[] }) {
   return (
     <Table className="min-w-[760px]">
       <TableHeader>
-        <TableRow className="bg-[#f8faf7] hover:bg-[#f8faf7]">
+        <TableRow className="bg-paper hover:bg-paper">
           <TableHead>Laporan & lokasi</TableHead>
           <TableHead>Jenis</TableHead>
           <TableHead>Status</TableHead>
@@ -327,7 +331,7 @@ function ReportTable({ reports }: { reports: Report[] }) {
                 {r.description.slice(0, 100)}
                 {r.description.length > 100 ? '…' : ''}
               </Link>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 {r.landmarkText || 'Lokasi belum jelas'}
               </span>
               {r.followUpRequested && (
@@ -347,9 +351,9 @@ function ReportTable({ reports }: { reports: Report[] }) {
                 {statuses[r.state]}
               </Badge>
             </TableCell>
-            <TableCell className="whitespace-nowrap text-xs tabular-nums">
+            <TableCell className="whitespace-nowrap font-mono text-xs tabular-nums">
               <span className="text-ink">{formatTime(r.createdAt)}</span>
-              <div className="mt-1 text-muted-foreground">
+              <div className="mt-1 font-sans text-xs text-muted-foreground">
                 Pengamatan {formatTime(r.observationTime)}
               </div>
             </TableCell>

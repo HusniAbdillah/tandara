@@ -2,6 +2,8 @@
 @import '@fontsource/plus-jakarta-sans/latin-500.css';
 @import '@fontsource/plus-jakarta-sans/latin-600.css';
 @import '@fontsource/plus-jakarta-sans/latin-700.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/utilities.css' layer(utilities) source(none);
@@ -12,57 +14,58 @@
 
 @theme {
   --font-sans: 'Plus Jakarta Sans', sans-serif;
-  --color-background: #f5f7f4;
-  --color-foreground: #203735;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --color-background: #f7f5f0;
+  --color-foreground: #10303d;
   --color-card: #ffffff;
-  --color-card-foreground: #203735;
+  --color-card-foreground: #10303d;
   --color-popover: #ffffff;
-  --color-popover-foreground: #203735;
-  --color-primary: #126653;
+  --color-popover-foreground: #10303d;
+  --color-primary: #1f6f7a;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #edf3ee;
-  --color-secondary-foreground: #203735;
-  --color-muted: #f0f3f0;
-  --color-muted-foreground: #5a6c67;
-  --color-accent: #edf3ee;
-  --color-accent-foreground: #203735;
-  --color-destructive: #a4382f;
-  --color-border: #dce3dc;
-  --color-input: #cbd5ce;
-  --color-ring: #946018;
-  --radius: 0.5rem;
-  --color-ink: #203735;
-  --color-brand: #126653;
-  --color-dark: #174a40;
-  --color-paper: #fff;
-  --color-line: #dce3dc;
-  --color-soft: #edf3ee;
-  --color-amber: #855614;
-  --color-red: #a4382f;
-  --color-focus: #946018;
+  --color-secondary: #dcedee;
+  --color-secondary-foreground: #10303d;
+  --color-muted: #f1efea;
+  --color-muted-foreground: #55656b;
+  --color-accent: #dcedee;
+  --color-accent-foreground: #10303d;
+  --color-destructive: #b4372b;
+  --color-border: #e3dfd6;
+  --color-input: #c9c4ba;
+  --color-ring: #e3a33b;
+  --radius: 0.625rem;
+  --color-ink: #10303d;
+  --color-brand: #1f6f7a;
+  --color-dark: #10303d;
+  --color-paper: #f7f5f0;
+  --color-line: #e3dfd6;
+  --color-soft: #dcedee;
+  --color-amber: #8a5a0c;
+  --color-red: #b4372b;
+  --color-focus: #8a5a0c;
 }
 
 :root {
   color-scheme: light;
-  --background: #f5f7f4;
-  --foreground: #203735;
+  --background: #f7f5f0;
+  --foreground: #10303d;
   --card: #ffffff;
-  --card-foreground: #203735;
+  --card-foreground: #10303d;
   --popover: #ffffff;
-  --popover-foreground: #203735;
-  --primary: #126653;
+  --popover-foreground: #10303d;
+  --primary: #1f6f7a;
   --primary-foreground: #ffffff;
-  --secondary: #edf3ee;
-  --secondary-foreground: #203735;
-  --muted: #f0f3f0;
-  --muted-foreground: #5a6c67;
-  --accent: #edf3ee;
-  --accent-foreground: #203735;
-  --destructive: #a4382f;
-  --border: #dce3dc;
-  --input: #cbd5ce;
-  --ring: #946018;
-  --radius: 0.5rem;
+  --secondary: #dcedee;
+  --secondary-foreground: #10303d;
+  --muted: #f1efea;
+  --muted-foreground: #55656b;
+  --accent: #dcedee;
+  --accent-foreground: #10303d;
+  --destructive: #b4372b;
+  --border: #e3dfd6;
+  --input: #c9c4ba;
+  --ring: #e3a33b;
+  --radius: 0.625rem;
 }
 
 /* Preflight is intentionally omitted during this compatibility stage. */

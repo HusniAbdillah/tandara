@@ -140,9 +140,9 @@ export function PoskoApp() {
         Lewati ke konten
       </a>
       <div className="posko-layout grid min-h-screen grid-cols-[232px_minmax(0,1fr)] max-[1100px]:grid-cols-[210px_minmax(0,1fr)] max-md:block print:block">
-        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-line bg-[#f8faf7] px-4 py-6 max-md:static max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 print:hidden">
-          <Brand audience="Posko" className="mx-2 mb-8 max-md:hidden" />
-          <p className="mb-2.5 ml-3 mr-3 mt-2 text-[10px] font-bold tracking-[1.5px] text-[#53665a] max-md:hidden">
+        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-[#244b56] bg-[#10303d] px-4 py-6 text-[#f7f5f0] max-md:static max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 max-md:text-ink print:hidden">
+          <Brand audience="Posko" className="mx-2 mb-8 text-[#f7f5f0] max-md:hidden" />
+          <p className="mb-2.5 ml-3 mr-3 mt-2 text-[10px] font-medium tracking-[1.5px] text-[#7fb3b8] max-md:hidden">
             RUANG KOORDINASI
           </p>
           <nav
@@ -156,8 +156,9 @@ export function PoskoApp() {
                 end={url === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground no-underline transition-colors hover:bg-[#edf3ee] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs',
-                    isActive && 'border-[#d8e6db] bg-[#eaf2ec] font-semibold text-brand',
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
+                    isActive &&
+                      'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
                   )
                 }
               >
@@ -170,8 +171,9 @@ export function PoskoApp() {
                 to="/admin"
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-muted-foreground no-underline transition-colors hover:bg-[#edf3ee] hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs',
-                    isActive && 'border-[#d8e6db] bg-[#eaf2ec] font-semibold text-brand',
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
+                    isActive &&
+                      'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
                   )
                 }
               >
@@ -180,7 +182,7 @@ export function PoskoApp() {
               </NavLink>
             )}
           </nav>
-          <div className="mt-auto border-t border-line px-2.5 pt-5 max-md:hidden">
+          <div className="mt-auto border-t border-[#315965] px-2.5 pt-5 max-md:hidden">
             <p className="mb-1 text-xs">
               <strong>{user.name}</strong>
             </p>
@@ -190,7 +192,7 @@ export function PoskoApp() {
             <Button
               variant="ghost"
               size="sm"
-              className="mt-3 justify-start px-2 text-muted-foreground"
+              className="mt-3 justify-start px-2 text-[#c4d7d8] hover:bg-[#194b56] hover:text-white"
               onClick={async () => {
                 await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
                 client.clear();
@@ -203,7 +205,7 @@ export function PoskoApp() {
           </div>
         </aside>
         <div>
-          <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-white/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
+          <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-paper/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
             <label className="flex min-w-[180px] max-w-[330px] items-center gap-2.5 text-brand">
               <Icon name="pin" />
               <select
@@ -223,10 +225,6 @@ export function PoskoApp() {
               </select>
             </label>
             <div className="actions">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Icon name="shield" size={15} />
-                Keputusan tetap pada manusia
-              </span>
               {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
               <button
                 className="quiet small hidden max-md:inline-flex"

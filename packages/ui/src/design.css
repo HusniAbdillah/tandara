@@ -1,5 +1,5 @@
 :root {
-  @apply bg-[#f6f7f3] font-sans leading-[1.55] text-ink;
+  @apply bg-paper font-sans leading-[1.5] text-ink;
   font-synthesis: none;
 }
 * {
@@ -103,19 +103,19 @@ p {
   @apply mt-0;
 }
 h1 {
-  @apply mb-3 text-[34px] leading-[1.2] tracking-[-1.1px];
+  @apply mb-3 text-[32px] leading-[1.25] tracking-[-0.48px];
 }
 h2 {
-  @apply mb-4 text-[21px] leading-[1.3] tracking-[-0.35px];
+  @apply mb-4 text-2xl leading-[1.33] tracking-[-0.24px];
 }
 h3 {
-  @apply mb-2 text-base leading-[1.4];
+  @apply mb-2 text-lg leading-[1.45];
 }
 p {
   @apply mb-3.5;
 }
 small {
-  @apply text-[13px];
+  @apply text-sm;
 }
 hr {
   @apply my-6 border-0 border-t border-line;
@@ -124,19 +124,22 @@ hr {
   @apply text-muted-foreground;
 }
 .eyebrow {
-  @apply mb-2.5 text-[11px] font-[750] tracking-[1.6px] text-brand uppercase;
+  @apply mb-2.5 text-xs font-medium tracking-[0.02em] text-brand uppercase;
 }
 .lead {
   @apply mb-0 max-w-[65ch] text-base text-muted-foreground;
 }
 .brand {
-  @apply flex min-h-12 items-center gap-2.5 py-1 text-[25px] font-[750] leading-none tracking-[-0.8px] text-brand no-underline;
+  @apply flex min-h-12 items-center gap-2.5 py-1 text-2xl font-bold leading-none tracking-[-0.48px] text-brand no-underline;
 }
 .brand > span {
   @apply flex flex-col leading-none;
 }
 .brand-audience {
-  @apply mt-[3px] block pb-0.5 text-[9px] leading-[1.3] font-[650] tracking-[2px] text-muted-foreground uppercase;
+  @apply mt-[3px] block pb-0.5 text-[9px] leading-[1.3] font-medium tracking-[2px] text-muted-foreground uppercase;
+}
+.sidebar .brand-audience {
+  @apply text-[#7fb3b8];
 }
 .actions {
   @apply flex flex-wrap items-center gap-2.5;
@@ -169,7 +172,7 @@ hr {
   @apply flex flex-col gap-4;
 }
 .meta {
-  @apply mt-3 flex flex-wrap gap-2.5 text-xs text-muted-foreground;
+  @apply mt-3 flex flex-wrap gap-2.5 font-mono text-xs text-muted-foreground;
 }
 .meta strong {
   @apply font-semibold text-ink;
