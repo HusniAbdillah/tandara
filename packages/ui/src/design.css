@@ -395,6 +395,9 @@ td a {
 .safe-footer p {
   @apply m-0;
 }
+.pwa-update-notice {
+  @apply fixed right-4 bottom-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-lg border border-line bg-white p-3 text-sm text-ink shadow-lg;
+}
 .receipt-secret {
   @apply font-mono text-xs [overflow-wrap:anywhere];
 }
@@ -542,6 +545,42 @@ td a {
   }
 }
 @media (max-width: 767px) {
+  .posko-layout {
+    min-height: 100dvh;
+  }
+  .posko-layout > .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .posko-layout > .sidebar nav {
+    scroll-padding-inline: 0.75rem;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+  }
+  .posko-layout > .sidebar nav::-webkit-scrollbar {
+    display: none;
+  }
+  .posko-layout > .sidebar nav > a {
+    min-height: 44px;
+    scroll-snap-align: start;
+  }
+  .posko-header {
+    @apply gap-3;
+  }
+  .posko-header > div:first-child {
+    @apply min-w-0 flex-1;
+  }
+  .posko-header .actions {
+    @apply gap-2;
+  }
+  .posko-main {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+  .posko-main .table-wrap {
+    max-width: calc(100vw - 2.5rem);
+    overscroll-behavior-x: contain;
+  }
   h1 {
     @apply text-[28px];
   }
@@ -617,6 +656,9 @@ td a {
   }
   .login-form {
     @apply max-w-[520px] px-5 py-8;
+  }
+  .login-install {
+    @apply mb-4;
   }
   .login-form h1 {
     @apply text-2xl;

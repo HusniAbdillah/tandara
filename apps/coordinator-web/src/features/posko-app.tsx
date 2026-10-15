@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -90,11 +90,14 @@ export function PoskoApp() {
     );
   if (!user)
     return (
-      <Login
-        simulation={deployment.data?.mode === 'simulation'}
-        residentOrigin={deployment.data?.residentOrigin}
-        onLogin={(data) => client.setQueryData(['auth'], data)}
-      />
+      <>
+        <Login
+          simulation={deployment.data?.mode === 'simulation'}
+          residentOrigin={deployment.data?.residentOrigin}
+          onLogin={(data) => client.setQueryData(['auth'], data)}
+        />
+        <PwaUpdateNotice />
+      </>
     );
   let content;
   if (path === '/admin' && user.role === 'admin')
@@ -158,7 +161,7 @@ export function PoskoApp() {
         Lewati ke konten
       </a>
       <div className="posko-layout grid min-h-screen grid-cols-[232px_minmax(0,1fr)] max-[1100px]:grid-cols-[210px_minmax(0,1fr)] max-md:block print:block">
-        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-[#244b56] bg-[#10303d] px-4 py-6 text-[#f7f5f0] max-md:static max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 max-md:text-ink print:hidden">
+        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-[#244b56] bg-[#10303d] px-4 py-6 text-[#f7f5f0] max-md:sticky max-md:top-0 max-md:z-30 max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 max-md:text-ink print:hidden">
           <Brand
             audience="Posko"
             className="mx-2 mb-8 text-[#f7f5f0] max-md:mb-1 max-md:mt-2 max-md:flex max-md:px-1 max-md:text-brand"
@@ -177,7 +180,7 @@ export function PoskoApp() {
                 end={url === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-11 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
                     isActive &&
                       'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
                   )
@@ -192,7 +195,7 @@ export function PoskoApp() {
                 to="/admin"
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-10 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
+                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-11 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
                     isActive &&
                       'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
                   )
@@ -249,7 +252,7 @@ export function PoskoApp() {
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden border-line bg-white text-ink hover:border-[#7fb3b8] hover:bg-[#dcedee] max-md:inline-flex"
+                className="hidden border-line bg-white text-ink hover:border-[#7fb3b8] hover:bg-[#dcedee] max-md:inline-flex max-md:min-h-11"
                 onClick={logout}
               >
                 <Icon name="logout" size={16} />
@@ -273,9 +276,36 @@ export function PoskoApp() {
           </main>
         </div>
       </div>
+      <PwaUpdateNotice />
     </>
   );
 }
+
+function PwaUpdateNotice() {
+  const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
+
+  useEffect(() => {
+    const onUpdateAvailable = (event: Event) => {
+      setApplyUpdate(() => (event as CustomEvent<() => void>).detail);
+    };
+
+    window.addEventListener('tandara:update-available', onUpdateAvailable);
+    return () => {
+      window.removeEventListener('tandara:update-available', onUpdateAvailable);
+    };
+  }, []);
+
+  if (!applyUpdate) return null;
+  return (
+    <div className="pwa-update-notice" role="status">
+      <span>Pembaruan Posko tersedia.</span>
+      <Button size="sm" onClick={applyUpdate}>
+        Perbarui
+      </Button>
+    </div>
+  );
+}
+
 function Login({
   onLogin,
   simulation,
