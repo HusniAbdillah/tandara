@@ -96,17 +96,51 @@ jobs:
           [[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]
           printf 'Exported release config digest: %s\n' "$image_id"
           tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh image_config_id.py
-          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA" <<'PREPARE'
+          successful_shas=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-demo.yml --branch main --status success --limit 20 --json headSha --jq '.[].headSha')
+          rollback_shas=()
+          declare -A seen_successful_shas=()
+          while IFS= read -r successful_sha; do
+            [[ "$successful_sha" =~ ^[a-f0-9]{40}$ ]] || continue
+            [[ "$successful_sha" == "$RELEASE_SHA" ]] && continue
+            [[ -n "${seen_successful_shas[$successful_sha]:-}" ]] && continue
+            seen_successful_shas["$successful_sha"]=1
+            rollback_shas+=("$successful_sha")
+            ((${#rollback_shas[@]} < 2)) || break
+          done <<< "$successful_shas"
+          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA ${rollback_shas[*]}" <<'PREPARE'
           set -euo pipefail
           root=/opt/tandara
           sha=$1
+          shift
           [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
           active=$(readlink -f "$root/current" 2>/dev/null || true)
-          if [[ "$active" != "$root/releases/$sha" ]]; then
-            # A failed release may have left these exact candidate tags behind.
-            # Docker refuses to remove an image still referenced by a container.
-            docker image rm "tandara-backend:$sha" "tandara-postgres:$sha" 2>/dev/null || true
+          active_sha=''
+          if [[ -n "$active" ]]; then
+            active_sha=$(basename "$active")
+            [[ "$active" == "$root/releases/$active_sha" && "$active_sha" =~ ^[a-f0-9]{40}$ ]] || {
+              echo 'Invalid current release path; refusing image cleanup.' >&2
+              exit 1
+            }
           fi
+          keep_shas=("$active_sha" "$@")
+          while IFS= read -r image; do
+            if [[ "$image" =~ ^tandara-(backend|postgres):([a-f0-9]{40})$ ]]; then
+              image_sha=${BASH_REMATCH[2]}
+              keep=false
+              for keep_sha in "${keep_shas[@]}"; do
+                [[ -n "$keep_sha" && "$image_sha" == "$keep_sha" ]] && keep=true
+              done
+              if [[ "$keep" == false ]]; then
+                # Keep the active image and two recent successful releases for rollback.
+                # Docker refuses to remove an image still referenced by any container.
+                docker image rm "$image" || true
+              fi
+            fi
+          done < <(docker image ls --format '{{.Repository}}:{{.Tag}}')
+          for incoming in "$root"/incoming/*; do
+            [[ -d "$incoming" ]] || continue
+            [[ "${incoming##*/}" == "$sha" ]] || rm -rf -- "$incoming"
+          done
           rm -f -- "$root/incoming/$sha/backend.tar.gz" "$root/incoming/$sha/backend.tar.gz.sha256" "$root/incoming/$sha/release.tar.gz"
           mkdir -p "$root/incoming/$sha"
           docker_root=$(docker info --format '{{.DockerRootDir}}')
