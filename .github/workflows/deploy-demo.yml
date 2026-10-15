@@ -96,7 +96,24 @@ jobs:
           [[ "$image_id" =~ ^sha256:[a-f0-9]{64}$ ]]
           printf 'Exported release config digest: %s\n' "$image_id"
           tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh image_config_id.py
-          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "mkdir -p /opt/tandara/incoming/$RELEASE_SHA"
+          ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA" <<'PREPARE'
+          set -euo pipefail
+          root=/opt/tandara
+          sha=$1
+          [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
+          mkdir -p "$root/incoming/$sha"
+          active=$(readlink -f "$root/current" 2>/dev/null || true)
+          if [[ "$active" != "$root/releases/$sha" ]]; then
+            # A failed release may have left these exact candidate tags behind.
+            # Docker refuses to remove an image still referenced by a container.
+            docker image rm "tandara-backend:$sha" "tandara-postgres:$sha" 2>/dev/null || true
+          fi
+          rm -f -- "$root/incoming/$sha/backend.tar.gz" "$root/incoming/$sha/backend.tar.gz.sha256" "$root/incoming/$sha/release.tar.gz"
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          df -h "$root" "$docker_root"
+          df -i "$root" "$docker_root"
+          docker system df
+          PREPARE
           scp -i "$HOME/.ssh/tandara" -P "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes .local/transfer/* "$SSH_USER@$SSH_HOST:/opt/tandara/incoming/$RELEASE_SHA/"
           ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "bash -s -- $RELEASE_SHA $image_id" <<'REMOTE'
           set -euo pipefail
@@ -106,12 +123,14 @@ jobs:
           cd "/opt/tandara/incoming/$sha"
           sha256sum -c backend.tar.gz.sha256
           gzip -dc backend.tar.gz | docker image load
+          # The archive duplicates the loaded image layers; release this space before unpacking.
+          rm -- backend.tar.gz backend.tar.gz.sha256
           mkdir -p "/opt/tandara/releases/$sha"
           tar -xzf release.tar.gz -C "/opt/tandara/releases/$sha"
           chmod 700 "/opt/tandara/releases/$sha/backup.sh" "/opt/tandara/releases/$sha/deploy.sh"
           bash "/opt/tandara/releases/$sha/deploy.sh" "$sha" "$image_id"
           # Only transfer files from this validated release; preserve running/rollback images and DB.
-          rm -- backend.tar.gz backend.tar.gz.sha256 release.tar.gz
+          rm -f -- release.tar.gz
           REMOTE
       - name: Deploy Warga and Posko after backend is healthy
         run: |
