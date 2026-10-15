@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -90,11 +90,14 @@ export function PoskoApp() {
     );
   if (!user)
     return (
-      <Login
-        simulation={deployment.data?.mode === 'simulation'}
-        residentOrigin={deployment.data?.residentOrigin}
-        onLogin={(data) => client.setQueryData(['auth'], data)}
-      />
+      <>
+        <Login
+          simulation={deployment.data?.mode === 'simulation'}
+          residentOrigin={deployment.data?.residentOrigin}
+          onLogin={(data) => client.setQueryData(['auth'], data)}
+        />
+        <PwaUpdateNotice />
+      </>
     );
   let content;
   if (path === '/admin' && user.role === 'admin')
@@ -245,7 +248,6 @@ export function PoskoApp() {
               </Select>
             </div>
             <div className="actions">
-              <InstallPwaButton />
               {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
               <Button
                 variant="outline"
@@ -274,125 +276,33 @@ export function PoskoApp() {
           </main>
         </div>
       </div>
+      <PwaUpdateNotice />
     </>
   );
 }
 
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-};
-
-function InstallPwaButton() {
-  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
-  const [isIos, setIsIos] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
+function PwaUpdateNotice() {
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const standalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (navigator as Navigator & { standalone?: boolean }).standalone === true;
-    setInstalled(standalone);
-    setIsIos(/iphone|ipad|ipod/i.test(navigator.userAgent));
-
-    const onInstallAvailable = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as InstallPromptEvent);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setInstallPrompt(null);
-    };
     const onUpdateAvailable = (event: Event) => {
       setApplyUpdate(() => (event as CustomEvent<() => void>).detail);
     };
 
-    window.addEventListener('beforeinstallprompt', onInstallAvailable);
-    window.addEventListener('appinstalled', onInstalled);
     window.addEventListener('tandara:update-available', onUpdateAvailable);
     return () => {
-      window.removeEventListener('beforeinstallprompt', onInstallAvailable);
-      window.removeEventListener('appinstalled', onInstalled);
       window.removeEventListener('tandara:update-available', onUpdateAvailable);
     };
   }, []);
 
-  useEffect(() => {
-    if (showHelp) {
-      dialogRef.current?.showModal();
-      closeRef.current?.focus();
-    } else if (dialogRef.current?.open) {
-      dialogRef.current.close();
-    }
-  }, [showHelp]);
-
-  async function install() {
-    if (!installPrompt) {
-      setShowHelp(true);
-      return;
-    }
-    try {
-      await installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      if (choice.outcome === 'accepted') setInstalled(true);
-    } catch {
-      setShowHelp(true);
-    } finally {
-      setInstallPrompt(null);
-    }
-  }
-
+  if (!applyUpdate) return null;
   return (
-    <>
-      {!installed && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="pwa-install-button border-[#c6d8d2] bg-white text-brand hover:bg-[#e8f1ed] max-md:min-h-11"
-          onClick={() => void install()}
-        >
-          Pasang aplikasi
-        </Button>
-      )}
-      {applyUpdate && (
-        <div className="pwa-update-notice" role="status">
-          <span>Pembaruan Posko tersedia.</span>
-          <Button size="sm" onClick={applyUpdate}>
-            Perbarui
-          </Button>
-        </div>
-      )}
-      <dialog
-        ref={dialogRef}
-        className="pwa-install-dialog"
-        aria-labelledby="pwa-install-title"
-        onClose={() => setShowHelp(false)}
-      >
-        <h2 id="pwa-install-title">Pasang Tandara Posko</h2>
-        {isIos ? (
-          <p>
-            Buka menu Bagikan di Safari, lalu pilih <strong>Tambahkan ke Layar Utama</strong>.
-          </p>
-        ) : (
-          <p>
-            Buka menu browser, lalu pilih <strong>Instal aplikasi</strong> atau{' '}
-            <strong>Tambahkan ke layar utama</strong>.
-          </p>
-        )}
-        <button
-          ref={closeRef}
-          type="button"
-          className="button"
-          onClick={() => dialogRef.current?.close()}
-        >
-          Mengerti
-        </button>
-      </dialog>
-    </>
+    <div className="pwa-update-notice" role="status">
+      <span>Pembaruan Posko tersedia.</span>
+      <Button size="sm" onClick={applyUpdate}>
+        Perbarui
+      </Button>
+    </div>
   );
 }
 
@@ -424,9 +334,6 @@ function Login({
         {simulation && <Badge tone="amber">SIMULASI</Badge>}
       </section>
       <main className="login-form">
-        <div className="login-install">
-          <InstallPwaButton />
-        </div>
         <h1>Masuk ke Posko</h1>
         <p className="muted">Akses untuk koordinator dan administrator berwenang.</p>
         <form
