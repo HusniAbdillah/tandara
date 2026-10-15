@@ -101,7 +101,6 @@ jobs:
           root=/opt/tandara
           sha=$1
           [[ "$sha" =~ ^[a-f0-9]{40}$ ]]
-          mkdir -p "$root/incoming/$sha"
           active=$(readlink -f "$root/current" 2>/dev/null || true)
           if [[ "$active" != "$root/releases/$sha" ]]; then
             # A failed release may have left these exact candidate tags behind.
@@ -109,6 +108,7 @@ jobs:
             docker image rm "tandara-backend:$sha" "tandara-postgres:$sha" 2>/dev/null || true
           fi
           rm -f -- "$root/incoming/$sha/backend.tar.gz" "$root/incoming/$sha/backend.tar.gz.sha256" "$root/incoming/$sha/release.tar.gz"
+          mkdir -p "$root/incoming/$sha"
           docker_root=$(docker info --format '{{.DockerRootDir}}')
           df -h "$root" "$docker_root"
           df -i "$root" "$docker_root"
