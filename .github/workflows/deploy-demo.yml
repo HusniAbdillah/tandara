@@ -98,9 +98,12 @@ jobs:
           tar -czf .local/transfer/release.tar.gz -C infrastructure/deployment backend.compose.yml Caddyfile deploy.sh backup.sh image_config_id.py
           successful_shas=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow deploy-demo.yml --branch main --status success --limit 20 --json headSha --jq '.[].headSha')
           rollback_shas=()
+          declare -A seen_successful_shas=()
           while IFS= read -r successful_sha; do
             [[ "$successful_sha" =~ ^[a-f0-9]{40}$ ]] || continue
             [[ "$successful_sha" == "$RELEASE_SHA" ]] && continue
+            [[ -n "${seen_successful_shas[$successful_sha]:-}" ]] && continue
+            seen_successful_shas["$successful_sha"]=1
             rollback_shas+=("$successful_sha")
             ((${#rollback_shas[@]} < 2)) || break
           done <<< "$successful_shas"
