@@ -83,8 +83,9 @@ const water = {
   updatedAt: '2026-10-15T13:00:00Z',
   thresholds: [
     { status: 'normal', label: '<151 cm' },
+    { status: 'waspada', label: '151–175 cm' },
     { status: 'siaga', label: '151–200 cm' },
-    { status: 'awas', label: '>200 cm' },
+    { status: 'bahaya', label: '>200 cm' },
   ],
 };
 const earthquake = {
@@ -201,6 +202,85 @@ async function fixtures(page: Page) {
   });
   return payloads;
 }
+for (const viewport of [
+  { width: 1440, height: 1024 },
+  { width: 390, height: 844 },
+]) {
+  test(`live observation details and source failures at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await fixtures(page);
+    await page.route('**/api/v1/regions/*/observations', (route) =>
+      route.fulfill({
+        json: {
+          mode: 'live',
+          fetchedAt: '2026-10-16T06:40:00Z',
+          water: [
+            {
+              ...water,
+              id: 'dsda-167',
+              name: 'Rumah Pompa Pluit 1',
+              heightCm: -167,
+              status: 'waspada',
+              thresholds: [],
+            },
+          ],
+          earthquakes: [],
+          sources: [
+            {
+              id: 'dsda',
+              name: 'Dinas SDA DKI Jakarta',
+              url: 'https://poskobanjir.dsdadki.web.id/',
+              status: 'stale',
+              checkedAt: '2026-10-16T06:40:00Z',
+              lastSuccessAt: '2026-10-16T06:30:00Z',
+              skippedRecords: 0,
+            },
+            {
+              id: 'bmkg',
+              name: 'BMKG',
+              url: 'https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json',
+              status: 'unavailable',
+              checkedAt: '2026-10-16T06:40:00Z',
+              lastSuccessAt: null,
+              skippedRecords: 0,
+            },
+          ],
+        },
+      }),
+    );
+    await page.goto('/map?panel=water&id=dsda-167');
+    const panel = page.getByRole('complementary', { name: 'Tinggi air' });
+    await expect(panel.getByRole('heading', { name: 'Rumah Pompa Pluit 1' })).toBeVisible();
+    await expect(panel.getByText('-167 cm', { exact: true })).toBeVisible();
+    await expect(panel.getByText('Belum diketahui', { exact: true })).toBeVisible();
+    await expect(page.locator('.pin-water.unknown')).toHaveCSS(
+      'background-color',
+      'rgb(107, 114, 128)',
+    );
+    expect(
+      await panel
+        .locator('.w-status.unknown')
+        .evaluate((node) => getComputedStyle(node, '::before').backgroundColor),
+    ).toBe('rgb(107, 114, 128)');
+    await expect(panel.getByText('Belum tersedia', { exact: true })).toBeVisible();
+    await expect(panel.getByText('Menampilkan data terakhir')).toBeVisible();
+    await expect(panel.getByRole('link', { name: 'Dinas SDA DKI Jakarta' })).toHaveAttribute(
+      'href',
+      'https://poskobanjir.dsdadki.web.id/',
+    );
+    await page.screenshot({ path: `test-results/live-water-${viewport.width}.png` });
+    await page.getByRole('button', { name: 'Kembali ke daftar' }).click();
+    await expect(panel.getByText(/-167 cm · Belum diketahui/)).toBeVisible();
+    await page.getByRole('button', { name: 'Gempa', exact: true }).click();
+    await expect(
+      page.getByRole('complementary', { name: 'Gempa' }).getByText('Sumber belum dapat diakses'),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('complementary', { name: 'Gempa' }).getByRole('link', { name: 'BMKG' }),
+    ).toBeVisible();
+  });
+}
+
 test('desktop Chalk shell, aligned dashboard and full-screen map sidebars', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

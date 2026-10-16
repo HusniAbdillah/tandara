@@ -3,14 +3,14 @@ import { observationsSchema } from '@tandara/contracts';
 import type { Observations, Region } from '@tandara/contracts';
 import { IdentityService } from './identity.js';
 
-/** Replace this provider with the supplied upstream APIs. Keep their payloads outside the UI. */
+/** Upstream payloads stay on the server; the map consumes this normalized contract. */
 export interface ObservationProvider {
   read(region: Region): Promise<Observations>;
 }
 export const OBSERVATION_PROVIDER = Symbol('OBSERVATION_PROVIDER');
-export class PendingObservationProvider implements ObservationProvider {
+export class SimulationObservationProvider implements ObservationProvider {
   async read(region: Region): Promise<Observations> {
-    const base = { fetchedAt: new Date().toISOString(), water: [], earthquakes: [] };
+    const base = { fetchedAt: new Date().toISOString(), water: [], earthquakes: [], sources: [] };
     if (!region.simulation) return { ...base, mode: 'unconfigured' };
     return observationsSchema.parse({
       ...base,
@@ -24,9 +24,10 @@ export class PendingObservationProvider implements ObservationProvider {
           status: 'normal',
           updatedAt: '2026-10-15T13:00:00Z',
           thresholds: [
-            { status: 'normal', label: '<151 cm' },
-            { status: 'siaga', label: '151–200 cm' },
-            { status: 'awas', label: '>200 cm' },
+            { status: 'normal', label: '≤ 150 cm' },
+            { status: 'waspada', label: '>150 sampai 175 cm' },
+            { status: 'siaga', label: '>175 sampai 200 cm' },
+            { status: 'bahaya', label: '> 200 cm' },
           ],
         },
         {
@@ -34,12 +35,13 @@ export class PendingObservationProvider implements ObservationProvider {
           name: 'Pintu Air RW 06',
           location: { latitude: -6.232, longitude: 106.872 },
           heightCm: 270,
-          status: 'awas',
+          status: 'bahaya',
           updatedAt: '2026-10-15T12:55:00Z',
           thresholds: [
-            { status: 'normal', label: '<200 cm' },
-            { status: 'siaga', label: '200–250 cm' },
-            { status: 'awas', label: '>250 cm' },
+            { status: 'normal', label: '≤ 200 cm' },
+            { status: 'waspada', label: '>200 sampai 225 cm' },
+            { status: 'siaga', label: '>225 sampai 250 cm' },
+            { status: 'bahaya', label: '> 250 cm' },
           ],
         },
         {
@@ -50,9 +52,10 @@ export class PendingObservationProvider implements ObservationProvider {
           status: 'siaga',
           updatedAt: '2026-10-15T12:50:00Z',
           thresholds: [
-            { status: 'normal', label: '<15 cm' },
-            { status: 'siaga', label: '15–30 cm' },
-            { status: 'awas', label: '>30 cm' },
+            { status: 'normal', label: '≤ 15 cm' },
+            { status: 'waspada', label: '>15 sampai 20 cm' },
+            { status: 'siaga', label: '>20 sampai 30 cm' },
+            { status: 'bahaya', label: '> 30 cm' },
           ],
         },
       ],
@@ -68,6 +71,17 @@ export class PendingObservationProvider implements ObservationProvider {
         },
       ],
     });
+  }
+}
+export class DisabledObservationProvider implements ObservationProvider {
+  async read(): Promise<Observations> {
+    return {
+      mode: 'unconfigured',
+      fetchedAt: new Date().toISOString(),
+      water: [],
+      earthquakes: [],
+      sources: [],
+    };
   }
 }
 @Injectable()

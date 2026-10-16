@@ -261,7 +261,16 @@ export function StreetMap({
     </div>
   );
 }
-const statusNames = { normal: 'Normal', siaga: 'Siaga', awas: 'Awas' };
+const statusNames = {
+  normal: 'Normal',
+  waspada: 'Waspada',
+  siaga: 'Siaga',
+  bahaya: 'Bahaya',
+  unknown: 'Belum diketahui',
+};
+function waterDisplayStatus(water: WaterObservation) {
+  return water.thresholds.length === 4 ? water.status : 'unknown';
+}
 export function observationTime(value: string, seconds = false) {
   return new Intl.DateTimeFormat('id-ID', {
     timeZone: 'Asia/Jakarta',
@@ -274,16 +283,18 @@ export function observationTime(value: string, seconds = false) {
   }).format(new Date(value));
 }
 export function WaterDetail({ water }: { water: WaterObservation }) {
+  const status = waterDisplayStatus(water);
   return (
     <div className="w-observation">
       <small>Lokasi pengamatan</small>
       <h3>{water.name}</h3>
       <div className="w-observation-value">
         <strong>{water.heightCm} cm</strong>
-        <span className={`w-status ${water.status}`}>{statusNames[water.status]}</span>
+        <span className={`w-status ${status}`}>{statusNames[status]}</span>
       </div>
-      <small>Diperbarui {observationTime(water.updatedAt)}</small>
+      <small>Diperbarui {observationTime(water.updatedAt)} WIB</small>
       <h3>Batas ketinggian</h3>
+      {!water.thresholds.length && <p className="w-muted">Belum tersedia</p>}
       <dl className="w-thresholds">
         {water.thresholds.map((t) => (
           <div key={t.status}>
@@ -386,7 +397,7 @@ export function MapPage({ app }: { app: ResidentData }) {
             ...x.location,
             label: x.heightCm + ' cm',
             type: 'water' as const,
-            status: x.status,
+            status: waterDisplayStatus(x),
           })) ?? [])
         : []),
       ...(quakeVisible
@@ -402,6 +413,14 @@ export function MapPage({ app }: { app: ResidentData }) {
   );
   const visiblePins = pins.filter((pin) => withinRadius(pin, center, radius));
   const visiblePoints = points.filter((point) => withinRadius(point, center, radius));
+  const panelSources =
+    feed.data?.sources.filter((source) =>
+      panel === 'water'
+        ? source.id === 'dsda'
+        : panel === 'earthquakes'
+          ? source.id === 'bmkg'
+          : true,
+    ) ?? [];
   const selected = water?.location ?? quake?.location ?? place;
   const panelTitle =
     panel === 'water'
@@ -426,6 +445,15 @@ export function MapPage({ app }: { app: ResidentData }) {
           open(type === 'water' ? 'water' : type === 'earthquake' ? 'earthquakes' : 'place', nextId)
         }
       />
+      {!!feed.data?.sources.length && (
+        <div className="w-map-source-credit" aria-label="Sumber data pengamatan">
+          {feed.data.sources.map((source) => (
+            <a key={source.id} href={source.url} target="_blank" rel="noreferrer">
+              {source.name}
+            </a>
+          ))}
+        </div>
+      )}
       <div className="w-map-toolbar">
         <form
           className="w-map-search"
@@ -471,6 +499,32 @@ export function MapPage({ app }: { app: ResidentData }) {
             <h2>{panelTitle}</h2>
           </div>
           <div className="w-map-panel-body">
+            {!!panelSources.length && (
+              <div className="w-observation-sources">
+                {panelSources.map((source) => (
+                  <div key={source.id}>
+                    <small>
+                      Sumber:{' '}
+                      <a href={source.url} target="_blank" rel="noreferrer">
+                        {source.name}
+                      </a>
+                    </small>
+                    {source.status !== 'ready' && (
+                      <p role="status">
+                        {source.status === 'stale'
+                          ? 'Menampilkan data terakhir'
+                          : 'Sumber belum dapat diakses'}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {panelSources.some((source) => source.status !== 'ready') && (
+                  <WButton secondary onClick={() => void feed.refetch()}>
+                    Coba lagi
+                  </WButton>
+                )}
+              </div>
+            )}
             {panel === 'filters' ? (
               <>
                 <div className="w-filter-toggles">
@@ -569,7 +623,7 @@ export function MapPage({ app }: { app: ResidentData }) {
                 <WRow
                   key={x.id}
                   title={x.name}
-                  subtitle={`${x.heightCm} cm · ${statusNames[x.status]} · ${observationTime(x.updatedAt)}`}
+                  subtitle={`${x.heightCm} cm · ${statusNames[waterDisplayStatus(x)]} · ${observationTime(x.updatedAt)}`}
                   icon="water"
                   onClick={() => open('water', x.id)}
                 />

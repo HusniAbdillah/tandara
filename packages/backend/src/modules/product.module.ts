@@ -11,15 +11,28 @@ import { ResidentsService } from './residents.js';
 import {
   ObservationsService,
   OBSERVATION_PROVIDER,
-  PendingObservationProvider,
+  SimulationObservationProvider,
+  DisabledObservationProvider,
 } from './observations.js';
+import { LiveObservationProvider } from './live-observations.js';
+import { ENVIRONMENT } from '../config/environment.js';
+import type { Environment } from '../config/environment.js';
 
 @Module({
   imports: [DatabaseModule],
   providers: [
     ResidentsService,
     ObservationsService,
-    { provide: OBSERVATION_PROVIDER, useClass: PendingObservationProvider },
+    {
+      provide: OBSERVATION_PROVIDER,
+      inject: [ENVIRONMENT],
+      useFactory: (env: Environment) =>
+        env.OBSERVATIONS_MODE === 'live'
+          ? new LiveObservationProvider()
+          : env.OBSERVATIONS_MODE === 'simulation'
+            ? new SimulationObservationProvider()
+            : new DisabledObservationProvider(),
+    },
     IdentityService,
     ReportsService,
     PreparednessService,

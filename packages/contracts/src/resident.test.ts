@@ -43,16 +43,19 @@ describe('observation provider boundary', () => {
       updatedAt: '2026-10-15T13:00:00Z',
       thresholds: [
         { status: 'normal', label: '<151 cm' },
-        { status: 'siaga', label: '151–200 cm' },
-        { status: 'awas', label: '>200 cm' },
+        { status: 'waspada', label: '151–175 cm' },
+        { status: 'siaga', label: '176–200 cm' },
+        { status: 'bahaya', label: '>200 cm' },
       ],
     };
     expect(waterObservationSchema.parse(input).heightCm).toBe(57);
+    expect(
+      waterObservationSchema.parse({ ...input, heightCm: -167, thresholds: [] }).heightCm,
+    ).toBe(-167);
     for (const changes of [
-      { heightCm: -1 },
       { heightCm: '57 cm' },
       { location: { latitude: 100, longitude: 106 } },
-      { thresholds: [] },
+      { thresholds: input.thresholds.slice(0, 3) },
     ])
       expect(waterObservationSchema.safeParse({ ...input, ...changes }).success).toBe(false);
   });

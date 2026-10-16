@@ -26,6 +26,7 @@ const environmentSchema = z
     SESSION_SECURE: z.enum(['true', 'false']).default('false'),
     TRUST_PROXY: z.enum(['true', 'false']).default('false'),
     ALLOW_LIVE_SOURCES: z.enum(['true', 'false']).default('false'),
+    OBSERVATIONS_MODE: z.enum(['live', 'simulation', 'disabled']).default('live'),
     WEB_ORIGINS: z.string().default(''),
     MFA_ENCRYPTION_KEY: z.string().default(''),
     AI_DATA_PROCESSING_APPROVED: z.enum(['true', 'false']).default('false'),
@@ -57,6 +58,7 @@ const environmentSchema = z
         }
       }), 'WEB_ORIGINS');
     require(!value.DEMO_PASSWORD, 'DEMO_PASSWORD');
+    require(value.OBSERVATIONS_MODE !== 'simulation', 'OBSERVATIONS_MODE');
     require(new URL(value.DATABASE_URL).searchParams.get('sslmode') ===
       'verify-full', 'DATABASE_URL');
     if (value.AI_EMBEDDING_MODE === 'compatible') {

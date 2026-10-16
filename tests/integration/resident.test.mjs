@@ -25,6 +25,7 @@ before(async () => {
       AI_MODE: 'heuristic',
       AI_EMBEDDING_MODE: 'disabled',
       LOG_LEVEL: 'silent',
+      OBSERVATIONS_MODE: 'simulation',
     }),
   );
   await app.init();

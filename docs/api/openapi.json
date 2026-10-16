@@ -92,15 +92,15 @@
                             "additionalProperties": false
                           },
                           "heightCm": {
-                            "type": "number",
-                            "minimum": 0
+                            "type": "number"
                           },
                           "status": {
                             "type": "string",
                             "enum": [
                               "normal",
+                              "waspada",
                               "siaga",
-                              "awas"
+                              "bahaya"
                             ]
                           },
                           "updatedAt": {
@@ -109,8 +109,7 @@
                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                           },
                           "thresholds": {
-                            "minItems": 3,
-                            "maxItems": 3,
+                            "maxItems": 4,
                             "type": "array",
                             "items": {
                               "type": "object",
@@ -119,8 +118,9 @@
                                   "type": "string",
                                   "enum": [
                                     "normal",
+                                    "waspada",
                                     "siaga",
-                                    "awas"
+                                    "bahaya"
                                   ]
                                 },
                                 "label": {
@@ -134,6 +134,26 @@
                               ],
                               "additionalProperties": false
                             }
+                          },
+                          "rawThresholdsCm": {
+                            "type": "object",
+                            "properties": {
+                              "siaga1": {
+                                "type": "number"
+                              },
+                              "siaga2": {
+                                "type": "number"
+                              },
+                              "siaga3": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "siaga1",
+                              "siaga2",
+                              "siaga3"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
@@ -210,13 +230,79 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "sources": {
+                      "default": [],
+                      "maxItems": 2,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "enum": [
+                              "dsda",
+                              "bmkg"
+                            ]
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "url": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ready",
+                              "stale",
+                              "unavailable"
+                            ]
+                          },
+                          "checkedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "lastSuccessAt": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "skippedRecords": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "url",
+                          "status",
+                          "checkedAt",
+                          "lastSuccessAt",
+                          "skippedRecords"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
                     "mode",
                     "fetchedAt",
                     "water",
-                    "earthquakes"
+                    "earthquakes",
+                    "sources"
                   ],
                   "additionalProperties": false
                 }

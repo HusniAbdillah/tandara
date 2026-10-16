@@ -26,6 +26,7 @@ describe('server configuration', () => {
       { SESSION_SECURE: 'false' },
       { WEB_ORIGINS: 'http://localhost' },
       { DATABASE_URL: input.DATABASE_URL },
+      { OBSERVATIONS_MODE: 'simulation' },
     ])
       expect(() => parseEnvironment({ ...production, ...patch })).toThrow();
   });
@@ -53,6 +54,15 @@ describe('server configuration', () => {
   });
   it('does not interpret the string false as true', () => {
     expect(parseEnvironment({ ...input, WORKER_ENABLED: 'false' }).WORKER_ENABLED).toBe(false);
+  });
+  it('enables public map feeds by default and validates their independent mode', () => {
+    expect(parseEnvironment(input).OBSERVATIONS_MODE).toBe('live');
+    expect(parseEnvironment({ ...input, OBSERVATIONS_MODE: 'disabled' }).OBSERVATIONS_MODE).toBe(
+      'disabled',
+    );
+    expect(() => parseEnvironment({ ...input, OBSERVATIONS_MODE: 'bogus' })).toThrow(
+      'OBSERVATIONS_MODE',
+    );
   });
 
   it('fails closed on invalid URLs without leaking credentials', () => {

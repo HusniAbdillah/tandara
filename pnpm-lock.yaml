@@ -292,6 +292,9 @@ importers:
       otpauth:
         specifier: 9.4.1
         version: 9.4.1
+      parse5:
+        specifier: 7.3.0
+        version: 7.3.0
       pino:
         specifier: 10.4.0
         version: 10.4.0
