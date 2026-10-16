@@ -86,12 +86,15 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
     <>
       <PageHeader
         eyebrow="ASISTEN POSKO"
-        title="Bantuan berbasis sumber"
-        description="Petikan, pertanyaan, dan draf untuk keputusan koordinator. Semua hasil memerlukan tinjauan."
+        title="Asisten AI & RAG"
+        description="Buat briefing dan draf berbasis laporan serta referensi wilayah. Semua hasil perlu ditinjau."
       />
       <div className="ai-workspace-grid">
-        <section className="panel">
-          <h2>Buat permintaan</h2>
+        <section className="panel ai-request-panel">
+          <div className="ai-section-heading">
+            <h2>Buat permintaan</h2>
+            <p>Pilih jenis bantuan dan sumber informasi yang diperlukan.</p>
+          </div>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -228,19 +231,30 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
             </button>
           </form>
         </section>
-        <section>
-          <h2>Permintaan dan hasil</h2>
+        <section className="panel ai-results">
+          <div className="ai-results-heading">
+            <div>
+              <h2>Permintaan dan hasil</h2>
+              <p>Draf yang selesai akan menunggu tinjauan koordinator.</p>
+            </div>
+            <Badge tone="amber">Tinjauan manusia</Badge>
+          </div>
           {query.isPending ? (
             <p role="status">Memuat permintaan…</p>
           ) : query.isError ? (
-            <Notice tone="error">Permintaan tidak dapat dimuat.</Notice>
+            <Notice tone="error">
+              Permintaan tidak dapat dimuat.{' '}
+              <button type="button" className="small" onClick={() => void query.refetch()}>
+                Coba lagi
+              </button>
+            </Notice>
           ) : query.data?.length ? (
             query.data.map((item) => (
               <AiResult key={item.id} item={item} regionId={region.id} run={run} />
             ))
           ) : (
             <Empty title="Belum ada permintaan">
-              Buat briefing atau pertanyaan dari formulir di samping.
+              Gunakan formulir untuk membuat draf. Hasil yang selesai akan muncul di sini.
             </Empty>
           )}
         </section>
