@@ -531,6 +531,7 @@ test('signed-out routes redirect to login and registration returns to the reques
   await expect(page).toHaveURL(
     '/register?next=' + encodeURIComponent('/report?category=blocked_access'),
   );
+  await page.getByLabel('Nama', { exact: true }).fill('Rani Uji');
   await page.getByLabel('Nomor telepon').fill('081234567890');
   await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Daftar', exact: true }).click();

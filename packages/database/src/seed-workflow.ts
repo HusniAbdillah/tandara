@@ -897,6 +897,17 @@ export async function seedResidentReports(db: Kysely<Database>) {
   ] as const;
 
   await db.transaction().execute(async (tx) => {
+    const hasPhone = Boolean(
+      (
+        await sql<{ exists: boolean }>`
+          SELECT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'report_private_details' AND column_name = 'resident_phone'
+          ) AS exists
+        `.execute(tx)
+      ).rows[0]?.exists,
+    );
+
     for (const report of examples) {
       const id = `42000000-0000-4000-8000-${report.region === 'ciliwung' ? '1' : '2'}${String(report.sequence).padStart(11, '0')}`;
       const regionId = regions[report.region];
@@ -960,12 +971,21 @@ export async function seedResidentReports(db: Kysely<Database>) {
         VALUES(${id}::uuid,'submitted','Laporan diterima dari akun Warga demo.',${receivedAt.toISOString()}::timestamptz)`.execute(
         tx,
       );
-      await sql`INSERT INTO report_private_details(report_id,resident_phone,consent_at,retention_until)
-        SELECT r.id,a.phone,r.created_at,r.created_at+(g.config->>'retentionDays')::int*interval '1 day'
-        FROM reports r JOIN residents a ON a.id=r.resident_id JOIN regions g ON g.id=r.region_id
-        WHERE r.id=${id}::uuid AND NOT r.erased
-          AND r.created_at+(g.config->>'retentionDays')::int*interval '1 day'>now()
-        ON CONFLICT(report_id) DO NOTHING`.execute(tx);
+      if (hasPhone) {
+        await sql`INSERT INTO report_private_details(report_id,resident_phone,consent_at,retention_until)
+          SELECT r.id,a.phone,r.created_at,r.created_at+(g.config->>'retentionDays')::int*interval '1 day'
+          FROM reports r JOIN residents a ON a.id=r.resident_id JOIN regions g ON g.id=r.region_id
+          WHERE r.id=${id}::uuid AND NOT r.erased
+            AND r.created_at+(g.config->>'retentionDays')::int*interval '1 day'>now()
+          ON CONFLICT(report_id) DO NOTHING`.execute(tx);
+      } else {
+        await sql`INSERT INTO report_private_details(report_id,consent_at,retention_until)
+          SELECT r.id,r.created_at,r.created_at+(g.config->>'retentionDays')::int*interval '1 day'
+          FROM reports r JOIN regions g ON g.id=r.region_id
+          WHERE r.id=${id}::uuid AND NOT r.erased
+            AND r.created_at+(g.config->>'retentionDays')::int*interval '1 day'>now()
+          ON CONFLICT(report_id) DO NOTHING`.execute(tx);
+      }
       if ('followUp' in report && report.followUp)
         await sql`INSERT INTO assistance_requests(report_id,region_id,state,organization_id,note,updated_at)
           VALUES(${id}::uuid,${regionId}::uuid,
