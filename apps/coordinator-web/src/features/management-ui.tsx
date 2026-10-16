@@ -15,6 +15,7 @@ import {
 import type { Plan, PlanContent, Source, Training } from '@tandara/contracts';
 import {
   Badge,
+  createUuid,
   Empty,
   Field,
   Notice,
@@ -285,6 +286,9 @@ function PlanEditor({
             method: 'POST',
             body: {
               task: 'plan_draft',
+              requestKey: createUuid(),
+              hours: 24,
+              language: 'id',
               question:
                 'Susun draf langkah kesiapsiagaan warga, daftar periksa keluarga, dan persiapan titik kumpul berdasarkan referensi SOP wilayah.',
             },
@@ -1058,6 +1062,9 @@ function TrainingEditor({
             method: 'POST',
             body: {
               task: 'training_draft',
+              requestKey: createUuid(),
+              hours: 24,
+              language: 'id',
               question:
                 'Susun draf skenario latihan simulasi kesiapsiagaan warga berdasarkan SOP evakuasi mandiri, keselamatan listrik, dan titik kumpul wilayah.',
             },
