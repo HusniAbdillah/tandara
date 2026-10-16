@@ -60,6 +60,9 @@ if [[ -z "$previous" ]]; then "${dc[@]}" run --rm --no-deps seed; fi
 # Keep only the reserved public demo accounts aligned with the configured password.
 if [[ ${DEMO_LOGIN_ENABLED:-true} == true ]]; then
   "${dc[@]}" run --rm --no-deps seed node api/node_modules/@tandara/backend/database-command.mjs demo-seed
+  # Add resident-linked report fixtures to existing VPS databases on every release.
+  # The operation is simulation-only and preserves reports that already exist.
+  "${dc[@]}" run --rm --no-deps seed-resident
 fi
 "${dc[@]}" up -d --wait --wait-timeout 180 api worker caddy
 curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-all-errors "https://$API_DOMAIN/ready" >/dev/null

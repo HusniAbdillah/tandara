@@ -1,7 +1,7 @@
 import { randomBytes, scryptSync } from 'node:crypto';
 import { sql } from 'kysely';
 import { createDatabase } from './client.js';
-import { seedWorkflow } from './seed-workflow.js';
+import { seedWorkflow, seedResidentReports } from './seed-workflow.js';
 import { seedDemoAccounts } from './demo-accounts.js';
 
 if (process.env['APP_MODE'] !== 'simulation')
@@ -276,8 +276,9 @@ try {
       }
     }
   });
-  await seedWorkflow(db);
   await seedDemoAccounts(db, password, process.env['DEMO_LOGIN_ENABLED'] === 'true');
+  await seedWorkflow(db);
+  await seedResidentReports(db);
   console.info('Development seed complete. Existing records preserved.');
 } finally {
   await db.destroy();

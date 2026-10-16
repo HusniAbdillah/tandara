@@ -305,7 +305,13 @@ export class AiService implements OnApplicationShutdown {
   }
   async submit(user: User, regionId: string, input: unknown, previousRunId: string | null = null) {
     const region = await this.identity.scope(user, regionId);
-    const request = parse(aiRequestSchema, input);
+    const normalizedInput =
+      typeof input === 'object' &&
+      input !== null &&
+      !(input as Record<string, unknown>)['requestKey']
+        ? { ...input, requestKey: crypto.randomUUID() }
+        : input;
+    const request = parse(aiRequestSchema, normalizedInput);
     if (
       request.task === 'translation' &&
       !(region.config.languages as readonly string[]).includes(request.language)
