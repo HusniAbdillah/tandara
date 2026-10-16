@@ -9,7 +9,7 @@ import {
   reportPageSchema,
 } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
-import { Badge, Notice, PageHeader, formatTime } from '@tandara/ui';
+import { Badge, Notice, PageHeader, createUuid, formatTime } from '@tandara/ui';
 import type { Map, GeoJSONSource } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
@@ -62,6 +62,7 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
         method: 'POST',
         body: {
           task: 'coverage',
+          requestKey: createUuid(),
           question:
             'Jelaskan sektor grid cakupan mana yang memiliki pengamatan laporan warga dan sektor mana yang masih titik buta informasi.',
         },
