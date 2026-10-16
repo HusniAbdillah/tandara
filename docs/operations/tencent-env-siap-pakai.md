@@ -95,7 +95,7 @@ meminta password login secara privat, sehingga tidak perlu menebak nilainya.
 | WEB_ORIGINS               | Lima origin HTTPS persis; mendukung domain utama, www, Posko dan dua alias Vercel yang diberikan tim                              |
 | POSTGRES_PASSWORD         | Hex minimal 32 karakter; pertahankan nilai lama untuk database yang sudah terbentuk                                               |
 | DEMO_PASSWORD             | Password akun seed awal, minimal 12 dan maksimal 200 karakter agar dapat dipakai login; gunakan kalimat unik dengan kutip tunggal |
-| SEED_DEMO_ON_FIRST_DEPLOY | Izin seed pada deployment pertama saja; `deploy.sh` tidak menjalankan seed pada release berikutnya jika `current` ada             |
+| SEED_DEMO_ON_FIRST_DEPLOY | Izin baseline seed pada deployment pertama; seeder tambahan laporan Warga tetap dijalankan secara idempoten setiap release demo   |
 | ALLOW_LIVE_SOURCES        | Opt-in konektor BMKG/PetaBencana; tetap perlu membuat dan mengaktifkan sumber per wilayah di Posko                                |
 
 `APP_IMAGE` dan `POSTGRES_IMAGE` dibuat workflow di `current/release.env`.
