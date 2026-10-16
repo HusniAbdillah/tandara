@@ -64,6 +64,8 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
         body: {
           task: 'coverage',
           requestKey: createUuid(),
+          hours: 24,
+          language: 'id',
           question:
             'Jelaskan sektor grid cakupan mana yang memiliki pengamatan laporan warga dan sektor mana yang masih titik buta informasi.',
         },
