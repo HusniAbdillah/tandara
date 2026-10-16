@@ -1,0 +1,172 @@
+[
+  {
+    "key": "bnpb2024",
+    "url": "https://bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf",
+    "content_type": "application/pdf",
+    "reachable": true
+  },
+  {
+    "key": "wmo2024",
+    "url": "https://wmo.int/sites/default/files/2024-06/Early-Warnings-for-All_Factsheet_EN.pdf",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://wmo.int/sites/default/files/2024-06/Early-Warnings-for-All_Factsheet_EN.pdf",
+    "content_type": "application/pdf",
+    "reachable": true
+  },
+  {
+    "key": "bnpbplan",
+    "url": "https://bpbd.jogjakota.go.id/assets/instansi/bpbd/files/pedoman-penyusunan-rencana-evakuasi-bencana-banjir-tingkat-desa-4917.pdf",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://bpbd.jogjakota.go.id/assets/instansi/bpbd/files/pedoman-penyusunan-rencana-evakuasi-bencana-banjir-tingkat-desa-4917.pdf",
+    "content_type": "application/pdf",
+    "reachable": true
+  },
+  {
+    "key": "undrr2023",
+    "url": "https://www.undrr.org/report/2023-gobal-survey-report-on-persons-with-disabilities-and-disasters",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://www.undrr.org/report/2023-gobal-survey-report-on-persons-with-disabilities-and-disasters",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "itu",
+    "url": "https://www.itu.int/en/ITU-D/Emergency-Telecommunications/Pages/Disaster-Connectivity-Map.aspx",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://www.itu.int/en/ITU-D/Emergency-Telecommunications/Pages/Disaster-Connectivity-Map.aspx",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "bmkgcap",
+    "url": "https://data.bmkg.go.id/peringatan-dini-cuaca/",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://data.bmkg.go.id/peringatan-dini-cuaca/",
+    "content_type": "text/html",
+    "reachable": true
+  },
+  {
+    "key": "bmkgforecast",
+    "url": "https://data.bmkg.go.id/prakiraan-cuaca/",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://data.bmkg.go.id/prakiraan-cuaca/",
+    "content_type": "text/html",
+    "reachable": true
+  },
+  {
+    "key": "inarisk",
+    "url": "https://inarisk.bnpb.go.id/about",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://inarisk.bnpb.go.id/about",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "petaapi",
+    "url": "https://docs.petabencana.id/routes/laporan-urun-daya",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://docs.petabencana.id/routes/laporan-urun-daya",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "uu24",
+    "url": "https://peraturan.bpk.go.id/Details/39901/uu-no-24-tahun-2007",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://peraturan.bpk.go.id/Details/39901/uu-no-24-tahun-2007",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "uu27",
+    "url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "sdg11",
+    "url": "https://sdgs.un.org/goals/goal11",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://sdgs.un.org/goals/goal11",
+    "content_type": "text/html; charset=UTF-8",
+    "reachable": true
+  },
+  {
+    "key": "sdg13",
+    "url": "https://sdgs.un.org/goals/goal13",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://sdgs.un.org/goals/goal13",
+    "content_type": "text/html; charset=UTF-8",
+    "reachable": true
+  },
+  {
+    "key": "nist",
+    "url": "https://doi.org/10.6028/NIST.AI.600-1",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf",
+    "content_type": "application/pdf",
+    "reachable": true
+  },
+  {
+    "key": "wcag",
+    "url": "https://www.w3.org/TR/2024/REC-WCAG22-20241212/",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://www.w3.org/TR/2024/REC-WCAG22-20241212/",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "osmdata",
+    "url": "https://www.openstreetmap.org/copyright",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://www.openstreetmap.org/copyright",
+    "content_type": "text/html; charset=utf-8",
+    "reachable": true
+  },
+  {
+    "key": "bmkggempa",
+    "url": "https://data.bmkg.go.id/gempabumi/",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://data.bmkg.go.id/gempabumi/",
+    "content_type": "text/html",
+    "reachable": true
+  },
+  {
+    "key": "lindell2012",
+    "url": "https://doi.org/10.1111/j.1539-6924.2011.01647.x",
+    "access_date": "2026-10-16",
+    "status": 403,
+    "reachable": false,
+    "error": "HTTP response requires manual/browser review"
+  },
+  {
+    "key": "sufri2020",
+    "url": "https://doi.org/10.1016/j.pdisas.2019.100058",
+    "access_date": "2026-10-16",
+    "status": 200,
+    "final_url": "https://linkinghub.elsevier.com/retrieve/pii/S2590061719300584",
+    "content_type": "text/html;charset=UTF-8",
+    "reachable": true
+  }
+]

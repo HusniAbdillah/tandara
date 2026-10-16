@@ -1,0 +1,203 @@
+{
+  "pdf": "D:\\Hackathon\\Tandara\\latex\\build\\Tandara_Proposal_Sustainability.pdf",
+  "pages": 10,
+  "sha256": "73e73c40acef05268eb43debd7016a63f7c379e637e3fc9b4d775572afcbd8aa",
+  "citation_keys": [
+    "bmkgcap",
+    "bmkgforecast",
+    "bmkggempa",
+    "bnpb2024",
+    "bnpbplan",
+    "inarisk",
+    "itu",
+    "lindell2012",
+    "nist",
+    "osmdata",
+    "petaapi",
+    "sdg11",
+    "sdg13",
+    "sufri2020",
+    "undrr2023",
+    "uu24",
+    "uu27",
+    "wcag",
+    "wmo2024"
+  ],
+  "unique_urls": [
+    "https://bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf",
+    "https://bpbd.jogjakota.go.id/assets/instansi/bpbd/files/pedoman-penyusunan-rencana-evakuasi-bencana-banjir-tingkat-desa-4917.pdf",
+    "https://data.bmkg.go.id/gempabumi/",
+    "https://data.bmkg.go.id/peringatan-dini-cuaca/",
+    "https://data.bmkg.go.id/prakiraan-cuaca/",
+    "https://docs.petabencana.id/routes/laporan-urun-daya",
+    "https://doi.org/10.1016/j.pdisas.2019.100058",
+    "https://doi.org/10.1111/j.1539-6924.2011.01647.x",
+    "https://doi.org/10.6028/NIST.AI.600-1",
+    "https://github.com/HusniAbdillah/tandara",
+    "https://inarisk.bnpb.go.id/about",
+    "https://ipb.link/product-design-tandara",
+    "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
+    "https://peraturan.bpk.go.id/Details/39901/uu-no-24-tahun-2007",
+    "https://posko.tandara.my.id/",
+    "https://sdgs.un.org/goals/goal11",
+    "https://sdgs.un.org/goals/goal13",
+    "https://tandara.my.id/",
+    "https://wmo.int/sites/default/files/2024-06/Early-Warnings-for-All_Factsheet_EN.pdf",
+    "https://www.itu.int/en/ITU-D/Emergency-Telecommunications/Pages/Disaster-Connectivity-Map.aspx",
+    "https://www.openstreetmap.org/copyright",
+    "https://www.undrr.org/report/2023-gobal-survey-report-on-persons-with-disabilities-and-disasters",
+    "https://www.w3.org/TR/2024/REC-WCAG22-20241212/"
+  ],
+  "checks": [
+    {
+      "check": "PDF tersedia",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "PDF dapat dibuka oleh dua parser",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Maksimal 10 halaman",
+      "pass": true,
+      "details": "10 halaman"
+    },
+    {
+      "check": "Struktur tepat 10 halaman",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Cover gambar satu halaman penuh",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Daftar pustaka pada halaman terakhir",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tidak ada halaman isi kosong",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Nomor halaman otomatis",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Header/footer baru pada setiap halaman isi",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Semua sitasi mempunyai entri",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "check": "Tidak ada entri bibliografi tak terpakai",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "check": "Referensi eksternal tersitasi",
+      "pass": true,
+      "details": "19"
+    },
+    {
+      "check": "Tidak ada placeholder gambar",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: pasti aman",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: prediksi banjir",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: peringatan resmi dari Tandara",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: evakuasi otomatis",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: menyelamatkan nyawa",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tanpa frasa klaim: jaminan",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tidak ada glyph pengganti",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Referensi stabil",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tidak ada missing character",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tidak ada overfull box",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Teks berada dalam halaman",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "check": "Teks isi terpisah dari area header/footer",
+      "pass": true,
+      "details": "[]"
+    },
+    {
+      "check": "Latar halaman isi F8F8F6",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Tautan referensi tertanam",
+      "pass": true,
+      "details": "23 URL unik"
+    },
+    {
+      "check": "Informasi gempa bumi tercakup",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Catatan audit dikeluarkan dari proposal",
+      "pass": true,
+      "details": ""
+    }
+  ],
+  "manual_checks_required": [
+    "Bahasa Indonesia dan ketepatan klaim",
+    "Keterbacaan screenshot/diagram",
+    "Tidak ada overlap dan pemotongan visual"
+  ]
+}

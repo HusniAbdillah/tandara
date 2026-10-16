@@ -1,0 +1,17 @@
+build/*
+!build/Tandara_Proposal_Sustainability.pdf
+!build/validation.json
+!build/QUALITY.md
+__pycache__/
+
+# LaTeX intermediates and failed public-page cache.
+*.aux
+*.fdb_latexmk
+*.fls
+*.bbl
+*.bcf
+*.blg
+*.run.xml
+*.synctex.gz
+*.xdv
+research/figma-public.html

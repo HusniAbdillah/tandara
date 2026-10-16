@@ -1,0 +1,16 @@
+\begin{tikzpicture}[x=1mm,y=.85mm]
+\tikzset{arch/.style={box,text width=67mm,minimum height=22mm,inner sep=2mm,font=\fontsize{9}{12}\selectfont}}
+\fill[Tint,rounded corners=3mm] (0,4) rectangle (176,-25);
+\node[arch] (w) at (42,-10) {\TechLogo{react}\quad\textbf{Tandara Warga}\\React PWA · Dexie/IndexedDB};
+\node[arch] (p) at (134,-10) {\TechLogo{react}\quad\textbf{Tandara Posko}\\React · sesi koordinator};
+\node[arch,fill=Deep,draw=Deep,text=white] (api) at (42,-42) {\TechLogo{nestjs}\quad\textbf{API dan otorisasi}\\NestJS · Fastify · Zod · Kysely};
+\node[arch] (worker) at (134,-42) {\TechLogo{typescript}\quad\textbf{Worker}\\Triase · sumber · pekerjaan terjadwal};
+\node[arch,fill=Tint,draw=TealSoft] (db) at (42,-74) {\TechLogo{postgresql}\quad\textbf{PostgreSQL / PostGIS}\\Laporan · rencana · audit · outbox};
+\node[arch] (sources) at (134,-74) {\textbf{Sumber informasi dan AI}\\BMKG · PetaBencana · model AI};
+\draw[arrow] (w)--(api);
+\draw[arrow] (p.south)--++(0,-2.5mm)-|(api.north);
+\draw[arrow] (api)--(db);
+\draw[{Stealth[length=2mm]}-{Stealth[length=2mm]},draw=Teal,line width=.8pt] (db.east)--++(10,0)|-(worker.west);
+\draw[arrow] (sources)--(worker);
+\node[tealbox,text width=170mm,minimum height=10mm,inner sep=2mm,font=\fontsize{9}{12}\selectfont] (infra) at (88,-96) {\TechLogo{docker}\quad\textbf{Infrastruktur}\qquad Docker Compose\quad ·\quad Caddy HTTPS\quad ·\quad VPS};
+\end{tikzpicture}

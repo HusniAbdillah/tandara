@@ -20,3 +20,4 @@ test-results/
 .DS_Store
 __pycache__/
 Thumbs.db
+docs/proposal/example/
