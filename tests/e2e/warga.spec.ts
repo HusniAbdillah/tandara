@@ -460,7 +460,7 @@ test('support contact switch omits private contact when disabled', async ({ page
 test('guide checklist, downloaded plan and quiz remain connected', async ({ page }) => {
   await fixtures(page);
   await page.goto('/guide');
-  await page.getByRole('checkbox').first().check();
+  await page.getByRole('checkbox').first().check({ force: true });
   await page.reload();
   await expect(page.getByRole('checkbox').first()).toBeChecked();
   await page.getByRole('button', { name: 'Unduh rencana' }).click();

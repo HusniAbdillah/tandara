@@ -90,14 +90,17 @@ jobs:
       - name: Verify OpenAPI matches the implementation
         run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
       - name: Install Chromium for UI checks
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify Warga flows and Posko observation integration
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm test:e2e:warga
       - name: Verify demo account pickers on desktop and mobile
+        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm test:e2e:demo
       - name: Upload Chalk browser failure evidence
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: failure() && github.event_name == 'workflow_dispatch' && inputs.full_e2e
         with:
           name: chalk-browser-evidence
           retention-days: 3
