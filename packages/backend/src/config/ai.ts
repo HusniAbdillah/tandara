@@ -17,6 +17,14 @@ export const aiProviderUrls = {
 } as const;
 
 type AiSettings = z.infer<ReturnType<typeof aiSchema>>;
+export function chatThinkingOptions(provider: AiSettings['AI_PROVIDER'], model: string) {
+  // Vikey routes hybrid DeepSeek models too; their default reasoning can consume
+  // the entire bounded completion allowance before any structured answer exists.
+  return provider === 'deepseek' ||
+    (provider === 'vikey' && /^deepseek\/deepseek-v(?:3\.[12]|4)(?:-|$)/i.test(model))
+    ? { thinking: { type: 'disabled' as const } }
+    : {};
+}
 const localHosts = new Set(['localhost', '127.0.0.1', '[::1]', 'ollama']);
 const placeholder = /^(replace[-_ ]with|your[-_ ]|<|changeme$)/i;
 

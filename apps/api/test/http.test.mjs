@@ -5,9 +5,37 @@ import { Test } from '@nestjs/testing';
 import { DatabaseService, parseEnvironment } from '@tandara/backend';
 import { AppModule } from '../dist/app.module.js';
 import { configureHttp, createHttpAdapter } from '../dist/bootstrap.js';
+import { ServiceUnavailableException } from '@nestjs/common';
+import { ApiErrorFilter } from '../dist/http/api-error.filter.js';
 
 let app;
 let databaseReady = true;
+test('AI budget rejection has an actionable code without exposing arbitrary service details', () => {
+  for (const [exception, code] of [
+    [
+      new ServiceUnavailableException({ code: 'AI_BUDGET_EXCEEDED', message: 'private details' }),
+      'AI_BUDGET_EXCEEDED',
+    ],
+    [new ServiceUnavailableException('private provider details'), 'SERVICE_UNAVAILABLE'],
+  ]) {
+    let body;
+    const reply = {
+      status: () => reply,
+      send: (value) => {
+        body = value;
+      },
+    };
+    new ApiErrorFilter().catch(exception, {
+      switchToHttp: () => ({
+        getRequest: () => ({ id: 'test-request' }),
+        getResponse: () => reply,
+      }),
+    });
+    assert.equal(body.error.code, code);
+    assert.equal(body.error.requestId, 'test-request');
+    assert.ok(!body.error.message.includes('private'));
+  }
+});
 before(async () => {
   const environment = parseEnvironment({
     DATABASE_URL: 'postgres://test:test@localhost/test',

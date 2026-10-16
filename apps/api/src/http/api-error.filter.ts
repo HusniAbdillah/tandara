@@ -25,11 +25,20 @@ export class ApiErrorFilter implements ExceptionFilter {
       429: 'RATE_LIMITED',
       503: 'SERVICE_UNAVAILABLE',
     };
+    const detail = exception instanceof HttpException ? exception.getResponse() : undefined;
+    // Expose only this application-owned reason, never arbitrary upstream errors.
+    const budgetExceeded =
+      status === 503 &&
+      typeof detail === 'object' &&
+      detail !== null &&
+      'code' in detail &&
+      detail.code === 'AI_BUDGET_EXCEEDED';
     const body: ErrorResponse = {
       error: {
-        code: codes[status] ?? 'INTERNAL_ERROR',
-        message:
-          status >= 500
+        code: budgetExceeded ? 'AI_BUDGET_EXCEEDED' : (codes[status] ?? 'INTERNAL_ERROR'),
+        message: budgetExceeded
+          ? 'Batas anggaran AI tidak cukup untuk permintaan ini. Hubungi pengelola posko.'
+          : status >= 500
             ? 'Layanan belum tersedia. Silakan coba lagi.'
             : duplicate
               ? 'Data dengan kunci ini sudah ada. Gunakan pengiriman yang sama untuk mencoba ulang.'

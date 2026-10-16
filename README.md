@@ -2,6 +2,7 @@
   <img src="logo/assets/tandara-logo.svg" alt="Tandara Logo" width="180" />
   <h1>Tandara</h1>
   <p><strong>Community-Driven Disaster Preparedness & AI-Augmented Flood Response Platform</strong></p>
+  <p><strong>Team: Mas Gudegnya Dua Soto Mienya Dua Pakai Nasi</strong></p>
   <p>
     <strong>Live Production Deployment:</strong><br/>
     <a href="https://tandara.my.id/" target="_blank"><strong>Resident Portal (Warga): https://tandara.my.id/</strong></a> • 
@@ -325,5 +326,5 @@ tandara/
 
 <div align="center">
   <p>Built for resilient, community-first disaster response.</p>
-  <p>© 2026 Tandara Team. All demonstration data is strictly for simulation purposes.</p>
+  <p>© 2026 Mas Gudegnya Dua Soto Mienya Dua Pakai Nasi. All demonstration data is strictly for simulation purposes.</p>
 </div>

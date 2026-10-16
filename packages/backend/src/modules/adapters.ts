@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { triageSchema, informationSchema } from '@tandara/contracts';
 import type { Information, Triage } from '@tandara/contracts';
-import { readAiSettings } from '../config/ai.js';
+import { chatThinkingOptions, readAiSettings } from '../config/ai.js';
 import { BmkgNowcastSource } from './bmkg-nowcast.js';
 
 export interface TriageInput {
@@ -142,7 +142,7 @@ export async function fetchJson(
 }
 export class CompatibleAdapter implements AiAdapter {
   usage: { prompt_tokens: number; completion_tokens: number } | null = null;
-  readonly provider: string;
+  readonly provider: 'vikey' | 'deepseek' | 'compatible';
   readonly model: string;
   readonly timeout: number;
   readonly maxOutputTokens: number;
@@ -200,7 +200,10 @@ export class CompatibleAdapter implements AiAdapter {
             temperature: 0,
             max_tokens: this.maxOutputTokens,
             stream: false,
-            ...(this.provider === 'deepseek' ? { thinking: { type: 'disabled' } } : {}),
+            ...chatThinkingOptions(
+              this.provider === 'compatible' ? 'custom' : this.provider,
+              this.model,
+            ),
             messages: [
               {
                 role: 'system',

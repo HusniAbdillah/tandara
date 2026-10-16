@@ -483,7 +483,10 @@ export class AiService implements OnApplicationShutdown {
         Number(budget.monthly) + worst > s.AI_MONTHLY_BUDGET_MICRO_USD ||
         Number(budget.organization) + worst > s.AI_ORG_DAILY_BUDGET_MICRO_USD)
     )
-      throw new ServiceUnavailableException('Batas anggaran AI tercapai.');
+      throw new ServiceUnavailableException({
+        code: 'AI_BUDGET_EXCEEDED',
+        message: 'Batas anggaran AI tidak cukup untuk permintaan ini.',
+      });
     await sql`INSERT INTO ai_budget_reservations(run_id,organization_id,reserved) VALUES(${runId}::uuid,${organizationId}::uuid,${paid ? worst : 0}) ON CONFLICT DO NOTHING`.execute(
       tx,
     );
