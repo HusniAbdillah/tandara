@@ -1,0 +1,11 @@
+\begin{tikzpicture}[x=1mm,y=1mm]
+\tikzset{stage/.style={box,text width=26mm,minimum height=23mm,inner sep=2mm,font=\fontsize{9}{12}\selectfont}}
+\node[stage] (a) at (15,0) {\textbf{Terima}\\Validasi\\laporan warga};
+\node[stage] (b) at (51,0) {\textbf{Simpan}\\Laporan asli\\dan tanda terima};
+\node[stage,fill=Tint,draw=TealSoft] (c) at (87,0) {\textbf{Bantu triase}\\Ringkasan dan\\informasi kurang};
+\node[stage,fill=Deep,draw=Deep,text=white] (d) at (123,0) {\textbf{Tinjau}\\Pemeriksaan\\oleh koordinator};
+\node[stage] (e) at (159,0) {\textbf{Perbarui}\\Status dan\\ringkasan publik};
+\draw[arrow] (a)--(b);\draw[arrow] (b)--(c);\draw[arrow] (c)--(d);\draw[arrow] (d)--(e);
+\draw[arrow] (b.south)--++(0,-10)-| (d.south);
+\node[note,fill=Paper,inner sep=1.5mm] at (87,-23) {Tinjauan manual tetap tersedia};
+\end{tikzpicture}

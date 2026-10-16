@@ -1,0 +1,17 @@
+\begin{tikzpicture}[x=1mm,y=.8mm]
+\tikzset{task/.style={box,text width=32mm,minimum height=14mm,inner sep=2mm,font=\fontsize{8.8}{11.5}\selectfont}}
+\fill[Tint,rounded corners=2mm] (0,0) rectangle (176,-24);
+\fill[white,rounded corners=2mm] (0,-26) rectangle (176,-50);
+\fill[Tint,rounded corners=2mm] (0,-52) rectangle (176,-76);
+\node[anchor=west,font=\bfseries\fontsize{9}{12}\selectfont] at (3,-12) {Warga};
+\node[anchor=west,font=\bfseries\fontsize{9}{12}\selectfont] at (3,-38) {Sistem};
+\node[anchor=west,font=\bfseries\fontsize{8.3}{11}\selectfont] at (3,-64) {Koordinator};
+\node[task] (a) at (49,-12) {Buka dan simpan\\rencana lokal};
+\node[task] (b) at (97,-12) {Isi checklist\\dan kirim laporan};
+\node[task] (c) at (150,-12) {Lihat tanda terima\\dan pembaruan};
+\node[task,fill=Tint,draw=TealSoft] (d) at (97,-38) {Simpan laporan\\dan siapkan saran};
+\node[task] (e) at (49,-64) {Susun dan terbitkan\\rencana lokal};
+\node[task,fill=Deep,draw=Deep,text=white] (f) at (97,-64) {Tinjau laporan\\dan catat keputusan};
+\node[task] (g) at (150,-64) {Perbarui status\\atau ringkasan};
+\draw[arrow] (e)--(a);\draw[arrow] (a)--(b);\draw[arrow] (b)--(d);\draw[arrow] (d)--(f);\draw[arrow] (f)--(g);\draw[arrow] (g)--(c);
+\end{tikzpicture}

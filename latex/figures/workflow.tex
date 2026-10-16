@@ -1,0 +1,11 @@
+\begin{tikzpicture}[x=1mm,y=1mm]
+\tikzset{flowcard/.style={box,text width=45mm,minimum height=24mm,inner sep=3mm,font=\fontsize{9.5}{13}\selectfont}}
+\node[flowcard,fill=Tint,draw=TealSoft] (a) at (27,0) {\textcolor{Teal}{\textbf{01 / BERSIAP}}\\Rencana lokal, checklist,\\dan panduan tersimpan};
+\node[flowcard] (b) at (88,0) {\textcolor{Teal}{\textbf{02 / MELAPOR}}\\Pengamatan warga\\beserta konteks lokasi};
+\node[flowcard] (c) at (149,0) {\textcolor{Teal}{\textbf{03 / TRIASE}}\\Kategori, ringkasan,\\dan informasi pelengkap};
+\node[flowcard,fill=Deep,draw=Deep,text=white] (d) at (149,-39) {\textbf{04 / MENINJAU}\\Koordinator memeriksa\\laporan asli dan saran};
+\node[flowcard,fill=Tint,draw=TealSoft] (e) at (88,-39) {\textcolor{Teal}{\textbf{05 / MEMPERBARUI}}\\Ringkasan komunitas\\yang telah ditinjau};
+\node[flowcard] (f) at (27,-39) {\textcolor{Teal}{\textbf{06 / MEMELIHARA}}\\Rencana dan persiapan\\diperbarui bersama};
+\draw[arrow] (a)--(b);\draw[arrow] (b)--(c);\draw[arrow] (c)--(d);\draw[arrow] (d)--(e);\draw[arrow] (e)--(f);\draw[arrow] (f)--(a);
+\end{tikzpicture}
+
