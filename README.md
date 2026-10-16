@@ -11,6 +11,7 @@
 <div align="center">
 
 ### Frontend & Client Applications
+
 ![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
@@ -19,6 +20,7 @@
 ![MapLibre](https://img.shields.io/badge/MapLibre_GL-396B99?style=for-the-badge&logo=maplibre&logoColor=white)
 
 ### Backend & Cloud Architecture
+
 ![Node.js](https://img.shields.io/badge/Node.js_24-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS_12-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
 ![Fastify](https://img.shields.io/badge/Fastify-000000?style=for-the-badge&logo=fastify&logoColor=white)
@@ -27,6 +29,7 @@
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ### AI Engine & Agentic Workflows
+
 ![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
 ![LangGraph](https://img.shields.io/badge/LangGraph_Orchestrator-FF6F00?style=for-the-badge&logo=diagram-project&logoColor=white)
 ![RAG](https://img.shields.io/badge/Agentic_RAG-7B1FA2?style=for-the-badge&logo=openai&logoColor=white)
@@ -34,6 +37,7 @@
 ![pgvector](https://img.shields.io/badge/pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 
 ### Reliability, Testing & Observability
+
 ![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)
 ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
 ![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-005A9C?style=for-the-badge&logo=opentelemetry&logoColor=white)
@@ -48,6 +52,7 @@
 **Tandara (ArahSiaga)** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
 
 Unlike naive chatbots or isolated dashboards, Tandara integrates:
+
 - **Offline-First Resident PWA (Tandara Warga)**: Built for intermittent low-connectivity crisis scenarios. Residents can inspect evacuation routes, household preparation checklists, and draft incident reports with zero network connection.
 - **Unified Command Center (Tandara Posko)**: Coordinator dashboard featuring interactive geospatial hazard layers (MapLibre + PostGIS), deduplication pipelines, triage tracking, and independent evacuation plan reviews.
 - **AI-Augmented Decision Support & Agentic RAG**: Powered by LangGraph and bounded Retrieval-Augmented Generation (RAG). It provides intelligent triage suggestions, duplicate incident correlation, gap analysis on evacuation plans, and verified situational Q&A—all anchored to authoritative sources with strict human-in-the-loop review.
@@ -100,16 +105,19 @@ graph TD
 ```
 
 ### 1. Dual-Portal Workflow
+
 - **Warga PWA (Port 8080)**: Native offline caching via Service Worker & IndexedDB. Pre-configured demo credentials or anonymous report submission with private tracking tokens.
 - **Posko Command Web (Port 8081)**: Role-Based Access Control (RBAC) separating field coordinators from cross-region administrators.
 
 ### 2. Multi-Agent & RAG Decision Engine
+
 - **LangGraph Workflows**: Orchestrates structured report categorization, severity estimation, and landmark grounding without hallucinated emergency instructions.
 - **pgvector & Hybrid Semantic Search**: Embeddings match historical flood contingency manuals and government SOPs to support coordinator actions.
 - **Cost & Budget Guards**: Daily and monthly token expenditure quotas strictly enforced at the database level.
 - **Explainable Deduplication**: Links related reports reversibly with coordinator attribution, preserving raw citizen submissions.
 
 ### 3. Resilient Data Layer
+
 - **PostgreSQL 16 + PostGIS**: Geospatial queries, spatial distance calculations, and outbox event queues.
 - **Zero-Data Loss Offline Sync**: Idempotent client sync keys prevent duplicate submissions during network flapping.
 
@@ -120,10 +128,12 @@ graph TD
 The fastest and most reliable way to evaluate the entire system is with Docker Compose.
 
 ### Prerequisites
+
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (with Linux container engine active)
 - Available ports: `8080` (Warga), `8081` (Posko)
 
 ### 1. Clone & Configure Environment
+
 ```bash
 git clone https://github.com/HusniAbdillah/tandara.git
 cd tandara
@@ -131,16 +141,19 @@ cd tandara
 # Copy sample environment configuration
 cp .env.example .env
 ```
-*(On Windows PowerShell: `Copy-Item .env.example .env`)*
+
+_(On Windows PowerShell: `Copy-Item .env.example .env`)_
 
 > Default passwords in `.env.example` are pre-configured for local evaluation. You can customize `POSTGRES_PASSWORD` and `DEMO_PASSWORD` if desired.
 
 ### 2. Build & Launch Containers
+
 ```bash
 docker compose up --build -d --wait
 ```
 
 This single command automatically:
+
 1. Provisions PostgreSQL with PostGIS extensions.
 2. Applies all database schema migrations.
 3. Seeds comprehensive demonstration scenarios (Ciliwung River Basin, Semarang Coastal Region, synthetic sensors, verified plans, and sample reports).
@@ -148,7 +161,9 @@ This single command automatically:
 5. Serves both Warga and Posko frontend applications.
 
 ### 3. Verify Health
+
 Open your browser or run:
+
 - Health check: [http://127.0.0.1:8080/ready](http://127.0.0.1:8080/ready) (Returns `{"status":"ok"}`)
 - OpenAPI Documentation: [http://127.0.0.1:8080/api/v1/system/openapi.json](http://127.0.0.1:8080/api/v1/system/openapi.json)
 
@@ -156,11 +171,11 @@ Open your browser or run:
 
 ## 🔑 Demo & Evaluation Access
 
-| Portal | Target URL | Description | Default Credentials |
-| :--- | :--- | :--- | :--- |
-| **Tandara Warga** | [http://127.0.0.1:8080](http://127.0.0.1:8080) | Resident PWA (Mobile / Desktop) | Phone: `081234560001`<br/>Password: `TandaraDemo2026!` *(Prefilled on login screen)* |
-| **Tandara Posko** | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Coordinator / Admin Dashboard | Email: `ciliwung@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env` |
-| **System Admin** | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Cross-Region Administrator & Reviewer | Email: `admin@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env` |
+| Portal            | Target URL                                     | Description                           | Default Credentials                                                                  |
+| :---------------- | :--------------------------------------------- | :------------------------------------ | :----------------------------------------------------------------------------------- |
+| **Tandara Warga** | [http://127.0.0.1:8080](http://127.0.0.1:8080) | Resident PWA (Mobile / Desktop)       | Phone: `081234560001`<br/>Password: `TandaraDemo2026!` _(Prefilled on login screen)_ |
+| **Tandara Posko** | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Coordinator / Admin Dashboard         | Email: `ciliwung@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env` |
+| **System Admin**  | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Cross-Region Administrator & Reviewer | Email: `admin@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env`    |
 
 ---
 
@@ -204,6 +219,7 @@ To experience the full end-to-end impact in 5–10 minutes, open two separate br
 By default, Tandara runs in **Deterministic / Heuristic Simulation Mode**, guaranteeing complete functionality offline without third-party API dependencies.
 
 To enable live LLM inference and embeddings with **DeepSeek**, **Vikey**, or any OpenAI-compatible provider:
+
 1. Open `.env`:
    ```bash
    AI_MODE=compatible
@@ -230,10 +246,12 @@ To enable live LLM inference and embeddings with **DeepSeek**, **Vikey**, or any
 For developers wishing to run services outside Docker containers:
 
 ### Prerequisites
+
 - Node.js `22.22.0` - `24.x` (Recommended: `24.20.0`)
 - pnpm `10.26.2`
 
 ### Setup & Dev Server
+
 ```bash
 # 1. Install dependencies across monorepo workspaces
 pnpm install --frozen-lockfile
@@ -250,6 +268,7 @@ pnpm dev
 ```
 
 ### Quality Assurance & Automated Testing
+
 ```bash
 # Run code formatting checks
 pnpm format:check
