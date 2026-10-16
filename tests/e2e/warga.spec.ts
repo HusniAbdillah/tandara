@@ -431,6 +431,14 @@ test('guide checklist, downloaded plan and quiz remain connected', async ({ page
 test('phone auth screens are centered, accessible and route into the app', async ({ page }) => {
   await fixtures(page, false);
   await page.goto('/login');
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('081234560001');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('TandaraDemo2026!');
+  await page.getByRole('link', { name: 'Daftar', exact: true }).click();
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('');
+  await page.getByRole('link', { name: 'Masuk', exact: true }).click();
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('081234560001');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('TandaraDemo2026!');
   const form = await page.locator('.w-auth-form').boundingBox();
   expect(Math.abs(form!.x + form!.width / 2 - 720)).toBeLessThan(1);
   expect(Math.abs(form!.y + form!.height / 2 - 512)).toBeLessThan(1);

@@ -34,6 +34,28 @@ before(async () => {
 after(async () => {
   await app?.close();
 });
+test('the prefilled judging account signs in through normal resident authentication', async () => {
+  const login = await call('POST', '/resident/auth/login', {
+    phone: '081234560001',
+    password: 'TandaraDemo2026!',
+  });
+  assert.equal(login.statusCode, 201, login.body);
+  assert.equal(login.json().user.name, 'Warga Demo');
+  const cookie = login.headers['set-cookie'].map((c) => c.split(';')[0]).join('; ');
+  assert.equal(
+    (await call('GET', '/resident/auth/me', undefined, { cookie })).json().user.phone,
+    '+6281234560001',
+  );
+  assert.equal(
+    (
+      await call('POST', '/resident/auth/login', {
+        phone: '081234560001',
+        password: 'incorrect-password',
+      })
+    ).statusCode,
+    401,
+  );
+});
 test('resident accounts use persistent password verification, independent sessions and CSRF logout', async () => {
   const anonymous = await call('GET', '/resident/auth/me');
   assert.equal(anonymous.statusCode, 200);
