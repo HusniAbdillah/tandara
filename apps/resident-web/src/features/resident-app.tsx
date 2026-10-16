@@ -67,13 +67,7 @@ export function ResidentApp() {
     return () => window.removeEventListener('tandara:unauthorized', expired);
   }, [client]);
   if (path === '/login' || path === '/register')
-    return (
-        <AccountForm
-          key={path}
-          register={path === '/register'}
-          onChooseRegion={app.choose}
-        />
-    );
+    return <AccountForm key={path} register={path === '/register'} onChooseRegion={app.choose} />;
   if (app.session.isPending)
     return (
       <div className="w-loading" role="status">
