@@ -856,92 +856,90 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
       ) : query.isError ? (
         <Notice tone="error">Hasil latihan tidak dapat dimuat.</Notice>
       ) : (
-        query.data
-          ?
-          .map((s) => (
-            <section
-              className="mb-4 overflow-hidden rounded-lg border border-[#e3dfd6] bg-white"
-              key={s.id}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#e3dfd6] px-5 py-4 sm:px-6">
-                <div>
-                  <p className="mb-1 font-mono text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-                    SIMULASI / LATIHAN
-                  </p>
-                  <h2 className="mb-1 text-lg">{s.content.title}</h2>
-                  <p className="mb-0 text-sm text-muted-foreground">{s.content.description}</p>
-                </div>
-                <Badge tone="amber">Simulasi</Badge>
+        query.data?.map((s) => (
+          <section
+            className="mb-4 overflow-hidden rounded-lg border border-[#e3dfd6] bg-white"
+            key={s.id}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#e3dfd6] px-5 py-4 sm:px-6">
+              <div>
+                <p className="mb-1 font-mono text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                  SIMULASI / LATIHAN
+                </p>
+                <h2 className="mb-1 text-lg">{s.content.title}</h2>
+                <p className="mb-0 text-sm text-muted-foreground">{s.content.description}</p>
               </div>
-              <div className="grid gap-4 bg-[#f7f6f2] px-5 py-3 text-sm sm:grid-cols-2 sm:px-6">
-                <div>
-                  <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                    Jadwal
-                  </span>
-                  <span className="font-medium">{formatTime(s.content.scheduledAt)}</span>
-                </div>
-                <div>
-                  <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                    Penyelesaian anonim
-                  </span>
-                  <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
-                </div>
+              <Badge tone="amber">Simulasi</Badge>
+            </div>
+            <div className="grid gap-4 bg-[#f7f6f2] px-5 py-3 text-sm sm:grid-cols-2 sm:px-6">
+              <div>
+                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  Jadwal
+                </span>
+                <span className="font-medium">{formatTime(s.content.scheduledAt)}</span>
               </div>
-              <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
-                <div>
-                  <h3 className="mb-3 text-sm">Tahapan latihan</h3>
-                  <ol className="m-0 space-y-2 pl-5 text-sm">
-                    {s.content.steps.map((step, i) => (
-                      <li className="pl-1 leading-relaxed" key={i}>
-                        {step.question}
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-                <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
-                  <summary className="cursor-pointer text-sm font-semibold">
-                    Feedback untuk perbaikan materi
-                  </summary>
-                  {s.feedback.length ? (
-                    s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
-                  ) : (
-                    <p className="hint">Belum ada feedback.</p>
-                  )}
-                </details>
+              <div>
+                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  Penyelesaian anonim
+                </span>
+                <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
               </div>
-              <div className="border-t border-[#e3dfd6] px-5 py-3 sm:px-6">
-                <button
-                  className="small"
-                  onClick={() => {
-                    const blob = new Blob(
-                      [
-                        JSON.stringify(
-                          {
-                            simulation: true,
-                            region: region.name,
-                            title: s.content.title,
-                            scheduledAt: s.content.scheduledAt,
-                            completed: s.completed,
-                            feedback: s.feedback,
-                          },
-                          null,
-                          2,
-                        ),
-                      ],
-                      { type: 'application/json' },
-                    );
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = 'tandara-latihan.json';
-                    link.click();
-                    URL.revokeObjectURL(link.href);
-                  }}
-                >
-                  Ekspor ringkasan latihan
-                </button>
+            </div>
+            <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
+              <div>
+                <h3 className="mb-3 text-sm">Tahapan latihan</h3>
+                <ol className="m-0 space-y-2 pl-5 text-sm">
+                  {s.content.steps.map((step, i) => (
+                    <li className="pl-1 leading-relaxed" key={i}>
+                      {step.question}
+                    </li>
+                  ))}
+                </ol>
               </div>
-            </section>
-          ))
+              <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Feedback untuk perbaikan materi
+                </summary>
+                {s.feedback.length ? (
+                  s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
+                ) : (
+                  <p className="hint">Belum ada feedback.</p>
+                )}
+              </details>
+            </div>
+            <div className="border-t border-[#e3dfd6] px-5 py-3 sm:px-6">
+              <button
+                className="small"
+                onClick={() => {
+                  const blob = new Blob(
+                    [
+                      JSON.stringify(
+                        {
+                          simulation: true,
+                          region: region.name,
+                          title: s.content.title,
+                          scheduledAt: s.content.scheduledAt,
+                          completed: s.completed,
+                          feedback: s.feedback,
+                        },
+                        null,
+                        2,
+                      ),
+                    ],
+                    { type: 'application/json' },
+                  );
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = 'tandara-latihan.json';
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+              >
+                Ekspor ringkasan latihan
+              </button>
+            </div>
+          </section>
+        ))
       )}
     </>
   );
