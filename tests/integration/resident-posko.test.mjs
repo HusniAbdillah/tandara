@@ -90,11 +90,18 @@ before(async () => {
   );
   await app.init();
   await app.getHttpAdapter().getInstance().ready();
-  a = session(await call('POST', '/resident/auth/register', { phone, password: pass }));
+  a = session(
+    await call('POST', '/resident/auth/register', {
+      phone,
+      password: pass,
+      name: 'Warga A',
+    }),
+  );
   b = session(
     await call('POST', '/resident/auth/register', {
       phone: '0813' + String(Date.now()).slice(-8),
       password: pass,
+      name: 'Warga B',
     }),
   );
   device2 = session(await call('POST', '/resident/auth/login', { phone, password: pass }));

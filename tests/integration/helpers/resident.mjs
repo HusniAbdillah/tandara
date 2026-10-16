@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
 import { ReportsService } from '../../../apps/api/dist/bootstrap.js';
 
-export async function registerResident(app) {
+export async function registerResident(
+  app,
+  name = 'Warga Pengujian',
+  phone = '0819' + String(Date.now()).slice(-8),
+  password = 'synthetic-integration-resident-password',
+) {
   const response = await app.inject({
     method: 'POST',
     url: '/api/v1/resident/auth/register',
     headers: { 'x-tandara-client': 'web' },
     payload: {
-      phone: '0819' + String(Date.now()).slice(-8),
-      password: 'synthetic-integration-resident-password',
+      phone,
+      password,
+      name,
     },
   });
   assert.equal(response.statusCode, 201, response.body);

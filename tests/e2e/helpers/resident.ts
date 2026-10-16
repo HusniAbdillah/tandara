@@ -7,6 +7,7 @@ export async function registerResident(page: Page, origin = '') {
     data: {
       phone: '0819' + randomInt(10000000, 99999999),
       password: 'synthetic-browser-resident-password',
+      name: 'Warga Browser E2E',
     },
     headers: { 'X-Tandara-Client': 'web' },
   });
