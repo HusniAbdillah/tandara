@@ -1286,6 +1286,18 @@ body:has(.warga-app) {
 .w-password {
   position: relative;
 }
+.warga-app .demo-accounts-heading h2 {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.warga-app .demo-accounts-heading p {
+  margin-top: 4px;
+}
+.warga-app .demo-accounts-hint {
+  margin-top: 12px;
+}
 .w-password input {
   padding-right: 54px;
 }

@@ -449,6 +449,66 @@ td a {
 .login-form > a {
   @apply mt-1 inline-flex min-h-10 items-center text-sm font-semibold no-underline;
 }
+.demo-accounts {
+  @apply m-0 min-w-0 rounded-2xl border border-line bg-white p-4;
+}
+.demo-accounts-heading {
+  @apply mb-3 flex items-start gap-2.5;
+}
+.demo-accounts-icon {
+  @apply flex size-9 shrink-0 items-center justify-center rounded-xl bg-soft text-brand;
+}
+.demo-accounts-heading > div {
+  @apply min-w-0 flex-1;
+}
+.demo-accounts-heading h2 {
+  @apply m-0 text-[15px] font-bold leading-5 tracking-[-0.2px];
+}
+.demo-accounts-heading p {
+  @apply mb-0 mt-1 text-xs font-normal leading-5 text-muted-foreground;
+}
+.demo-accounts-badge {
+  @apply rounded-full bg-paper px-2 py-1 text-[10px] font-semibold tracking-wide text-muted-foreground;
+}
+.demo-accounts-list {
+  @apply grid gap-2;
+}
+.demo-accounts .demo-account {
+  @apply m-0 grid w-full grid-cols-[36px_minmax(0,1fr)_20px] items-center gap-3 rounded-xl border border-line bg-white px-3 py-3 text-left font-normal transition-colors;
+}
+.demo-accounts .demo-account:hover {
+  @apply border-brand bg-[#f3f8f8];
+}
+.demo-accounts .demo-account[aria-pressed='true'] {
+  @apply border-brand bg-[#edf6f6] shadow-[0_0_0_1px_#1f6f7a];
+}
+.demo-account-avatar {
+  @apply flex size-9 items-center justify-center rounded-full bg-paper text-xs font-bold text-brand;
+}
+.demo-account-copy {
+  @apply flex min-w-0 flex-col items-start gap-0.5;
+}
+.demo-account-name {
+  @apply text-[13px] font-semibold leading-5 text-ink;
+}
+.demo-account-identifier {
+  @apply max-w-full text-[11px] leading-4 text-muted-foreground [overflow-wrap:anywhere];
+}
+.demo-account-role {
+  @apply mt-0.5 text-[10px] font-medium leading-4 text-brand;
+}
+.demo-account-indicator {
+  @apply flex size-5 items-center justify-center rounded-full text-muted-foreground;
+}
+.demo-account[aria-pressed='true'] .demo-account-indicator {
+  @apply bg-brand text-white;
+}
+.demo-accounts .demo-accounts-hint {
+  @apply mb-0 mt-3 text-[11px] font-normal leading-5 text-muted-foreground;
+}
+.login-form > .demo-accounts {
+  @apply mb-6;
+}
 .hero {
   @apply mb-[30px] grid grid-cols-[1.3fr_1fr] overflow-hidden rounded-[10px] bg-dark text-white;
 }

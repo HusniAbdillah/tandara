@@ -7,6 +7,7 @@ import { deploymentSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
 import {
   Brand,
+  DemoAccountPicker,
   Button,
   Field,
   Icon,
@@ -405,33 +406,28 @@ function Login({
         <h1>Masuk ke Posko</h1>
         <p className="muted">Akses untuk koordinator dan administrator berwenang.</p>
         {demoLogin && (
-          <fieldset className="my-5 grid gap-2 rounded-xl border p-4" disabled={busy}>
-            <legend className="px-1 font-semibold">Coba akun demo</legend>
-            <p className="text-sm text-muted-foreground">
-              Pilih akun untuk mengisi email dan kata sandi.
-            </p>
-            {demoLogin.coordinators.map((account) => (
-              <button
-                key={account.id}
-                type="button"
-                className="text-left"
-                aria-pressed={email === account.email}
-                style={{ display: 'grid', gap: 4, justifyItems: 'start', padding: '12px 14px' }}
-                onClick={() => {
-                  setEmail(account.email);
-                  setPassword(demoLogin.password);
-                  setCode('');
-                  setNeedsCode(false);
-                  setError('');
-                }}
-              >
-                <strong className="block">{account.name}</strong>
-                <span className="block text-xs">
-                  {account.email} · {account.role}
-                </span>
-              </button>
-            ))}
-          </fieldset>
+          <DemoAccountPicker
+            disabled={busy}
+            accounts={demoLogin.coordinators.map((account) => ({
+              ...account,
+              identifier: account.email,
+              role: account.role === 'admin' ? 'Administrator' : 'Koordinator wilayah',
+            }))}
+            selectedId={
+              password === demoLogin.password
+                ? demoLogin.coordinators.find((account) => account.email === email)?.id
+                : undefined
+            }
+            onSelect={(id) => {
+              const account = demoLogin.coordinators.find((account) => account.id === id);
+              if (!account) return;
+              setEmail(account.email);
+              setPassword(demoLogin.password);
+              setCode('');
+              setNeedsCode(false);
+              setError('');
+            }}
+          />
         )}
         <form
           onSubmit={async (e) => {

@@ -22,6 +22,7 @@ import {
 import { cva } from 'class-variance-authority';
 import { cn } from './lib/utils.js';
 export { Button } from './components/button.js';
+export { DemoAccountPicker } from './components/demo-account-picker.js';
 export type { ButtonProps } from './components/button.js';
 export {
   Card,

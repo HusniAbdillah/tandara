@@ -1,7 +1,7 @@
 {
   "pdf": "D:\\Hackathon\\Tandara\\latex\\build\\Tandara_Proposal_Sustainability.pdf",
   "pages": 10,
-  "sha256": "66c51783d44183ade8cab91aa93ad8f2074acb19a233939ff4018294de8f57d5",
+  "sha256": "7ffd2f047a7c55391b115f2b39a34c3d78545e5cf3529802b1e30920b86f73a7",
   "citation_keys": [
     "bmkgcap",
     "bmkgforecast",
@@ -14,6 +14,7 @@
     "nist",
     "osmdata",
     "petaapi",
+    "poskobanjir",
     "sdg11",
     "sdg13",
     "sufri2020",
@@ -26,7 +27,7 @@
   "unique_urls": [
     "https://bnpb.go.id/storage/app/media/Buletin%20Info%20Bencana/Buku%20Data%20Bencana%202024/20250613_Buku%20Data%202024.pdf",
     "https://bpbd.jogjakota.go.id/assets/instansi/bpbd/files/pedoman-penyusunan-rencana-evakuasi-bencana-banjir-tingkat-desa-4917.pdf",
-    "https://data.bmkg.go.id/gempabumi/",
+    "https://data.bmkg.go.id/DataMKG/TEWS/gempadirasakan.json",
     "https://data.bmkg.go.id/peringatan-dini-cuaca/",
     "https://data.bmkg.go.id/prakiraan-cuaca/",
     "https://docs.petabencana.id/routes/laporan-urun-daya",
@@ -39,6 +40,7 @@
     "https://peraturan.bpk.go.id/Details/229798/uu-no-27-tahun-2022",
     "https://peraturan.bpk.go.id/Details/39901/uu-no-24-tahun-2007",
     "https://posko.tandara.my.id/",
+    "https://poskobanjir.dsdadki.web.id/",
     "https://sdgs.un.org/goals/goal11",
     "https://sdgs.un.org/goals/goal13",
     "https://tandara.my.id/",
@@ -112,7 +114,7 @@
     {
       "check": "Referensi eksternal tersitasi",
       "pass": true,
-      "details": "19"
+      "details": "20"
     },
     {
       "check": "Tidak ada placeholder gambar",
@@ -187,7 +189,7 @@
     {
       "check": "Tautan referensi tertanam",
       "pass": true,
-      "details": "23 URL unik"
+      "details": "24 URL unik"
     },
     {
       "check": "Informasi gempa bumi tercakup",

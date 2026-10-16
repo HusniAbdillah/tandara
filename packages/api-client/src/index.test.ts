@@ -3,6 +3,45 @@ import { z } from 'zod';
 import { ApiError, createApiClient, request } from './index.js';
 
 describe('API client', () => {
+  it.each([
+    [502, ''],
+    [503, '<html>upstream unavailable</html>'],
+    [500, '{"error":'],
+  ])('turns non-JSON HTTP %s into a readable service error', async (status, body) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async () => new Response(body, { status, headers: { 'X-Request-ID': 'proxy-1' } }),
+      );
+    vi.stubGlobal('fetch', fetcher);
+    try {
+      for (const action of [
+        () => request('/auth/login', z.object({ ok: z.boolean() }), { method: 'POST', body: {} }),
+        () => createApiClient({ fetch: fetcher }).getSystemInfo(),
+      ]) {
+        await expect(action()).rejects.toMatchObject({
+          name: 'ApiError',
+          status,
+          requestId: 'proxy-1',
+          message: 'Layanan sedang tidak tersedia. Tunggu sebentar lalu coba lagi.',
+        });
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it.each(['', '{"user":', '<html>not an API response</html>'])(
+    'handles incomplete successful responses without a JSON parser error',
+    async (body) => {
+      const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(body));
+      await expect(createApiClient({ fetch: fetcher }).getSystemInfo()).rejects.toMatchObject({
+        name: 'ApiError',
+        code: 'INVALID_RESPONSE',
+        message: 'Respons layanan belum lengkap. Silakan coba lagi.',
+      });
+    },
+  );
   it('sends bodyless actions without a JSON content type while retaining security headers', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
