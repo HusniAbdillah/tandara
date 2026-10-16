@@ -12,6 +12,7 @@ import * as residents from './migrations/010_residents.js';
 import * as workflow from './migrations/011_report_workflow.js';
 import * as residentIntegration from './migrations/011_resident_integration.js';
 import * as residentWorkflow from './migrations/012_resident_workflow_notifications.js';
+import * as residentPhone from './migrations/013_resident_report_phone.js';
 import { createDatabase } from './client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -41,6 +42,7 @@ try {
           '011_report_workflow': workflow,
           '011_resident_integration': residentIntegration,
           '012_resident_workflow_notifications': residentWorkflow,
+          '013_resident_report_phone': residentPhone,
         };
       },
     },

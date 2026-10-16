@@ -7912,6 +7912,12 @@
                       ],
                       "additionalProperties": false
                     },
+                    "reporterPhone": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
                     "history": {
                       "type": "array",
                       "items": {
@@ -8415,6 +8421,7 @@
                   },
                   "required": [
                     "report",
+                    "reporterPhone",
                     "history",
                     "suggestions",
                     "duplicates",

@@ -462,6 +462,14 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
               <dd>{w?.assigneeName ?? 'Belum ditugaskan'}</dd>
               <dt>Prioritas</dt>
               <dd>{priorityLabels[w?.priority ?? 'normal']}</dd>
+              {d.reporterPhone && (
+                <>
+                  <dt>Nomor telepon pelapor</dt>
+                  <dd>
+                    <a href={'tel:' + d.reporterPhone}>{d.reporterPhone}</a>
+                  </dd>
+                </>
+              )}
               {r.contactDetails && (
                 <>
                   <dt>Kontak warga</dt>

@@ -208,8 +208,9 @@ export function PrivacyPage({ app }: { app: ResidentData }) {
       <section className="w-card w-stack">
         <h2>Data laporan</h2>
         <p>
-          Pengelola wilayah dapat melihat laporan, foto, lokasi dan kontak yang kamu kirim.
-          Ringkasan ditampilkan di peta setelah ditinjau Posko.
+          Pengelola wilayah dapat melihat laporan, foto, lokasi dan kontak yang kamu kirim. Jika
+          kamu masuk, nomor telepon akun ikut dikirim ke Posko bersama laporan. Ringkasan
+          ditampilkan di peta setelah ditinjau Posko.
         </p>
         <p>
           Kontak dihapus setelah {app.region?.config.retentionDays ?? 30} hari. Draf yang belum

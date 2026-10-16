@@ -19,6 +19,7 @@ import { DatabaseService } from '../platform/database.service.js';
 import { hash, parse, rateLimit, found } from './shared.js';
 import { z } from 'zod';
 import { passwordHash, verifyPassword } from './identity.js';
+import { retainResidentPhone } from './resident-contact.js';
 
 @Injectable()
 export class ResidentsService {
@@ -117,7 +118,10 @@ export class ResidentsService {
         }>`UPDATE reports SET resident_id=${user.id}::uuid WHERE id=${receipt.id}::uuid AND tracking_hash=${hash(receipt.trackingToken)} AND NOT erased AND (resident_id IS NULL OR resident_id=${user.id}::uuid) RETURNING id`.execute(
           tx,
         );
-        if (result.rows[0]) claimedIds.push(result.rows[0].id);
+        if (result.rows[0]) {
+          await retainResidentPhone(tx, result.rows[0].id);
+          claimedIds.push(result.rows[0].id);
+        }
       }
       return { claimedIds: [...new Set(claimedIds)] };
     });

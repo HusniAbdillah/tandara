@@ -575,6 +575,11 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
               Koordinat {r.latitude === null ? 'Tidak diketahui' : r.latitude + ', ' + r.longitude}
             </span>
             <span>Sumber: warga · revisi {r.revision}</span>
+            {d.reporterPhone && (
+              <span>
+                Nomor telepon pelapor: <a href={'tel:' + d.reporterPhone}>{d.reporterPhone}</a>
+              </span>
+            )}
           </div>
           {r.followUpRequested && (
             <Notice tone="warning">

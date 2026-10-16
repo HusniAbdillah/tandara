@@ -14,6 +14,7 @@ import { IdentityService } from './identity.js';
 import { audit, conflict, found, hash, parse, rateLimit, reportProjection } from './shared.js';
 
 import { workflowDetail } from './report-workflow.js';
+import { retainResidentPhone } from './resident-contact.js';
 
 export const transitions: Record<ReportReviewState, ReportReviewState[]> = {
   submitted: ['under_review', 'clarification_requested', 'reviewed', 'rejected', 'closed'],
@@ -117,6 +118,7 @@ export class ReportsService {
         await sql`INSERT INTO report_private_details(report_id,contact_details,consent_at,retention_until) VALUES(${row.id}::uuid,${data.contactDetails},now(),now()+${region.config.retentionDays}*interval '1 day')`.execute(
           tx,
         );
+      if (residentId) await retainResidentPhone(tx, row.id);
       if (data.followUpRequested)
         await sql`INSERT INTO assistance_requests(report_id,region_id) VALUES(${row.id}::uuid,${data.regionId}::uuid)`.execute(
           tx,
@@ -228,15 +230,17 @@ export class ReportsService {
   }
   async detail(user: User, id: string): Promise<ReportDetail> {
     const regionId = await this.accessible(user, id);
-    const report = found(
+    const detail = found(
       (
         await sql<{
           data: Report;
-        }>`SELECT ${reportProjection} AS data FROM reports r LEFT JOIN report_private_details p ON p.report_id=r.id WHERE r.id=${id}::uuid`.execute(
+          reporterPhone: string | null;
+        }>`SELECT ${reportProjection} AS data,CASE WHEN p.retention_until>now() THEN p.resident_phone ELSE NULL END AS "reporterPhone" FROM reports r LEFT JOIN report_private_details p ON p.report_id=r.id WHERE r.id=${id}::uuid`.execute(
           this.db,
         )
       ).rows[0],
-    ).data;
+    );
+    const report = detail.data;
     const history = (
       await sql<
         ReportDetail['history'][number]
@@ -265,9 +269,16 @@ export class ReportsService {
         this.db,
       )
     ).rows;
-    if (report.contactDetails || report.followUpRequested)
+    if (report.contactDetails || report.followUpRequested || detail.reporterPhone)
       await audit(this.db, user.id, regionId, 'report.private_view', id);
-    return { report, history, suggestions, duplicates, attachments };
+    return {
+      report,
+      reporterPhone: detail.reporterPhone,
+      history,
+      suggestions,
+      duplicates,
+      attachments,
+    };
   }
   async review(user: User, id: string, input: unknown) {
     const regionId = await this.accessible(user, id);

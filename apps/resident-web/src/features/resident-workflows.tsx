@@ -389,9 +389,9 @@ export function ReportForm({
   );
   const contactFields = (
     <>
-      <h2>Bagaimana Posko bisa menghubungimu?</h2>
+      <h2>{residentId ? 'Nomor lain untuk dihubungi' : 'Bagaimana Posko bisa menghubungimu?'}</h2>
       <label className="w-field">
-        <span>Nomor telepon</span>
+        <span>{residentId ? 'Nomor tambahan' : 'Nomor telepon'}</span>
         <input
           type="tel"
           value={contact}
@@ -403,7 +403,7 @@ export function ReportForm({
       </label>
       <label className="w-switch-row">
         <span>
-          <strong>Boleh dihubungi Posko</strong>
+          <strong>{residentId ? 'Bagikan nomor tambahan' : 'Boleh dihubungi Posko'}</strong>
           <small>Lewat nomor di atas</small>
         </span>
         <input
@@ -421,7 +421,7 @@ export function ReportForm({
           setContact('');
         }}
       >
-        Lanjut tanpa nomor
+        {residentId ? 'Gunakan nomor akun' : 'Lanjut tanpa nomor'}
       </WButton>
     </>
   );
@@ -435,6 +435,7 @@ export function ReportForm({
       />
       <span>
         Saya menyetujui <Link to="/help">penggunaan data laporan</Link>.
+        {residentId && ' Nomor akunmu ikut dikirim ke Posko.'}
       </span>
     </label>
   );

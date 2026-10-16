@@ -166,6 +166,7 @@ export const duplicateSchema = z.object({
 export const attachmentSchema = z.object({ id: z.uuid(), name: z.string(), createdAt: z.string() });
 export const reportDetailSchema = z.object({
   report: reportSchema,
+  reporterPhone: z.string().nullable(),
   history: z.array(historySchema),
   suggestions: z.array(suggestionSchema),
   duplicates: z.array(duplicateSchema),

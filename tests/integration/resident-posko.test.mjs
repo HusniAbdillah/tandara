@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { createApp } from '../../apps/api/dist/bootstrap.js';
 import { parseEnvironment } from '../../packages/backend/dist/index.js';
+import { createRequire } from 'node:module';
+const { Client } = createRequire(new URL('../../packages/database/package.json', import.meta.url))(
+  'pg',
+);
 
 let app, a, b, device2, posko, admin, report;
 const region = '20000000-0000-4000-8000-000000000001';
@@ -98,6 +102,11 @@ after(async () => {
 test('signed-in reports persist across devices and isolate accounts and Posko sessions', async () => {
   report = await submit(a);
   assert.equal(report.residentId, a.user.id);
+  const detail = await call('GET', `/reports/${report.id}`, undefined, posko);
+  assert.equal(detail.statusCode, 200, detail.body);
+  assert.equal(detail.json().reporterPhone, a.user.phone);
+  assert.ok(!detail.body.includes('password'));
+  assert.ok(!detail.body.includes(pass));
   const inbox = await call(
     'GET',
     `/regions/${region}/reports?q=Laporan sintetis`,
@@ -105,6 +114,8 @@ test('signed-in reports persist across devices and isolate accounts and Posko se
     posko,
   );
   assert.ok(inbox.json().items.some((item) => item.id === report.id));
+  assert.ok(!inbox.body.includes(a.user.phone));
+  assert.ok(!inbox.body.includes('reporterPhone'));
   const list = await call('GET', '/resident/reports', undefined, device2);
   assert.equal(list.statusCode, 200, list.body);
   assert.ok(list.json().items.some((item) => item.id === report.id));
@@ -143,6 +154,75 @@ test('signed-in reports persist across devices and isolate accounts and Posko se
     { 'idempotency-key': crypto.randomUUID(), 'x-resident-id': a.user.id },
   );
   assert.equal(swapped.statusCode, 403);
+});
+
+test('registered phone is staff-only, separate from optional contacts, and follows retention', async () => {
+  const guest = await submit();
+  assert.equal(
+    (await call('GET', `/reports/${guest.id}`, undefined, posko)).json().reporterPhone,
+    null,
+  );
+  const owned = await submit(a, {
+    contactDetails: 'Kontak tambahan sintetis',
+    contactPermission: true,
+  });
+  const detail = (await call('GET', `/reports/${owned.id}`, undefined, admin)).json();
+  assert.equal(detail.reporterPhone, a.user.phone);
+  assert.equal(detail.report.contactDetails, 'Kontak tambahan sintetis');
+  assert.equal((await call('GET', `/reports/${owned.id}`, undefined, a)).statusCode, 401);
+  assert.equal((await call('GET', `/reports/${owned.id}`, undefined, b)).statusCode, 401);
+  const outsider = session(
+    await call('POST', '/auth/login', {
+      email: 'semarang@demo.tandara.test',
+      password: process.env.DEMO_PASSWORD,
+    }),
+    false,
+  );
+  assert.equal((await call('GET', `/reports/${owned.id}`, undefined, outsider)).statusCode, 403);
+  const publicData = await call('GET', `/regions/${region}/public`);
+  assert.ok(!publicData.body.includes(a.user.phone));
+  const tracking = await call('GET', `/reports/${owned.id}/tracking`, undefined, undefined, {
+    'x-tracking-token': owned.trackingToken,
+  });
+  assert.ok(!tracking.body.includes(a.user.phone));
+  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    const views = await client.query(
+      "SELECT count(*)::int AS count FROM audit_events WHERE action='report.private_view' AND entity_id=$1",
+      [report.id],
+    );
+    assert.ok(views.rows[0].count > 0);
+    await client.query("UPDATE reports SET created_at=now()-interval '365 days' WHERE id=$1", [
+      owned.id,
+    ]);
+    await client.query(
+      "UPDATE report_private_details SET retention_until=now()-interval '1 day' WHERE report_id=$1",
+      [owned.id],
+    );
+    assert.equal(
+      (await call('GET', `/reports/${owned.id}`, undefined, posko)).json().reporterPhone,
+      null,
+    );
+    await client.query('DELETE FROM report_private_details WHERE report_id=$1', [owned.id]);
+    await call(
+      'POST',
+      '/resident/reports/claim',
+      { reports: [{ id: owned.id, trackingToken: owned.trackingToken }] },
+      a,
+    );
+    assert.equal(
+      (
+        await client.query(
+          'SELECT count(*)::int AS count FROM report_private_details WHERE report_id=$1',
+          [owned.id],
+        )
+      ).rows[0].count,
+      0,
+    );
+  } finally {
+    await client.end();
+  }
 });
 test('Posko reviews create durable private notifications, with cross-device read state and no private notes', async () => {
   const result = await call(
@@ -224,6 +304,10 @@ test('claiming legacy receipts requires a valid secret and cannot transfer anoth
   assert.equal(
     (await call('GET', `/resident/reports/${guest.id}`, undefined, device2)).statusCode,
     200,
+  );
+  assert.equal(
+    (await call('GET', `/reports/${guest.id}`, undefined, posko)).json().reporterPhone,
+    a.user.phone,
   );
 });
 test('assistance status changes notify the owner without exposing operational notes', async () => {
