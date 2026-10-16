@@ -4,3 +4,4 @@ export * from './domain.js';
 export * from './ai.js';
 export * from './observations.js';
 export * from './resident.js';
+export * from './workflow.js';

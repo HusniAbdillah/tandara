@@ -16,3 +16,11 @@ export * from './modules/knowledge.js';
 export * from './modules/residents.js';
 export * from './modules/observations.js';
 export { startTelemetry, stopTelemetry } from './platform/telemetry.js';
+
+export {
+  workflowDetail,
+  updateWorkflow,
+  citizenFeedback,
+  reportTeam,
+  reportAnalytics,
+} from './modules/report-workflow.js';

@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import {
+  workflowLabels,
   createReportSchema,
   receiptSchema,
   trackingSchema,
@@ -18,6 +19,7 @@ import { enqueue, synchronize } from '../offline/sync.js';
 import { WButton, WEmpty, WError, WIcon, WLink, WProgress, WRow } from './chalk-ui.js';
 import { useDesktop } from './resident-data.js';
 import { StreetMap } from './resident-map.js';
+import { ReportFeedback } from './report-feedback.js';
 
 export const categoryNames: Record<string, string> = {
   road_flooding: 'Genangan',
@@ -704,14 +706,39 @@ export function TrackingPage() {
               </div>
             </li>
           ))}
+        {tracking.data?.updates?.map((update) => (
+          <li key={update.id}>
+            <WIcon name="check" size={22} />
+            <div>
+              <strong>
+                {workflowLabels[update.action as keyof typeof workflowLabels] ?? update.action}
+              </strong>
+              <small>{update.message}</small>
+              <small>{formatTime(update.createdAt)}</small>
+            </div>
+          </li>
+        ))}
         <li className="is-current">
           <span className="w-timeline-dot" />
           <div>
-            <strong>{stateNames[tracking.data?.state ?? selected.state] ?? selected.state}</strong>
+            <strong>
+              {tracking.data?.workflow
+                ? workflowLabels[tracking.data.workflow.status]
+                : (stateNames[tracking.data?.state ?? selected.state] ?? selected.state)}
+            </strong>
             {tracking.data?.assistanceState && <small>{tracking.data.assistanceState}</small>}
           </div>
         </li>
       </ol>
+      {tracking.data?.workflow && !tracking.data.erased && (
+        <ReportFeedback
+          key={selected.id}
+          id={selected.id}
+          token={selected.trackingToken}
+          workflow={tracking.data.workflow}
+          onSaved={() => tracking.refetch()}
+        />
+      )}
       {tracking.isError && <WError>Status terbaru belum dapat dimuat.</WError>}
       {tracking.data?.erased && <p role="status">Data laporan telah dihapus.</p>}
       <div className="w-status-actions">

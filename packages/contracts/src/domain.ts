@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { reportCategorySchema, reportReviewStateSchema } from './reports.js';
+import { workflowSchema, workflowEventSchema } from './workflow.js';
 
 export const regionConfigSchema = z.strictObject({
   categories: z.array(reportCategorySchema).min(1),
@@ -136,6 +137,7 @@ export const suggestionSchema = z.object({
   humanNote: z.string().nullable(),
 });
 export const reportSchema = z.object({
+  workflow: workflowSchema.optional(),
   id: z.uuid(),
   regionId: z.uuid(),
   category: reportCategorySchema,
@@ -181,6 +183,8 @@ export const receiptSchema = z.object({
   state: reportReviewStateSchema,
 });
 export const trackingSchema = z.object({
+  workflow: workflowSchema.optional(),
+  updates: z.array(workflowEventSchema).optional(),
   id: z.uuid(),
   state: reportReviewStateSchema,
   createdAt: z.string(),

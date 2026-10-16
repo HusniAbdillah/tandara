@@ -58,7 +58,7 @@ export function ResidentApp() {
   else if (path === '/help') content = <PrivacyPage app={app} />;
   else if (path === '/tracking') content = <TrackingPage />;
   else if (mapPage) content = <MapPage app={app} />;
-  else if (app.regions.isError || app.data.isError)
+  else if ((app.regions.isError || app.data.isError) && !app.region)
     content = (
       <WEmpty title="Informasi wilayah belum dapat dimuat">
         <WButton
@@ -75,7 +75,7 @@ export function ResidentApp() {
         </WLink>
       </WEmpty>
     );
-  else if (!app.region || app.data.isPending)
+  else if (!app.region)
     content = (
       <div className="w-loading" role="status">
         Memuat wilayah…

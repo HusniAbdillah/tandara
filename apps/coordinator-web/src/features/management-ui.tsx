@@ -177,10 +177,7 @@ export function PlansPage({ region, user, run }: ManagementProps) {
                           {r.name}: {r.description} · {r.reviewNote}
                         </p>
                       ))}
-                      <p>
-                        {p.simulation ? 'Simulasi — ' : ''}Rencana tidak menjamin keamanan rute saat
-                        ini.
-                      </p>
+                      <p>Rencana tidak menjamin keamanan rute saat ini.</p>
                     </div>
                   </details>
                   <div className="button-row mt-0 border-t border-[#e3dfd6] px-4 py-3 print:hidden">
@@ -455,7 +452,7 @@ function PlanEditor({
     </form>
   );
 }
-export function AssistancePage({ region, user, run }: ManagementProps) {
+export function AssistancePage({ region, user }: ManagementProps) {
   const query = useQuery({
     queryKey: ['assistance', user.id, region.id],
     queryFn: () => request('/regions/' + region.id + '/assistance', z.array(assistanceSchema)),
@@ -464,8 +461,8 @@ export function AssistancePage({ region, user, run }: ManagementProps) {
     <>
       <PageHeader
         eyebrow="Akses terbatas / tindak lanjut"
-        title="Kebutuhan warga, ditangani dengan hati-hati."
-        description="Detail hanya dibuka koordinator wilayah. Status menunjukkan tindak lanjut komunitas, bukan pengiriman layanan darurat."
+        title="Permintaan bantuan warga"
+        description="Buka laporan untuk menugaskan koordinator dan memperbarui penanganan."
       />
       <Notice tone="warning">
         Jangan menjanjikan waktu respons atau bantuan layanan darurat melalui status platform.
@@ -475,7 +472,7 @@ export function AssistancePage({ region, user, run }: ManagementProps) {
       ) : query.isError ? (
         <Notice tone="error">Tidak dapat memuat permintaan terbatas.</Notice>
       ) : query.data?.length ? (
-        query.data.map((a) => <AssistanceCard key={a.id} item={a} region={region} run={run} />)
+        query.data.map((a) => <AssistanceCard key={a.id} item={a} />)
       ) : (
         <Empty title="Belum ada permintaan tindak lanjut">
           Kebutuhan yang disampaikan akan muncul setelah diterima server.
@@ -484,97 +481,25 @@ export function AssistancePage({ region, user, run }: ManagementProps) {
     </>
   );
 }
-function AssistanceCard({
-  item,
-  region,
-  run,
-}: {
-  item: z.infer<typeof assistanceSchema>;
-  region: ManagementProps['region'];
-  run: ManagementProps['run'];
-}) {
-  const [state, setState] = useState(
-    item.state === 'received' ? 'assigned' : item.state === 'closed' ? 'closed' : 'in_progress',
-  );
-  const [note, setNote] = useState('');
-  const [assigned, setAssigned] = useState(!!item.organizationId);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
+function AssistanceCard({ item }: { item: z.infer<typeof assistanceSchema> }) {
+  const labels: Record<string, string> = {
+    received: 'Diterima',
+    assigned: 'Ditugaskan',
+    in_progress: 'Sedang ditangani',
+    closed: 'Selesai',
+  };
   return (
     <section className="panel">
       <div className="panel-heading">
-        <Link to={'/reports/' + item.reportId}>Laporan {item.reportId.slice(0, 8)}</Link>
-        <Badge tone="amber">{item.state} · akses terbatas</Badge>
+        <h2>Permintaan bantuan</h2>
+        <Badge>{labels[item.state] ?? item.state}</Badge>
       </div>
       <p>{item.description}</p>
-      <p className="hint">
-        Kontak privat: {item.contactDetails || 'Tidak diberikan'} · diperbarui{' '}
-        {formatTime(item.updatedAt)}
-      </p>
-      {item.note && <Notice>Catatan terakhir: {item.note}</Notice>}
-      {item.state !== 'closed' && (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setBusy(true);
-            try {
-              await run(() =>
-                request('/regions/' + region.id + '/assistance/' + item.id, ok, {
-                  method: 'POST',
-                  body: { state, note, organizationId: assigned ? region.organizationId : null },
-                }),
-              );
-              setNote('');
-            } catch (err) {
-              setError(err instanceof Error ? err.message : 'Perubahan gagal.');
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          <div className="form-grid">
-            <Field label="Status tindak lanjut">
-              <Select value={state} onValueChange={setState}>
-                <SelectTrigger aria-label="Status tindak lanjut">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="assigned">Ditugaskan</SelectItem>
-                  <SelectItem value="in_progress">Dalam tindak lanjut</SelectItem>
-                  <SelectItem value="closed">Ditutup</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field label="Penanggung jawab">
-              <Select
-                value={assigned ? 'yes' : 'no'}
-                onValueChange={(value) => setAssigned(value === 'yes')}
-              >
-                <SelectTrigger aria-label="Penanggung jawab">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">Belum ditugaskan</SelectItem>
-                  <SelectItem value="yes">{region.organization}</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-          <Field label="Catatan tindak lanjut">
-            <textarea
-              required
-              minLength={5}
-              maxLength={1000}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </Field>
-          <button className="primary" disabled={busy}>
-            Simpan tindak lanjut
-          </button>
-        </form>
-      )}
-      {error && <Notice tone="error">{error}</Notice>}
+      <p className="hint">Kontak warga: {item.contactDetails || 'Tidak diberikan'}</p>
+      <p className="hint">Diperbarui {formatTime(item.updatedAt)}</p>
+      <Link className="button primary" to={'/reports/' + item.reportId}>
+        Buka penanganan laporan
+      </Link>
     </section>
   );
 }
@@ -590,7 +515,7 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
       <PageHeader
         eyebrow="Integrasi / atribusi / kesegaran"
         title="Sumber informasi"
-        description="Prakiraan cuaca, laporan urun daya, dan simulasi tetap dipisahkan. Kegagalan satu sumber tidak mematikan alur pelaporan."
+        description="Periksa status prakiraan cuaca dan informasi wilayah dari sumber yang terhubung."
         action={
           user.role === 'admin' ? (
             <button className="primary" onClick={() => setEditing(null)}>
@@ -614,61 +539,67 @@ export function SourcesPage({ region, user, run }: ManagementProps) {
           ) : query.isError ? (
             <Notice tone="error">Tidak dapat membaca status sumber.</Notice>
           ) : (
-            query.data?.map((s) => (
-              <div key={s.id} className="source-details px-5 py-5 lg:flex-row lg:items-center">
-                <div>
-                  <h3 className="mb-2 text-base font-semibold">{s.name}</h3>
-                  <div className="actions">
-                    <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
-                      {s.enabled ? s.mode : 'Dinonaktifkan'}
-                    </Badge>
-                    <a href={s.sourceUrl} target="_blank" rel="noreferrer">
-                      Dokumentasi sumber ↗
-                    </a>
+            query.data
+              ?.filter((s) => s.provider !== 'fixture')
+              .map((s) => (
+                <div key={s.id} className="source-details px-5 py-5 lg:flex-row lg:items-center">
+                  <div>
+                    <h3 className="mb-2 text-base font-semibold">{s.name}</h3>
+                    <div className="actions">
+                      <Badge tone={s.lastError ? 'amber' : s.enabled ? 'teal' : 'neutral'}>
+                        {s.enabled ? s.mode : 'Dinonaktifkan'}
+                      </Badge>
+                      <a href={s.sourceUrl} target="_blank" rel="noreferrer">
+                        Dokumentasi sumber ↗
+                      </a>
+                    </div>
+                    <p>{s.licenseNote}</p>
+                    <div className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
+                      <p className="m-0">
+                        Percobaan terakhir{' '}
+                        <span className="font-medium text-ink">{formatTime(s.lastAttemptAt)}</span>
+                      </p>
+                      <p className="m-0">
+                        Berhasil terakhir{' '}
+                        <span className="font-medium text-ink">{formatTime(s.lastSuccessAt)}</span>
+                      </p>
+                    </div>
+                    {s.lastError && (
+                      <Notice tone="warning">
+                        {s.lastError}. Data lama tetap memiliki waktu asli; tidak tampil sebagai
+                        pembaruan baru.
+                      </Notice>
+                    )}
                   </div>
-                  <p>{s.licenseNote}</p>
-                  <div className="mt-3 grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2">
-                    <p className="m-0">
-                      Percobaan terakhir{' '}
-                      <span className="font-medium text-ink">{formatTime(s.lastAttemptAt)}</span>
-                    </p>
-                    <p className="m-0">
-                      Berhasil terakhir{' '}
-                      <span className="font-medium text-ink">{formatTime(s.lastSuccessAt)}</span>
-                    </p>
+                  <div className="actions shrink-0 sm:justify-end">
+                    <button
+                      disabled={!s.enabled}
+                      onClick={async () => {
+                        try {
+                          await run(
+                            () =>
+                              request(
+                                '/regions/' + region.id + '/sources/' + s.id + '/refresh',
+                                ok,
+                                {
+                                  method: 'POST',
+                                },
+                              ),
+                            'Pembaruan dijadwalkan. Periksa waktu dan status setelah worker memproses.',
+                          );
+                        } catch (e) {
+                          setError(e instanceof Error ? e.message : 'Pembaruan gagal.');
+                        }
+                      }}
+                    >
+                      Perbarui sumber
+                    </button>
+                    {user.role === 'admin' && (
+                      <button onClick={() => setEditing(s)}>Konfigurasi</button>
+                    )}
                   </div>
-                  {s.lastError && (
-                    <Notice tone="warning">
-                      {s.lastError}. Data lama tetap memiliki waktu asli; tidak tampil sebagai
-                      pembaruan baru.
-                    </Notice>
-                  )}
                 </div>
-                <div className="actions shrink-0 sm:justify-end">
-                  <button
-                    disabled={!s.enabled}
-                    onClick={async () => {
-                      try {
-                        await run(
-                          () =>
-                            request('/regions/' + region.id + '/sources/' + s.id + '/refresh', ok, {
-                              method: 'POST',
-                            }),
-                          'Pembaruan dijadwalkan. Periksa waktu dan status setelah worker memproses.',
-                        );
-                      } catch (e) {
-                        setError(e instanceof Error ? e.message : 'Pembaruan gagal.');
-                      }
-                    }}
-                  >
-                    Perbarui sumber
-                  </button>
-                  {user.role === 'admin' && (
-                    <button onClick={() => setEditing(s)}>Konfigurasi</button>
-                  )}
-                </div>
-              </div>
-            ))
+              ))
           )}
         </section>
       )}
@@ -687,18 +618,15 @@ function SourceEditor({
   onClose: () => void;
 }) {
   const [name, setName] = useState(source?.name ?? '');
-  const [provider, setProvider] = useState(source?.provider ?? 'fixture');
+  const [provider, setProvider] = useState(source?.provider ?? 'bmkg');
   const [enabled, setEnabled] = useState(source?.enabled ?? false);
-  const [mode, setMode] = useState(source?.mode ?? 'simulation');
-  const [url, setUrl] = useState(source?.sourceUrl ?? 'https://example.org/tandara/simulation');
-  const [license, setLicense] = useState(
-    source?.licenseNote ?? 'Fixture sintetis; bukan kejadian nyata.',
-  );
+  const [mode, setMode] = useState(source?.mode ?? 'disabled');
+  const [url, setUrl] = useState(source?.sourceUrl ?? '');
+  const [license, setLicense] = useState(source?.licenseNote ?? '');
   const [authorized, setAuthorized] = useState(source?.config['authorized'] === true);
   const [adm4, setAdm4] = useState(String(source?.config['adm4'] ?? ''));
   const [admin, setAdmin] = useState(String(source?.config['admin'] ?? ''));
   const [province, setProvince] = useState(String(source?.config['province'] ?? ''));
-  const [fail, setFail] = useState(source?.config['fail'] === true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   return (
@@ -724,7 +652,6 @@ function SourceEditor({
                   ...(adm4 ? { adm4 } : {}),
                   ...(admin ? { admin } : {}),
                   ...(province ? { province } : {}),
-                  fail,
                 },
               },
             }),
@@ -748,7 +675,7 @@ function SourceEditor({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {['fixture', 'bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
+              {['bmkg', 'bmkg_nowcast', 'petabencana', 'inarisk'].map((p) => (
                 <SelectItem key={p} value={p}>
                   {p}
                 </SelectItem>
@@ -762,7 +689,6 @@ function SourceEditor({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="simulation">Simulasi</SelectItem>
               <SelectItem value="disabled">Dinonaktifkan</SelectItem>
               <SelectItem value="live">Live (memerlukan izin)</SelectItem>
             </SelectContent>
@@ -820,16 +746,9 @@ function SourceEditor({
         />
         Izin sumber dan penggunaan telah ditinjau oleh pengelola
       </label>
-      {provider === 'fixture' && (
-        <label className="checkbox">
-          <input type="checkbox" checked={fail} onChange={(e) => setFail(e.target.checked)} />
-          Simulasikan gangguan provider untuk pengujian
-        </label>
-      )}
       <Notice>
-        Aktivasi live juga memerlukan ALLOW_LIVE_SOURCES=true pada server. URL ini untuk atribusi;
-        endpoint jaringan ditentukan adapter, sehingga konfigurasi tidak menjadi akses jaringan
-        sembarang.
+        Sumber aktif menampilkan informasi terbaru dari penyedia. Pastikan izin penggunaan dan
+        cakupan wilayah sudah sesuai.
       </Notice>
       {error && <Notice tone="error">{error}</Notice>}
       <div className="button-row">
@@ -937,90 +856,92 @@ export function TrainingManagement({ region, user, run }: ManagementProps) {
       ) : query.isError ? (
         <Notice tone="error">Hasil latihan tidak dapat dimuat.</Notice>
       ) : (
-        query.data?.map((s) => (
-          <section
-            className="mb-4 overflow-hidden rounded-lg border border-[#e3dfd6] bg-white"
-            key={s.id}
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#e3dfd6] px-5 py-4 sm:px-6">
-              <div>
-                <p className="mb-1 font-mono text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-                  SIMULASI / LATIHAN
-                </p>
-                <h2 className="mb-1 text-lg">{s.content.title}</h2>
-                <p className="mb-0 text-sm text-muted-foreground">{s.content.description}</p>
+        query.data
+          ?
+          .map((s) => (
+            <section
+              className="mb-4 overflow-hidden rounded-lg border border-[#e3dfd6] bg-white"
+              key={s.id}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#e3dfd6] px-5 py-4 sm:px-6">
+                <div>
+                  <p className="mb-1 font-mono text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                    SIMULASI / LATIHAN
+                  </p>
+                  <h2 className="mb-1 text-lg">{s.content.title}</h2>
+                  <p className="mb-0 text-sm text-muted-foreground">{s.content.description}</p>
+                </div>
+                <Badge tone="amber">Simulasi</Badge>
               </div>
-              <Badge tone="amber">Simulasi</Badge>
-            </div>
-            <div className="grid gap-4 bg-[#f7f6f2] px-5 py-3 text-sm sm:grid-cols-2 sm:px-6">
-              <div>
-                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                  Jadwal
-                </span>
-                <span className="font-medium">{formatTime(s.content.scheduledAt)}</span>
+              <div className="grid gap-4 bg-[#f7f6f2] px-5 py-3 text-sm sm:grid-cols-2 sm:px-6">
+                <div>
+                  <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    Jadwal
+                  </span>
+                  <span className="font-medium">{formatTime(s.content.scheduledAt)}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+                    Penyelesaian anonim
+                  </span>
+                  <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
+                </div>
               </div>
-              <div>
-                <span className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-                  Penyelesaian anonim
-                </span>
-                <span className="font-sans font-semibold tabular-nums">{s.completed}</span>
+              <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
+                <div>
+                  <h3 className="mb-3 text-sm">Tahapan latihan</h3>
+                  <ol className="m-0 space-y-2 pl-5 text-sm">
+                    {s.content.steps.map((step, i) => (
+                      <li className="pl-1 leading-relaxed" key={i}>
+                        {step.question}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+                <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    Feedback untuk perbaikan materi
+                  </summary>
+                  {s.feedback.length ? (
+                    s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
+                  ) : (
+                    <p className="hint">Belum ada feedback.</p>
+                  )}
+                </details>
               </div>
-            </div>
-            <div className="grid gap-5 px-5 py-5 lg:grid-cols-[1.2fr_0.8fr] lg:px-6">
-              <div>
-                <h3 className="mb-3 text-sm">Tahapan latihan</h3>
-                <ol className="m-0 space-y-2 pl-5 text-sm">
-                  {s.content.steps.map((step, i) => (
-                    <li className="pl-1 leading-relaxed" key={i}>
-                      {step.question}
-                    </li>
-                  ))}
-                </ol>
+              <div className="border-t border-[#e3dfd6] px-5 py-3 sm:px-6">
+                <button
+                  className="small"
+                  onClick={() => {
+                    const blob = new Blob(
+                      [
+                        JSON.stringify(
+                          {
+                            simulation: true,
+                            region: region.name,
+                            title: s.content.title,
+                            scheduledAt: s.content.scheduledAt,
+                            completed: s.completed,
+                            feedback: s.feedback,
+                          },
+                          null,
+                          2,
+                        ),
+                      ],
+                      { type: 'application/json' },
+                    );
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'tandara-latihan.json';
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                  }}
+                >
+                  Ekspor ringkasan latihan
+                </button>
               </div>
-              <details className="border-t border-[#e3dfd6] pt-4 lg:border-t-0 lg:border-l lg:pl-5 lg:pt-0">
-                <summary className="cursor-pointer text-sm font-semibold">
-                  Feedback untuk perbaikan materi
-                </summary>
-                {s.feedback.length ? (
-                  s.feedback.map((f, i) => <p key={i}>{f || 'Tidak ada komentar'}</p>)
-                ) : (
-                  <p className="hint">Belum ada feedback.</p>
-                )}
-              </details>
-            </div>
-            <div className="border-t border-[#e3dfd6] px-5 py-3 sm:px-6">
-              <button
-                className="small"
-                onClick={() => {
-                  const blob = new Blob(
-                    [
-                      JSON.stringify(
-                        {
-                          simulation: true,
-                          region: region.name,
-                          title: s.content.title,
-                          scheduledAt: s.content.scheduledAt,
-                          completed: s.completed,
-                          feedback: s.feedback,
-                        },
-                        null,
-                        2,
-                      ),
-                    ],
-                    { type: 'application/json' },
-                  );
-                  const link = document.createElement('a');
-                  link.href = URL.createObjectURL(blob);
-                  link.download = 'tandara-latihan.json';
-                  link.click();
-                  URL.revokeObjectURL(link.href);
-                }}
-              >
-                Ekspor ringkasan latihan
-              </button>
-            </div>
-          </section>
-        ))
+            </section>
+          ))
       )}
     </>
   );
