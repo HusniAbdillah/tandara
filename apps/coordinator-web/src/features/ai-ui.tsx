@@ -63,6 +63,25 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
         z.object({ items: z.array(z.object({ id: z.uuid(), description: z.string() })) }),
       ),
   });
+  const selectedReportId = reportId || reports.data?.items[0]?.id || '';
+  const quickPrompts: Record<string, string[]> = {
+    answer: [
+      'Apa langkah evakuasi untuk lansia dan kelompok rentan menuju titik kumpul?',
+      'Bagaimana protokol keselamatan listrik dan drainase saat air mulai naik?',
+      'Bagaimana SOP triase laporan warga dan verifikasi silang di Posko?',
+    ],
+    plan_draft: [
+      'Susun draf pembaruan rencana kesiapsiagaan 72 jam dan titik kumpul kelompok rentan.',
+      'Susun langkah koordinasi komunikasi warga dan keselamatan listrik rumah tangga.',
+    ],
+    training_draft: [
+      'Susun skenario latihan memahami perbedaan observasi warga dan peringatan resmi BMKG.',
+      'Susun latihan kesiapsiagaan tas siaga 72 jam dan pendampingan lansia.',
+    ],
+    translation: [
+      'Siapkan dokumen penting dalam kantong kedap air untuk 3 hari dan pantau informasi resmi.',
+    ],
+  };
   return (
     <>
       <PageHeader
@@ -90,7 +109,7 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
                         language,
                         ...(question.trim() ? { question } : {}),
                         ...(['duplicates', 'clarification', 'public_summary'].includes(task)
-                          ? { reportId }
+                          ? { reportId: selectedReportId }
                           : {}),
                       },
                     }),
@@ -121,7 +140,7 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
               <Field label="Laporan sumber">
                 <Select
                   required
-                  {...(reportId ? { value: reportId } : {})}
+                  {...(selectedReportId ? { value: selectedReportId } : {})}
                   onValueChange={setReportId}
                 >
                   <SelectTrigger aria-label="Laporan sumber">
@@ -138,18 +157,34 @@ export function AiWorkspace({ region, user, run }: ManagementProps) {
               </Field>
             )}
             {['answer', 'translation', 'plan_draft', 'training_draft'].includes(task) && (
-              <Field
-                label={task === 'translation' ? 'Teks asli' : 'Pertanyaan atau kebutuhan draf'}
-              >
-                <textarea
-                  required
-                  minLength={3}
-                  maxLength={1500}
-                  rows={5}
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                />
-              </Field>
+              <>
+                <Field
+                  label={task === 'translation' ? 'Teks asli' : 'Pertanyaan atau kebutuhan draf'}
+                >
+                  <textarea
+                    required
+                    minLength={3}
+                    maxLength={1500}
+                    rows={5}
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                  />
+                </Field>
+                {quickPrompts[task] && (
+                  <div className="actions" style={{ marginBottom: '0.75rem' }}>
+                    {quickPrompts[task].map((preset, idx) => (
+                      <button
+                        type="button"
+                        className="small"
+                        key={idx}
+                        onClick={() => setQuestion(preset)}
+                      >
+                        Contoh {idx + 1}: {preset.slice(0, 42)}…
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
             {task === 'briefing' && (
               <Field label="Rentang laporan">
