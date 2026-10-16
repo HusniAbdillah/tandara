@@ -71,10 +71,42 @@
 /* Preflight is intentionally omitted during this compatibility stage. */
 @layer components {
   .ai-workspace-grid {
-    @apply grid grid-cols-[minmax(260px,0.8fr)_minmax(0,1.5fr)] items-start gap-6;
+    @apply mb-6 grid grid-cols-2 items-start gap-6;
   }
-  .ai-workspace-grid > .panel {
+  .ai-workspace-grid > .ai-request-panel {
     @apply sticky top-5;
+  }
+  .ai-request-panel,
+  .ai-results {
+    min-width: 0;
+  }
+  .ai-section-heading {
+    @apply mb-5;
+  }
+  .ai-section-heading h2 {
+    @apply mb-1;
+  }
+  .ai-section-heading p,
+  .ai-results-heading p {
+    @apply m-0 text-[13px] leading-relaxed text-muted-foreground;
+  }
+  .ai-request-panel form > .primary {
+    @apply w-full;
+  }
+  .ai-results {
+    min-height: 220px;
+  }
+  .ai-workspace-grid > .panel + .panel {
+    @apply mt-0;
+  }
+  .ai-results-heading {
+    @apply mb-5 flex items-start justify-between gap-4 border-b border-line pb-4;
+  }
+  .ai-results-heading > div {
+    @apply min-w-0;
+  }
+  .ai-results-heading h2 {
+    @apply mb-1;
   }
   .ai-result {
     @apply mb-5 [overflow-wrap:anywhere];
@@ -94,15 +126,21 @@
   }
   @media (max-width: 950px) {
     .ai-workspace-grid {
-      @apply grid-cols-1;
+      @apply mb-5 grid-cols-1 gap-4;
     }
-    .ai-workspace-grid > .panel {
+    .ai-workspace-grid > .ai-request-panel {
       @apply static;
     }
   }
   @media (max-width: 600px) {
     .ai-translation {
       @apply grid-cols-1;
+    }
+    .ai-results-heading {
+      @apply flex-col items-start gap-2;
+    }
+    .ai-result form > .actions > button {
+      @apply w-full;
     }
   }
 }
