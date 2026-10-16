@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { registerResident } from './helpers/resident.js';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 
 const warga = process.env['WARGA_URL'] ?? 'http://127.0.0.1:8080';
 const posko = process.env['POSKO_URL'] ?? 'http://127.0.0.1:8081';
@@ -37,6 +39,17 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
     .getByLabel('Apa yang Anda amati?')
     .fill('Uji browser: genangan di dekat pintu balai warga.');
   await resident.getByLabel('Patokan lokasi').fill('Pintu balai warga RT 03');
+  const sharp = createRequire(resolve('packages/backend/package.json'))('sharp');
+  const picture = await sharp({
+    create: { width: 20, height: 20, channels: 3, background: '#aabbcc' },
+  })
+    .png()
+    .toBuffer();
+  await resident.getByLabel('Foto kejadian', { exact: true }).setInputFiles({
+    name: 'kejadian.png',
+    mimeType: 'image/png',
+    buffer: picture,
+  });
   await resident.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
   const sent = resident.waitForResponse(
     (r) => r.url().endsWith('/api/v1/reports') && r.request().method() === 'POST',
@@ -45,6 +58,15 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
   const response = await sent;
   expect(response.status()).toBe(201);
   const receipt = await response.json();
+  await expect(resident).toHaveURL(warga + '/tracking');
+  await expect(resident.getByRole('img', { name: 'Foto laporan 1', exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      resident
+        .getByRole('img', { name: 'Foto laporan 1', exact: true })
+        .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+    )
+    .toBe(true);
   await login(admin, 'admin@demo.tandara.test');
   await login(coordinator, 'ciliwung@demo.tandara.test');
   async function act(page: Page, action: string, message: string) {
@@ -67,6 +89,14 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
       .toBe(true);
   }
   await admin.goto(posko + '/reports/' + receipt.id);
+  await expect(admin.getByRole('img', { name: 'Foto laporan', exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      admin
+        .getByRole('img', { name: 'Foto laporan', exact: true })
+        .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+    )
+    .toBe(true);
   await act(admin, 'verify', 'Lokasi dan informasi genangan telah diperiksa.');
   await admin.getByLabel('Tindakan', { exact: false }).selectOption('assign');
   await admin
@@ -74,6 +104,7 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
     .selectOption('30000000-0000-4000-8000-000000000001');
   await act(admin, 'assign', 'Koordinator wilayah akan memeriksa saluran air.');
   await coordinator.goto(posko + '/reports/' + receipt.id);
+  await expect(coordinator.getByRole('img', { name: 'Foto laporan', exact: true })).toBeVisible();
   await expect(coordinator.getByRole('navigation', { name: 'Navigasi mobile' })).toBeVisible();
   expect(await coordinator.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
     true,

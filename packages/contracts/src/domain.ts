@@ -185,6 +185,7 @@ export const receiptSchema = z.object({
   residentId: z.uuid().optional(),
 });
 export const trackingSchema = z.object({
+  attachments: z.array(attachmentSchema).default([]),
   workflow: workflowSchema.optional(),
   updates: z.array(workflowEventSchema).optional(),
   id: z.uuid(),

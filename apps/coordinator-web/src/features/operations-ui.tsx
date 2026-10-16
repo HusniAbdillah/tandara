@@ -491,7 +491,11 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <img src={`/api/v1/reports/${id}/attachments/${a.id}`} alt={a.name} />
+                    <img
+                      src={`/api/v1/reports/${id}/attachments/${a.id}`}
+                      alt={a.name}
+                      loading="lazy"
+                    />
                     <span>{a.name}</span>
                   </a>
                 ))}

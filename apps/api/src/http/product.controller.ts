@@ -76,6 +76,19 @@ export class ProductController {
   ) {
     return this.residents.report(await this.resident(req), id);
   }
+  @Get('resident/reports/:id/attachments/:attachmentId') async residentAttachment(
+    @Req() req: FastifyRequest,
+    @Param('id') id: string,
+    @Param('attachmentId') attachment: string,
+    @Res() reply: FastifyReply,
+  ) {
+    const resident = await this.resident(req);
+    const image = await this.reports.residentAttachment(resident.id, id, attachment);
+    reply
+      .type('image/jpeg')
+      .header('Content-Disposition', 'inline; filename="report.jpg"')
+      .send(image);
+  }
   @Post('resident/reports/:id/feedback') async residentFeedback(
     @Req() req: FastifyRequest,
     @Param('id') id: string,

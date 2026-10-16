@@ -87,6 +87,7 @@ export function ReportForm({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [photoReceipt, setPhotoReceipt] = useState<z.infer<typeof receiptSchema> | null>(null);
   const [queued, setQueued] = useState(false);
   const attempt = useRef<{
     key: string;
@@ -94,8 +95,34 @@ export function ReportForm({
     durable: boolean;
     residentId?: string | undefined;
   } | null>(null);
+  async function sendPhoto(receipt: z.infer<typeof receiptSchema>) {
+    if (!file) return true;
+    try {
+      const encoded = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(',')[1]!);
+        reader.onerror = () => reject(new Error('Foto gagal dibaca. Pilih foto lain.'));
+        reader.readAsDataURL(file);
+      });
+      await request('/reports/' + receipt.id + '/attachments', z.object({ id: z.uuid() }), {
+        method: 'POST',
+        body: { data: encoded },
+        headers: { 'X-Tracking-Token': receipt.trackingToken, 'X-CSRF-Token': residentCsrf() },
+      });
+      setPhotoReceipt(null);
+      return true;
+    } catch (err) {
+      setPhotoReceipt(receipt);
+      setError(
+        'Laporan sudah diterima. Foto belum terkirim. ' +
+          (err instanceof Error ? err.message : 'Coba kirim foto lagi.'),
+      );
+      return false;
+    }
+  }
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy || accepted) return;
     setError('');
     if (!consent) {
       setError('Persetujuan penyimpanan laporan diperlukan.');
@@ -172,26 +199,7 @@ export function ReportForm({
       });
       setAccepted(true);
       await queryClient.invalidateQueries({ queryKey: ['resident-receipts'] });
-      if (file) {
-        try {
-          const encoded = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result).split(',')[1]!);
-            reader.onerror = () => reject(new Error('Foto gagal dibaca'));
-            reader.readAsDataURL(file);
-          });
-          await request('/reports/' + receipt.id + '/attachments', z.object({ id: z.uuid() }), {
-            method: 'POST',
-            body: { data: encoded },
-            headers: { 'X-Tracking-Token': receipt.trackingToken, 'X-CSRF-Token': residentCsrf() },
-          });
-        } catch {
-          setError(
-            'Laporan diterima, tetapi foto gagal dikirim. Lihat status laporan melalui Laporan saya.',
-          );
-          return;
-        }
-      }
+      if (!(await sendPhoto(receipt))) return;
       navigate('/tracking', { state: { submitted: true } });
     } catch (error) {
       setError(
@@ -280,7 +288,7 @@ export function ReportForm({
               type="file"
               aria-label="Foto kejadian"
               accept="image/jpeg,image/png"
-              disabled={!online || frozen}
+              disabled={!online || busy || (frozen && !photoReceipt)}
               onChange={(e) => {
                 const photo = e.target.files?.[0];
                 if (
@@ -439,7 +447,27 @@ export function ReportForm({
       </span>
     </label>
   );
-  const submitButton = (
+  const submitButton = photoReceipt ? (
+    <div className="w-stack">
+      <WButton
+        type="button"
+        disabled={busy || !online}
+        onClick={async () => {
+          setBusy(true);
+          setError('');
+          try {
+            if (await sendPhoto(photoReceipt))
+              navigate('/tracking', { state: { submitted: true } });
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? 'Mengirim foto…' : 'Coba kirim foto lagi'}
+      </WButton>
+      <WLink to={'/tracking?id=' + photoReceipt.id}>Lihat laporan</WLink>
+    </div>
+  ) : (
     <WButton type="submit" disabled={frozen}>
       {busy
         ? 'Mengirim…'
@@ -700,11 +728,7 @@ export function TrackingPage({ app }: { app: ResidentData }) {
     enabled: !!selected,
     queryFn: () =>
       request(
-        (!selected!.trackingToken && selected!.residentId === residentId && residentId
-          ? '/resident/reports/'
-          : '/reports/') +
-          selected!.id +
-          '/tracking',
+        (residentId ? '/resident/reports/' : '/reports/') + selected!.id + '/tracking',
         trackingSchema,
         {
           headers: selected!.trackingToken ? { 'X-Tracking-Token': selected!.trackingToken } : {},
@@ -754,6 +778,27 @@ export function TrackingPage({ app }: { app: ResidentData }) {
         </small>
         {selected.landmark && <small>{selected.landmark}</small>}
       </section>
+      {!!tracking.data?.attachments.length && !tracking.data.erased && (
+        <section className="w-card">
+          <h3>Foto laporan</h3>
+          <div className="w-report-photos">
+            {tracking.data.attachments.map((photo, index) => (
+              <a
+                key={photo.id}
+                href={`/api/v1/resident/reports/${selected.id}/attachments/${photo.id}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img
+                  src={`/api/v1/resident/reports/${selected.id}/attachments/${photo.id}`}
+                  alt={`Foto laporan ${index + 1}`}
+                  loading="lazy"
+                />
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
       <h3>{selected.followUp ? 'Status permintaan' : 'Status laporan'}</h3>
       <ol className="w-timeline">
         <li>

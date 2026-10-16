@@ -166,7 +166,20 @@ export class ReportsService {
       )
     ).rows;
     const detail = await workflowDetail(this, id, true);
-    return { ...r, history, workflow: detail.workflow, updates: r.erased ? [] : detail.events };
+    const attachments =
+      residentId && !r.erased
+        ? (
+            await sql`SELECT id,name,created_at::text AS "createdAt" FROM report_attachments
+          WHERE report_id=${id}::uuid ORDER BY created_at,id`.execute(this.db)
+          ).rows
+        : [];
+    return {
+      ...r,
+      history,
+      attachments,
+      workflow: detail.workflow,
+      updates: r.erased ? [] : detail.events,
+    };
   }
   async eraseRequest(id: string, token: string | undefined, residentId?: string) {
     await this.track(id, token, residentId);
@@ -441,6 +454,19 @@ export class ReportsService {
       ).rows[0],
     );
     await audit(this.db, user.id, region, 'attachment.view', attachmentId);
+    return row.content;
+  }
+  async residentAttachment(residentId: string, id: string, attachmentId: string) {
+    parse(z.uuid(), id);
+    parse(z.uuid(), attachmentId);
+    const row = found(
+      (
+        await sql<{ content: Buffer }>`SELECT a.content
+      FROM report_attachments a JOIN reports r ON r.id=a.report_id
+      WHERE a.id=${attachmentId}::uuid AND r.id=${id}::uuid
+      AND r.resident_id=${residentId}::uuid AND NOT r.erased`.execute(this.db)
+      ).rows[0],
+    );
     return row.content;
   }
 }

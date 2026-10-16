@@ -360,6 +360,59 @@ test('desktop single-page report submits once and opens the shared status view',
   await page.getByRole('dialog').getByRole('button', { name: 'Ajukan penghapusan' }).click();
   await expect(page.getByText('Permintaan penghapusan diterima.')).toBeVisible();
 });
+test('a rejected photo can be retried without submitting the accepted report again', async ({
+  page,
+}) => {
+  const payloads = await fixtures(page);
+  await page.context().addCookies([
+    {
+      name: 'tandara_resident_csrf',
+      value: 'synthetic-photo-csrf',
+      url: 'http://127.0.0.1:5173',
+    },
+  ]);
+  let uploads = 0;
+  await page.route('**/api/v1/reports/*/attachments', async (route) => {
+    uploads++;
+    expect(route.request().headers()['x-csrf-token']).toBe('synthetic-photo-csrf');
+    expect(route.request().headers()['x-tracking-token']).toBe(receipt.trackingToken);
+    await route.fulfill(
+      uploads === 1
+        ? {
+            status: 403,
+            json: {
+              error: {
+                code: 'FORBIDDEN',
+                message: 'Muat ulang halaman lalu coba lagi.',
+                requestId: 'synthetic-photo-rejection',
+              },
+            },
+          }
+        : { status: 201, json: { id: '80000000-0000-4000-8000-000000000001' } },
+    );
+  });
+  await page.goto('/report');
+  await page.getByLabel('Apa yang Anda amati?').fill('Air menggenang di jalan dekat balai warga.');
+  await page.getByLabel('Foto kejadian', { exact: true }).setInputFiles({
+    name: 'kejadian.png',
+    mimeType: 'image/png',
+    buffer: tile,
+  });
+  await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
+  await page.getByRole('button', { name: 'Kirim laporan', exact: true }).click();
+  await expect(page.getByText(/Laporan sudah diterima. Foto belum terkirim./)).toBeVisible();
+  await expect(page.getByText(/Muat ulang halaman lalu coba lagi./)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Lihat laporan', exact: true })).toHaveAttribute(
+    'href',
+    '/tracking?id=' + receipt.id,
+  );
+  await expect(page.getByLabel('Foto kejadian', { exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Coba kirim foto lagi', exact: true }).click();
+  await expect(page).toHaveURL(/tracking/);
+  expect(payloads).toHaveLength(1);
+  expect(uploads).toBe(2);
+});
+
 test('mobile report uses three steps, preserves inputs and has no horizontal overflow', async ({
   page,
 }) => {

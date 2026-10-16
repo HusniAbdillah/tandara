@@ -591,17 +591,26 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
           {d.attachments.length > 0 && (
             <>
               <hr />
-              <h3>Foto privat</h3>
-              {d.attachments.map((a) => (
-                <a
-                  key={a.id}
-                  href={'/api/v1/reports/' + id + '/attachments/' + a.id}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {a.name} · {formatTime(a.createdAt)} →
-                </a>
-              ))}
+              <h3>Foto laporan</h3>
+              <div className="p-attachments">
+                {d.attachments.map((a) => (
+                  <a
+                    key={a.id}
+                    href={'/api/v1/reports/' + id + '/attachments/' + a.id}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <img
+                      src={'/api/v1/reports/' + id + '/attachments/' + a.id}
+                      alt={a.name}
+                      loading="lazy"
+                    />
+                    <span>
+                      {a.name} · {formatTime(a.createdAt)}
+                    </span>
+                  </a>
+                ))}
+              </div>
             </>
           )}
         </section>

@@ -116,6 +116,51 @@ before(async () => {
 after(async () => {
   await app?.close();
 });
+
+test('uploaded report photos are visible to the resident owner and Posko only', async () => {
+  const own = await submit(a);
+  const sharp = createRequire(new URL('../../packages/backend/package.json', import.meta.url))(
+    'sharp',
+  );
+  const image = await sharp({
+    create: { width: 20, height: 20, channels: 3, background: '#aabbcc' },
+  })
+    .png()
+    .toBuffer();
+  const upload = await call(
+    'POST',
+    `/reports/${own.id}/attachments`,
+    { data: image.toString('base64') },
+    a,
+    { 'x-tracking-token': own.trackingToken },
+  );
+  assert.equal(upload.statusCode, 201, upload.body);
+  const photo = upload.json().id;
+  const tracking = await call('GET', `/resident/reports/${own.id}/tracking`, undefined, device2);
+  assert.equal(tracking.statusCode, 200, tracking.body);
+  assert.equal(tracking.json().attachments[0].id, photo);
+  const path = `/resident/reports/${own.id}/attachments/${photo}`;
+  const downloaded = await call('GET', path, undefined, device2);
+  assert.equal(downloaded.statusCode, 200, downloaded.body);
+  assert.match(downloaded.headers['content-type'], /image\/jpeg/);
+  assert.equal(downloaded.headers['cache-control'], 'no-store');
+  assert.equal((await sharp(downloaded.rawPayload).metadata()).format, 'jpeg');
+  assert.equal((await call('GET', path)).statusCode, 401);
+  assert.equal((await call('GET', path, undefined, b)).statusCode, 404);
+  assert.equal((await call('GET', path, undefined, posko)).statusCode, 401);
+  assert.equal(
+    (await call('GET', `/reports/${own.id}/attachments/${photo}`, undefined, posko)).statusCode,
+    200,
+  );
+  assert.deepEqual(
+    (
+      await call('GET', `/reports/${own.id}/tracking`, undefined, undefined, {
+        'x-tracking-token': own.trackingToken,
+      })
+    ).json().attachments,
+    [],
+  );
+});
 test('signed-in reports persist across devices and isolate accounts and Posko sessions', async () => {
   report = await submit(a);
   assert.equal(report.residentId, a.user.id);

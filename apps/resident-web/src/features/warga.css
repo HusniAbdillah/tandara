@@ -989,6 +989,19 @@ body:has(.warga-app) {
   flex-direction: column;
   gap: 16px;
 }
+.w-report-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.w-report-photos img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+}
 .w-status-detail {
   display: flex;
   flex-direction: column;
