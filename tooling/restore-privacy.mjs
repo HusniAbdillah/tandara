@@ -41,6 +41,9 @@ try {
       tx,
     );
     await sql`DELETE FROM sessions`.execute(tx);
+    await sql`DO $$ BEGIN IF to_regclass('public.resident_sessions') IS NOT NULL THEN DELETE FROM resident_sessions; END IF; END $$`.execute(
+      tx,
+    );
     await sql`UPDATE ai_runs SET state='cancelled',request='{}'::jsonb WHERE state IN ('queued','processing','failed')`.execute(
       tx,
     );

@@ -28,10 +28,15 @@ test('real assets use filesystem, missing assets return 404 rather than a cached
     assert.match(url, new RegExp(mutable.src));
 });
 
-test('only Posko allows map tiles and HTTPS origins cannot include credentials or paths', () => {
+test('both apps allow only the configured map host and HTTPS API origins cannot include credentials or paths', () => {
   const warga = outputConfig('resident-web', 'https://api.tandara.my.id');
   const posko = outputConfig('coordinator-web', 'https://api.tandara.my.id');
-  assert.doesNotMatch(warga.routes[0].headers['Content-Security-Policy'], /openstreetmap/);
+  assert.match(
+    warga.routes[0].headers['Content-Security-Policy'],
+    /https:\/\/tile.openstreetmap.org/,
+  );
+  assert.equal(warga.routes[0].headers['Referrer-Policy'], 'strict-origin');
+  assert.doesNotMatch(warga.routes[0].headers['Content-Security-Policy'], /connect-src[^;]*\*/);
   assert.match(
     posko.routes[0].headers['Content-Security-Policy'],
     /https:\/\/tile.openstreetmap.org/,

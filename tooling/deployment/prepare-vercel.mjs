@@ -16,7 +16,7 @@ export function outputConfig(app, apiOrigin) {
   )
     throw new Error('API origin must be a plain HTTPS origin');
   const posko = app === 'coordinator-web';
-  const tiles = posko ? ' https://tile.openstreetmap.org' : '';
+  const tiles = ' https://tile.openstreetmap.org';
   return {
     version: 3,
     routes: [
@@ -25,7 +25,7 @@ export function outputConfig(app, apiOrigin) {
         headers: {
           'X-Content-Type-Options': 'nosniff',
           'X-Frame-Options': 'DENY',
-          'Referrer-Policy': posko ? 'strict-origin' : 'no-referrer',
+          'Referrer-Policy': 'strict-origin',
           'Permissions-Policy': 'camera=(), microphone=(), geolocation=(self)',
           'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:${tiles}; connect-src 'self'${tiles}; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'`,
         },

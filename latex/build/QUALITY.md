@@ -62,3 +62,10 @@ Kedua entri jurnal menampilkan metadata, tahun edisi, volume, halaman atau
 nomor artikel, serta DOI yang sesuai. Judul laporan tetap memiliki hyperlink
 sumber resmi. Font pustaka tetap 8 pt dan PDF tetap 10 halaman. Pemeriksaan
 akademis beserta lokasi bukti dicatat dalam research/VERIFIKASI-JURNAL.md.
+
+Koreksi spasi cover: kalimat terakhir kini berbunyi "bahkan ketika konektivitas
+terbatas." melalui `cover-caption.tex`, tanpa mengubah gambar asli. PDF
+dibangun ulang dan cover diperiksa secara visual. Perbandingan render dengan
+PDF pada main memastikan sembilan halaman isi identik piksel demi piksel;
+perubahan hanya berada pada baris cover yang diperbaiki. Seluruh pemeriksaan
+otomatis lulus dan dokumen tetap 10 halaman.

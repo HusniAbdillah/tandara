@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import {
@@ -11,15 +11,18 @@ import {
   trainingSchema,
 } from '@tandara/contracts';
 import type { Region } from '@tandara/contracts';
-import { Badge, createUuid, Empty, Field, Icon, Notice, PageHeader, formatTime } from '@tandara/ui';
+import { createUuid, formatTime } from '@tandara/ui';
 import { residentDb } from '../offline/database.js';
-import type { Receipt, ReportDraft } from '../offline/database.js';
+import type { Receipt } from '../offline/database.js';
 import { enqueue, synchronize } from '../offline/sync.js';
+import { WButton, WEmpty, WError, WIcon, WLink, WProgress, WRow } from './chalk-ui.js';
+import { useDesktop } from './resident-data.js';
+import { StreetMap } from './resident-map.js';
 
 export const categoryNames: Record<string, string> = {
-  road_flooding: 'Genangan di jalan',
+  road_flooding: 'Genangan',
   water_entering_homes: 'Air masuk rumah',
-  blocked_access: 'Akses terhalang',
+  blocked_access: 'Jalan terhambat',
   debris: 'Material / sampah',
   damaged_facility: 'Fasilitas rusak',
   follow_up_needed: 'Perlu tindak lanjut',
@@ -39,8 +42,10 @@ export const stateNames: Record<string, string> = {
 };
 const ok = z.object({ ok: z.boolean() });
 export function ReportForm({ region, online }: { region: Region; online: boolean }) {
-  const parameters = new URLSearchParams(useLocation().search);
-  const help = parameters.get('help') === '1';
+  const queryClient = useQueryClient();
+  const currentLocation = useLocation();
+  const parameters = new URLSearchParams(currentLocation.search);
+  const help = parameters.get('help') === '1' || currentLocation.pathname === '/support';
   const requestedCategory = region.config.categories.find((c) => c === parameters.get('category'));
   const navigate = useNavigate();
   const [category, setCategory] = useState(
@@ -52,11 +57,18 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
   const [location, setLocation] = useState<
     { latitude: number; longitude: number; accuracyMeters?: number } | undefined
   >();
-  const [followUp, setFollowUp] = useState(help);
+  const followUp = help;
   const [contact, setContact] = useState('');
   const [permission, setPermission] = useState(false);
   const [consent, setConsent] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState('');
+  useEffect(
+    () => () => {
+      if (photoPreview) URL.revokeObjectURL(photoPreview);
+    },
+    [photoPreview],
+  );
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -97,7 +109,8 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
         delete offlinePayload.contactDetails;
         delete offlinePayload.location;
         await enqueue(offlinePayload);
-        navigate('/tracking');
+        await queryClient.invalidateQueries({ queryKey: ['resident-receipts'] });
+        navigate('/tracking', { state: { queued: true } });
         return;
       }
       if (!attempt.current)
@@ -124,10 +137,19 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
         headers: { 'Idempotency-Key': key },
       });
       await residentDb.transaction('rw', residentDb.receipts, residentDb.drafts, async () => {
-        await residentDb.receipts.put({ ...receipt, createdAt: new Date().toISOString() });
+        await residentDb.receipts.put({
+          ...receipt,
+          createdAt: new Date().toISOString(),
+          description: original.description,
+          category: original.category,
+          landmark: original.landmarkText,
+          followUp: help,
+          title: help ? helpType : undefined,
+        });
         await residentDb.drafts.delete(key);
       });
       setAccepted(true);
+      await queryClient.invalidateQueries({ queryKey: ['resident-receipts'] });
       if (file) {
         try {
           const encoded = await new Promise<string>((resolve, reject) => {
@@ -148,7 +170,7 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
           return;
         }
       }
-      navigate('/tracking');
+      navigate('/tracking', { state: { submitted: true } });
     } catch (error) {
       setError(
         (error instanceof Error ? error.message : 'Laporan belum terkirim.') +
@@ -178,323 +200,648 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
       { timeout: 10000, maximumAge: 0 },
     );
   }
-  return (
-    <div className="narrow">
-      <PageHeader
-        eyebrow="Laporan warga"
-        title="Bagikan yang Anda lihat."
-        description="Tuliskan pengamatan Anda. Laporan diterima platform untuk ditinjau koordinator komunitas."
-      />
-      <Notice tone="warning">
-        Simulasi — bukan kejadian nyata. Ini bukan kanal pengiriman layanan darurat dan tidak
-        menjamin bantuan dikirim.
-      </Notice>
-      {!online && (
-        <Notice>
-          Laporan akan disimpan di perangkat. Kontak, foto, dan koordinat GPS tidak disimpan untuk
-          draf offline. Hindari data sensitif dalam teks pada perangkat bersama.
-        </Notice>
-      )}
-      <form className="panel" onSubmit={(e) => void submit(e)}>
-        <Field label="Jenis laporan">
-          <select value={category} onChange={(e) => setCategory(e.target.value as typeof category)}>
-            {region.config.categories.map((c) => (
+  const desktop = useDesktop();
+  const [step, setStep] = useState(0);
+  const [helpType, setHelpType] = useState('Kebutuhan dasar');
+  const [timeMode, setTimeMode] = useState('now');
+  const frozen = busy || accepted || queued;
+  function next() {
+    if (!description.trim() || description.trim().length < 10) {
+      setError('Jelaskan kejadian dengan minimal 10 karakter.');
+      return;
+    }
+    setError('');
+    setStep((n) => n + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  const categoryControl = (
+    <label className="w-field">
+      <span>Jenis kejadian</span>
+      <span className="w-category-control">
+        <WIcon name="water" />
+        <select
+          aria-label="Jenis kejadian"
+          value={category}
+          onChange={(e) => setCategory(e.target.value as typeof category)}
+          disabled={frozen}
+        >
+          {region.config.categories
+            .filter((c) => c !== 'follow_up_needed')
+            .map((c) => (
               <option key={c} value={c}>
                 {categoryNames[c]}
               </option>
             ))}
-          </select>
-        </Field>
-        <Field
-          label="Apa yang Anda amati?"
-          hint="10–2.000 karakter. Jangan menyertakan kontak pribadi dalam teks."
-        >
-          <textarea
-            required
-            minLength={10}
-            maxLength={2000}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Contoh: terlihat genangan di jalan dekat patokan…"
-          />
-        </Field>
-        <div className="form-grid">
-          <Field label="Patokan lokasi (opsional)">
-            <input
-              maxLength={300}
-              value={landmark}
-              onChange={(e) => setLandmark(e.target.value)}
-              placeholder="Nama jalan / bangunan / RT"
-            />
-          </Field>
-          <Field label="Waktu pengamatan (opsional)" hint="Kosongkan jika tidak diketahui.">
-            <input
-              type="datetime-local"
-              value={observed}
-              onChange={(e) => setObserved(e.target.value)}
-            />
-          </Field>
-        </div>
-        <div className="form-section">
-          <h3>Lokasi & foto (opsional)</h3>
-          <div className="actions">
-            <button type="button" onClick={gps} disabled={!online}>
-              <Icon name="pin" />
-              Gunakan lokasi perangkat
-            </button>
-            {location && (
-              <>
-                <span className="hint">
-                  {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
-                </span>
-                <button type="button" className="quiet" onClick={() => setLocation(undefined)}>
-                  Hapus lokasi
-                </button>
-              </>
-            )}
-          </div>
-          <Field
-            label="Foto pengamatan"
-            hint="JPEG/PNG, maks. 2 MB. Foto privat; metadata lokasi dihapus server."
-          >
+        </select>
+      </span>
+    </label>
+  );
+  const detailFields = (
+    <>
+      {!help && categoryControl}
+      <label className="w-field">
+        <span>{help ? 'Bantuan yang dibutuhkan' : 'Kejadian'}</span>
+        <textarea
+          aria-label={help ? 'Bantuan yang dibutuhkan' : 'Apa yang Anda amati?'}
+          placeholder={help ? 'Jelaskan bantuan yang dibutuhkan' : 'Jelaskan apa yang kamu lihat'}
+          minLength={10}
+          maxLength={2000}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          disabled={frozen}
+        />
+      </label>
+      {!help && (
+        <>
+          <label className="w-photo-upload">
             <input
               type="file"
+              aria-label="Foto kejadian"
               accept="image/jpeg,image/png"
-              disabled={!online}
+              disabled={!online || frozen}
               onChange={(e) => {
                 const photo = e.target.files?.[0];
-                if (photo && photo.size > 2000000) {
-                  setError('Foto maksimal 2 MB.');
-                  setFile(null);
+                if (
+                  photo &&
+                  (photo.size > 2000000 || !['image/jpeg', 'image/png'].includes(photo.type))
+                ) {
+                  setError('Pilih foto JPG atau PNG, maksimal 2 MB.');
                   e.target.value = '';
-                } else setFile(photo ?? null);
+                  return;
+                }
+                setFile(photo ?? null);
+                setPhotoPreview(photo ? URL.createObjectURL(photo) : '');
+                setError('');
               }}
             />
-          </Field>
-        </div>
-        <div className="form-section">
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={followUp}
-              onChange={(e) => setFollowUp(e.target.checked)}
-            />
+            {photoPreview ? (
+              <img
+                className="w-photo-preview"
+                src={photoPreview}
+                width={80}
+                height={80}
+                alt="Foto kejadian"
+              />
+            ) : (
+              <WIcon name="camera" size={32} />
+            )}
             <span>
-              Saya membutuhkan tindak lanjut komunitas.
-              <small className="muted"> Detail hanya dibuka pengelola yang berwenang.</small>
+              <strong>{file?.name ?? 'Tambah foto'}</strong>
+              <small>{file ? 'Foto dipilih' : 'Boleh dikosongkan'}</small>
             </span>
           </label>
-          {followUp && online && (
-            <>
-              <Field label="Kontak untuk tindak lanjut (opsional)">
+          <div className="w-stack">
+            <h3>Waktu kejadian</h3>
+            <div className="w-chips">
+              <button
+                type="button"
+                className={timeMode === 'now' ? 'is-active' : ''}
+                onClick={() => {
+                  setTimeMode('now');
+                  setObserved('');
+                }}
+              >
+                Baru saja
+              </button>
+              <button
+                type="button"
+                className={timeMode === 'pick' ? 'is-active' : ''}
+                onClick={() => setTimeMode('pick')}
+              >
+                Pilih waktu
+              </button>
+            </div>
+            {timeMode === 'pick' && (
+              <label className="w-field">
+                <span>Waktu kejadian</span>
                 <input
-                  value={contact}
-                  maxLength={200}
-                  onChange={(e) => setContact(e.target.value)}
-                  placeholder="Kanal kontak yang dapat dihubungi"
+                  type="datetime-local"
+                  value={observed}
+                  onChange={(e) => setObserved(e.target.value)}
+                  required
                 />
-              </Field>
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={permission}
-                  onChange={(e) => setPermission(e.target.checked)}
-                />
-                <span>
-                  Saya mengizinkan koordinator menggunakan kontak ini untuk tindak lanjut.
-                </span>
               </label>
-            </>
-          )}
-        </div>
-        <label className="checkbox">
-          <input
-            type="checkbox"
-            required
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-          />
-          <span>
-            Saya memahami <Link to="/help">penggunaan dan penyimpanan data</Link>. Laporan ini
-            merupakan pengamatan yang perlu ditinjau.
-          </span>
-        </label>
-        {error && <Notice tone="error">{error}</Notice>}
-        <div className="button-row">
-          <button className="primary" disabled={busy || accepted || queued} type="submit">
-            <Icon name="report" />
-            {busy ? 'Memproses…' : online ? 'Kirim laporan' : 'Simpan laporan offline'}
-          </button>
-          <Link to="/tracking" className="button">
-            Laporan saya
+            )}
+          </div>
+        </>
+      )}
+    </>
+  );
+  const locationFields = (
+    <>
+      <h3>Lokasi kejadian</h3>
+      <div className="w-report-map">
+        <StreetMap
+          region={region}
+          picked={location}
+          onPick={(point) => {
+            if (!frozen) setLocation(point);
+          }}
+        />
+      </div>
+      <button
+        type="button"
+        className="w-location-action"
+        onClick={gps}
+        disabled={!online || frozen}
+      >
+        <WIcon name="locate" size={20} />
+        Gunakan lokasiku
+      </button>
+      <label className="w-field">
+        <span>Patokan lokasi</span>
+        <input
+          value={landmark}
+          maxLength={300}
+          onChange={(e) => setLandmark(e.target.value)}
+          placeholder="Nama jalan, bangunan, atau RT"
+          disabled={frozen}
+        />
+      </label>
+      {location && (
+        <button type="button" className="w-text-button" onClick={() => setLocation(undefined)}>
+          Hapus pin lokasi
+        </button>
+      )}
+    </>
+  );
+  const contactFields = (
+    <>
+      <h2>Bagaimana Posko bisa menghubungimu?</h2>
+      <label className="w-field">
+        <span>Nomor telepon</span>
+        <input
+          type="tel"
+          value={contact}
+          onChange={(e) => setContact(e.target.value)}
+          autoComplete="tel"
+          placeholder="08xx xxxx xxxx"
+          disabled={frozen || !online}
+        />
+      </label>
+      <label className="w-switch-row">
+        <span>
+          <strong>Boleh dihubungi Posko</strong>
+          <small>Lewat nomor di atas</small>
+        </span>
+        <input
+          role="switch"
+          type="checkbox"
+          checked={online && permission}
+          disabled={!online || frozen}
+          onChange={(e) => setPermission(e.target.checked)}
+        />
+      </label>
+      <WButton
+        quiet
+        onClick={() => {
+          setPermission(false);
+          setContact('');
+        }}
+      >
+        Lanjut tanpa nomor
+      </WButton>
+    </>
+  );
+  const consentField = (
+    <label className="w-consent">
+      <input
+        type="checkbox"
+        required
+        checked={consent}
+        onChange={(e) => setConsent(e.target.checked)}
+      />
+      <span>
+        Saya menyetujui <Link to="/help">penggunaan data laporan</Link>.
+      </span>
+    </label>
+  );
+  const submitButton = (
+    <WButton type="submit" disabled={frozen}>
+      {busy
+        ? 'Mengirim…'
+        : accepted
+          ? 'Laporan diterima'
+          : queued
+            ? 'Periksa Laporan saya'
+            : !online
+              ? 'Simpan laporan offline'
+              : help
+                ? 'Kirim permintaan'
+                : 'Kirim laporan'}
+    </WButton>
+  );
+  if (!desktop && !help && step === 0)
+    return (
+      <div className="w-report-mobile">
+        <div className="w-mobile-back">
+          <Link to="/">
+            <WIcon name="back" />
           </Link>
+          <strong>Buat laporan</strong>
         </div>
+        <h1>Apa yang kamu lihat?</h1>
+        <p className="w-muted">Pilih jenis kejadian.</p>
+        <div className="w-category-grid">
+          {region.config.categories
+            .filter((c) => c !== 'follow_up_needed')
+            .map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={category === c ? 'is-selected' : ''}
+                aria-pressed={category === c}
+                onClick={() => setCategory(c)}
+              >
+                <WIcon
+                  name={
+                    c === 'blocked_access'
+                      ? 'walk'
+                      : c === 'damaged_facility'
+                        ? 'building'
+                        : c === 'other'
+                          ? 'message'
+                          : 'water'
+                  }
+                  size={32}
+                />
+                <strong>{categoryNames[c]}</strong>
+              </button>
+            ))}
+        </div>
+        <WRow to="/support" title="Butuh bantuan?" subtitle="Minta bantuan Posko" icon="help" />
+        <div className="w-mobile-action">
+          <WButton onClick={() => setStep(1)}>Lanjut</WButton>
+        </div>
+      </div>
+    );
+  return (
+    <div className="w-report-page">
+      <div className="w-page-heading">
+        <h1>
+          {help
+            ? 'Minta bantuan'
+            : desktop
+              ? 'Laporkan kejadian'
+              : step === 1
+                ? 'Jelaskan kejadiannya.'
+                : step === 2
+                  ? 'Tentukan lokasi'
+                  : 'Periksa sebelum kirim.'}
+        </h1>
+        {!desktop && (
+          <button
+            className="w-icon-button"
+            aria-label="Kembali"
+            onClick={() => setStep((n) => Math.max(0, n - 1))}
+          >
+            <WIcon name="back" />
+          </button>
+        )}
+      </div>
+      {!desktop && !help && <WProgress value={step} total={3} label="Langkah laporan" />}
+      <form
+        className={desktop ? 'w-report-columns' : 'w-report-mobile-form'}
+        onSubmit={(e) => void submit(e)}
+      >
+        {(desktop || (help ? step === 0 : step === 1)) && (
+          <section className="w-card w-report-fields">
+            {help && (
+              <div className="w-stack">
+                <h2>Bantuan apa yang dibutuhkan?</h2>
+                {['Kebutuhan dasar', 'Bantuan pendamping', 'Lainnya'].map((item, i) => (
+                  <WRow
+                    key={item}
+                    title={item}
+                    subtitle={
+                      [
+                        'Air, makanan, perlengkapan',
+                        'Untuk lansia, anak, atau sulit berjalan',
+                        'Jelaskan bantuan yang dibutuhkan',
+                      ][i]
+                    }
+                    icon={i === 1 ? 'users' : 'help'}
+                    selected={helpType === item}
+                    onClick={() => setHelpType(item)}
+                  />
+                ))}
+              </div>
+            )}
+            {detailFields}
+            {help && !desktop && (
+              <label className="w-field">
+                <span>Patokan lokasi</span>
+                <input
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                  maxLength={300}
+                />
+              </label>
+            )}
+          </section>
+        )}
+        {(desktop || (!help && step === 2)) && (
+          <section className="w-card w-report-location">
+            {locationFields}
+            {desktop && (
+              <>
+                {help && contactFields}
+                <label className="w-field">
+                  <span>Penerima laporan</span>
+                  <input value={region.organization} readOnly />
+                </label>
+                {consentField}
+                {error && <WError>{error}</WError>}
+                {submitButton}
+              </>
+            )}
+          </section>
+        )}
+        {!desktop && help && step >= 1 && (
+          <section className="w-stack">
+            {contactFields}
+            {consentField}
+          </section>
+        )}
+        {!desktop && !help && step === 3 && (
+          <div className="w-stack">
+            <section className="w-card w-stack">
+              {categoryControl}
+              <h3>{description}</h3>
+              <small className="w-muted">
+                {observed ? new Date(observed).toLocaleString('id-ID') : 'Baru saja'}
+                {landmark ? ' · ' + landmark : ''}
+              </small>
+              <div className="w-review-map">
+                <StreetMap compact region={region} picked={location} />
+              </div>
+            </section>
+            <WButton secondary onClick={() => setStep(1)}>
+              Ubah laporan
+            </WButton>
+            <label className="w-field">
+              <span>Penerima laporan</span>
+              <input value={region.organization} readOnly />
+            </label>
+            {consentField}
+          </div>
+        )}
+        {!desktop && (
+          <>
+            {error && <WError>{error}</WError>}
+            <div className="w-mobile-action">
+              {(help ? step >= 1 : step === 3) ? (
+                submitButton
+              ) : (
+                <WButton type="button" onClick={next}>
+                  {help ? 'Lanjut' : step === 1 ? 'Tentukan lokasi' : 'Cek laporan'}
+                </WButton>
+              )}
+            </div>
+          </>
+        )}
       </form>
     </div>
   );
 }
+
 export function TrackingPage() {
-  const [drafts, setDrafts] = useState<ReportDraft[]>([]);
-  const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [message, setMessage] = useState('');
-  const [busy, setBusy] = useState(false);
+  const desktop = useDesktop(),
+    location = useLocation(),
+    navigate = useNavigate();
+  const selectedId = new URLSearchParams(location.search).get('id');
+  const [message, setMessage] = useState(''),
+    [syncing, setSyncing] = useState(false),
+    [deleting, setDeleting] = useState(false),
+    [confirm, setConfirm] = useState(false);
+  const stored = useQuery({
+    queryKey: ['resident-receipts'],
+    networkMode: 'always',
+    queryFn: async () => ({
+      drafts: await residentDb.drafts.toArray(),
+      receipts: await residentDb.receipts.orderBy('createdAt').reverse().toArray(),
+    }),
+  });
+  const reloadStored = stored.refetch;
   useEffect(() => {
-    const load = () => {
-      void Promise.all([
-        residentDb.drafts.toArray(),
-        residentDb.receipts.orderBy('createdAt').reverse().toArray(),
-      ])
-        .then(([d, r]) => {
-          setDrafts(d);
-          setReceipts(r);
-        })
-        .catch(() => setMessage('Penyimpanan perangkat tidak tersedia.'));
+    const reload = () => {
+      void reloadStored();
     };
-    load();
-    window.addEventListener('tandara:queue', load);
-    return () => window.removeEventListener('tandara:queue', load);
-  }, []);
+    window.addEventListener('tandara:queue', reload);
+    return () => window.removeEventListener('tandara:queue', reload);
+  }, [reloadStored]);
+  const receipts = stored.data?.receipts ?? [],
+    drafts = stored.data?.drafts ?? [];
+  const selected =
+    receipts.find((r) => r.id === selectedId) ??
+    (desktop || location.state?.submitted ? receipts[0] : undefined);
+  const tracking = useQuery({
+    queryKey: ['receipt', selected?.id],
+    enabled: !!selected,
+    queryFn: () =>
+      request('/reports/' + selected!.id + '/tracking', trackingSchema, {
+        headers: { 'X-Tracking-Token': selected!.trackingToken },
+      }),
+    refetchInterval: navigator.onLine ? 30000 : false,
+  });
   async function sync() {
-    setBusy(true);
-    setMessage('');
+    setSyncing(true);
     try {
       await residentDb.drafts.toCollection().modify({ retryCount: 0 });
       await synchronize();
-      setDrafts(await residentDb.drafts.toArray());
-      setReceipts(await residentDb.receipts.orderBy('createdAt').reverse().toArray());
-      setMessage(
-        'Sinkronisasi selesai. Status di bawah menunjukkan apakah server telah menerima laporan.',
-      );
+      await stored.refetch();
+      setMessage('Antrean diperbarui.');
     } catch {
-      setMessage('Sinkronisasi gagal. Laporan tetap di perangkat.');
+      setMessage('Belum dapat mengirim antrean. Coba lagi.');
     } finally {
-      setBusy(false);
+      setSyncing(false);
     }
   }
-  return (
-    <div className="narrow">
-      <PageHeader
-        eyebrow="Laporan saya"
-        title="Setiap laporan, status yang jelas."
-        description="Tanda terima disimpan di perangkat ini. Hanya laporan dengan konfirmasi server yang berstatus diterima."
-        action={
-          <button onClick={() => void sync()} disabled={busy || !navigator.onLine}>
-            {busy ? 'Menyinkronkan…' : 'Sinkronkan antrean'}
-          </button>
-        }
-      />
-      {message && <Notice>{message}</Notice>}
-      {drafts.length > 0 && (
-        <section className="panel">
-          <h2>Antrean di perangkat</h2>
-          {drafts.map((d) => (
-            <div className="source-details" key={d.localId}>
+  const receiptTitle = (receipt: Receipt) =>
+    receipt.title ??
+    (receipt.followUp
+      ? 'Permintaan bantuan'
+      : (categoryNames[receipt.category ?? ''] ?? 'Laporan ' + receipt.id.slice(0, 8)));
+  const detail = selected && (
+    <div className="w-status-detail">
+      {!desktop && (
+        <div className="w-mobile-back">
+          <Link to="/tracking">
+            <WIcon name="back" />
+          </Link>
+          <strong>{selected.followUp ? 'Status permintaan' : 'Detail laporan'}</strong>
+        </div>
+      )}
+      <section className="w-card w-report-identity">
+        <h2>
+          <WIcon name={selected.followUp ? 'help' : 'water'} />
+          {receiptTitle(selected)}
+        </h2>
+        {selected.description && <p>{selected.description}</p>}
+        <small>
+          {selected.id.slice(0, 8).toUpperCase()} · {formatTime(selected.createdAt)}
+        </small>
+        {selected.landmark && <small>{selected.landmark}</small>}
+      </section>
+      <h3>{selected.followUp ? 'Status permintaan' : 'Status laporan'}</h3>
+      <ol className="w-timeline">
+        <li>
+          <WIcon name="check" size={22} />
+          <div>
+            <strong>Diterima</strong>
+            <small>{formatTime(selected.createdAt)} · Laporan masuk ke Posko</small>
+          </div>
+        </li>
+        {tracking.data?.history
+          .filter((h) => h.action !== 'submitted' && h.action !== 'report.created')
+          .map((h) => (
+            <li key={h.id}>
+              <WIcon name="check" size={22} />
               <div>
-                <Badge tone="amber">{stateNames[d.state]} · belum dikonfirmasi server</Badge>
-                <p>{d.payload.description}</p>
-                <small>
-                  {formatTime(d.updatedAt)} · percobaan {d.retryCount}/5
-                </small>
-                {d.error && <Notice tone="error">{d.error}</Notice>}
+                <strong>{stateNames[h.action] ?? h.action}</strong>
+                {h.reason && <small>{h.reason}</small>}
+                <small>{formatTime(h.createdAt)}</small>
               </div>
-              <button
-                className="danger small"
+            </li>
+          ))}
+        <li className="is-current">
+          <span className="w-timeline-dot" />
+          <div>
+            <strong>{stateNames[tracking.data?.state ?? selected.state] ?? selected.state}</strong>
+            {tracking.data?.assistanceState && <small>{tracking.data.assistanceState}</small>}
+          </div>
+        </li>
+      </ol>
+      {tracking.isError && <WError>Status terbaru belum dapat dimuat.</WError>}
+      {tracking.data?.erased && <p role="status">Data laporan telah dihapus.</p>}
+      <div className="w-status-actions">
+        <WButton secondary onClick={() => void tracking.refetch()}>
+          Perbarui status
+        </WButton>
+        {!tracking.data?.erased && (
+          <WButton quiet onClick={() => setConfirm(true)}>
+            Ajukan penghapusan
+          </WButton>
+        )}
+      </div>
+    </div>
+  );
+  return (
+    <div className="w-tracking">
+      <div className="w-page-heading">
+        <h1>Status laporan saya</h1>
+        <WLink to="/report">Buat laporan</WLink>
+      </div>
+      {(location.state?.submitted || location.state?.queued) && (
+        <div className="w-confirmation" role="status">
+          <WIcon name="check" size={40} />
+          <div>
+            <h2>
+              {!location.state?.queued && receipts.length
+                ? receipts[0]?.followUp
+                  ? 'Permintaan terkirim'
+                  : 'Laporan terkirim'
+                : 'Laporan menunggu koneksi'}
+            </h2>
+            <p>
+              {!location.state?.queued && receipts.length
+                ? 'Lihat perkembangannya di sini.'
+                : 'Laporan akan dikirim setelah tersambung internet.'}
+            </p>
+          </div>
+        </div>
+      )}
+      {message && <p role="status">{message}</p>}
+      {stored.isError && <WError>Laporan di perangkat belum dapat dibaca.</WError>}
+      {drafts.length > 0 && (
+        <section className="w-card w-stack">
+          <div className="w-page-heading">
+            <h2>Belum terkirim</h2>
+            <WButton secondary disabled={syncing || !navigator.onLine} onClick={() => void sync()}>
+              {syncing ? 'Mengirim…' : 'Kirim ulang'}
+            </WButton>
+          </div>
+          {drafts.map((d) => (
+            <div className="w-draft-row" key={d.localId}>
+              <div>
+                <strong>{stateNames[d.state]}</strong>
+                <p>{d.payload.description}</p>
+                <small>{formatTime(d.updatedAt)}</small>
+                {d.error && <WError>{d.error}</WError>}
+              </div>
+              <WButton
+                quiet
                 onClick={async () => {
                   await residentDb.drafts.delete(d.localId);
-                  setDrafts(await residentDb.drafts.toArray());
+                  await stored.refetch();
                 }}
               >
                 Hapus draf
-              </button>
+              </WButton>
             </div>
           ))}
         </section>
       )}
-      {receipts.map((r) => (
-        <ReceiptCard key={r.id} receipt={r} />
-      ))}
-      {!drafts.length && !receipts.length && (
-        <Empty title="Belum ada laporan di perangkat">
-          <Link to="/report">Buat laporan pengamatan</Link>. Tanda terima perangkat lain tidak
-          ditampilkan di sini.
-        </Empty>
+      <div className={'w-tracking-layout ' + (!desktop && selected ? 'show-detail' : '')}>
+        <div className="w-report-list">
+          {receipts.map((receipt) => (
+            <WRow
+              key={receipt.id}
+              title={receipt.description ? receipt.description.slice(0, 64) : receiptTitle(receipt)}
+              subtitle={receiptTitle(receipt) + ' · ' + formatTime(receipt.createdAt)}
+              selected={selected?.id === receipt.id}
+              icon={receipt.followUp ? 'help' : 'report'}
+              onClick={() => navigate('/tracking?id=' + receipt.id)}
+            />
+          ))}
+        </div>
+        {detail}
+      </div>
+      {!stored.isPending && !receipts.length && !drafts.length && (
+        <WEmpty title="Belum ada laporan">
+          <p>Laporan dan permintaan bantuanmu muncul di sini.</p>
+          <WLink to="/report">Buat laporan</WLink>
+        </WEmpty>
+      )}
+      {confirm && (
+        <div className="w-dialog-backdrop">
+          <section
+            className="w-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+          >
+            <h2 id="delete-title">Ajukan penghapusan laporan?</h2>
+            <p>Posko akan memproses permintaanmu.</p>
+            <WButton
+              disabled={deleting}
+              onClick={async () => {
+                if (!selected) return;
+                setDeleting(true);
+                try {
+                  await request('/reports/' + selected.id + '/deletion-request', ok, {
+                    method: 'POST',
+                    headers: { 'X-Tracking-Token': selected.trackingToken },
+                  });
+                  setMessage('Permintaan penghapusan diterima.');
+                  setConfirm(false);
+                } catch (err) {
+                  setMessage(err instanceof Error ? err.message : 'Permintaan belum terkirim.');
+                  setConfirm(false);
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+            >
+              {deleting ? 'Mengirim…' : 'Ajukan penghapusan'}
+            </WButton>
+            <WButton secondary onClick={() => setConfirm(false)}>
+              Batal
+            </WButton>
+          </section>
+        </div>
       )}
     </div>
-  );
-}
-function ReceiptCard({ receipt }: { receipt: Receipt }) {
-  const [message, setMessage] = useState('');
-  const result = useQuery({
-    queryKey: ['receipt', receipt.id],
-    queryFn: () =>
-      request('/reports/' + receipt.id + '/tracking', trackingSchema, {
-        headers: { 'X-Tracking-Token': receipt.trackingToken },
-      }),
-    retry: 1,
-  });
-  return (
-    <section className="panel">
-      <div className="panel-heading">
-        <h2>Laporan {receipt.id.slice(0, 8)}</h2>
-        <Badge tone="teal">Diterima platform</Badge>
-      </div>
-      <p>{stateNames[result.data?.state ?? receipt.state]}</p>
-      {result.data?.erased && (
-        <Notice>
-          Data laporan telah dihapus. Tanda terima dan jejak status minimum dipertahankan.
-        </Notice>
-      )}
-      <p className="meta">
-        Dikirim {formatTime(receipt.createdAt)} · diperbarui {formatTime(result.data?.updatedAt)}
-      </p>
-      {result.data?.assistanceState && (
-        <Notice>
-          Status tindak lanjut komunitas: {result.data.assistanceState}. Bukan konfirmasi layanan
-          darurat.
-        </Notice>
-      )}
-      {result.isError && (
-        <Notice tone="warning">
-          Status terbaru tidak tersedia. Tanda terima tersimpan; coba lagi saat terhubung.
-        </Notice>
-      )}
-      <details>
-        <summary>Riwayat status & tanda terima</summary>
-        <ul className="timeline">
-          {result.data?.history.map((h) => (
-            <li key={h.id}>
-              <strong>{stateNames[h.action] ?? h.action}</strong>
-              <p>{h.reason}</p>
-              <small>{formatTime(h.createdAt)}</small>
-            </li>
-          ))}
-        </ul>
-        <p className="receipt-secret">Token privat: {receipt.trackingToken}</p>
-        <p className="hint">
-          Jangan bagikan token ini. Simpan ID dan token sebelum menghapus data perangkat.
-        </p>
-      </details>
-      <div className="button-row">
-        <button onClick={() => void result.refetch()}>Perbarui status</button>
-        <button
-          className="danger"
-          onClick={async () => {
-            try {
-              await request('/reports/' + receipt.id + '/deletion-request', ok, {
-                method: 'POST',
-                headers: { 'X-Tracking-Token': receipt.trackingToken },
-              });
-              setMessage('Permintaan penghapusan diterima. Administrator akan memprosesnya.');
-            } catch (e) {
-              setMessage(e instanceof Error ? e.message : 'Permintaan gagal.');
-            }
-          }}
-        >
-          Ajukan penghapusan
-        </button>
-      </div>
-      {message && <Notice>{message}</Notice>}
-    </section>
   );
 }
 export function TrainingPage({ region }: { region: Region }) {
@@ -502,109 +849,158 @@ export function TrainingPage({ region }: { region: Region }) {
     queryKey: ['training', region.id],
     queryFn: () => request('/regions/' + region.id + '/training', z.array(trainingSchema)),
   });
-  const [answers, setAnswers] = useState<Record<number, number>>({});
-  const [feedback, setFeedback] = useState('');
-  const [message, setMessage] = useState('');
-  const [result, setResult] = useState<{ score: number; total: number } | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [key] = useState(createUuid);
-  const scenario = query.data?.[0];
+  const [started, setStarted] = useState(false),
+    [step, setStep] = useState(0),
+    [answers, setAnswers] = useState<Record<number, number>>({}),
+    [revealed, setRevealed] = useState(false),
+    [message, setMessage] = useState(''),
+    [busy, setBusy] = useState(false),
+    [result, setResult] = useState<{ score: number; total: number } | null>(null),
+    [key, setKey] = useState(createUuid);
+  const scenario = query.data?.[0],
+    question = scenario?.content.steps[step];
+  async function finish() {
+    if (!scenario) return;
+    setBusy(true);
+    setMessage('');
+    try {
+      const score = await request(
+        '/regions/' + region.id + '/training/' + scenario.id + '/results',
+        z.object({ score: z.number(), total: z.number() }),
+        {
+          method: 'POST',
+          body: {
+            answers: scenario.content.steps.map((_, i) => answers[i] ?? -1),
+            feedback: '',
+            completionKey: key,
+          },
+        },
+      );
+      setResult(score);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Hasil belum dapat disimpan.');
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (query.isPending) return <p role="status">Memuat kuis…</p>;
+  if (query.isError)
+    return (
+      <WEmpty title="Kuis belum dapat dimuat">
+        <WButton secondary onClick={() => void query.refetch()}>
+          Coba lagi
+        </WButton>
+      </WEmpty>
+    );
+  if (!scenario || !question) return <WEmpty title="Belum ada kuis untuk wilayah ini" />;
+  if (result)
+    return (
+      <div>
+        <h1>Hasil kuis</h1>
+        <div className="w-result-layout">
+          <section className="w-card w-score-card">
+            <h2>{scenario.content.title}</h2>
+            <strong className="w-score">
+              {result.score} / {result.total}
+            </strong>
+            <p className="w-muted">jawaban benar</p>
+            <WButton
+              onClick={() => {
+                setResult(null);
+                setAnswers({});
+                setStep(0);
+                setRevealed(false);
+                setKey(createUuid());
+              }}
+            >
+              Ulangi kuis
+            </WButton>
+            <WLink secondary to="/guide">
+              Kembali ke panduan
+            </WLink>
+          </section>
+          <div className="w-answer-review">
+            {scenario.content.steps.map((s, i) => (
+              <section className="w-card w-stack" key={i}>
+                <small>Pertanyaan {i + 1}</small>
+                <h3>{s.question}</h3>
+                <p>
+                  <WIcon name="check" size={22} />
+                  {s.options[s.answer]}
+                </p>
+                <small>{s.explanation}</small>
+              </section>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  if (!started)
+    return (
+      <div className="w-narrow">
+        <h1>{scenario.content.title}</h1>
+        <section className="w-card w-stack">
+          <span className="w-icon-tile">
+            <WIcon name="book" size={32} />
+          </span>
+          <h2>{scenario.content.title}</h2>
+          <p className="w-muted">{scenario.content.steps.length} pertanyaan</p>
+          <WButton onClick={() => setStarted(true)}>Mulai kuis</WButton>
+        </section>
+      </div>
+    );
   return (
-    <div className="narrow">
-      <PageHeader
-        eyebrow="Latihan kesiapsiagaan"
-        title="Pahami informasi sebelum situasi berubah."
-      />
-      <Notice tone="warning">LATIHAN SIMULASI — bukan peringatan atau kejadian nyata.</Notice>
-      {query.isPending ? (
-        <div className="loading">Memuat latihan…</div>
-      ) : query.isError ? (
-        <Notice tone="error">Latihan belum tersedia saat koneksi ini.</Notice>
-      ) : scenario ? (
-        <form
-          className="panel"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setBusy(true);
-            try {
-              const r = await request(
-                '/regions/' + region.id + '/training/' + scenario.id + '/results',
-                z.object({ score: z.number(), total: z.number() }),
-                {
-                  method: 'POST',
-                  body: {
-                    answers: scenario.content.steps.map((_, i) => answers[i] ?? -1),
-                    feedback,
-                    completionKey: key,
-                  },
-                },
-              );
-              setResult(r);
-              setMessage('Latihan selesai. Baca penjelasan untuk meninjau kembali pemahaman Anda.');
-              void query.refetch();
-            } catch (err) {
-              setMessage(err instanceof Error ? err.message : 'Gagal menyimpan latihan.');
-            } finally {
-              setBusy(false);
-            }
+    <div className="w-quiz">
+      <h1>{scenario.content.title}</h1>
+      <small>
+        {step + 1} dari {scenario.content.steps.length}
+      </small>
+      <WProgress value={step + 1} total={scenario.content.steps.length} label="Progres kuis" />
+      <h2>{question.question}</h2>
+      <fieldset className="w-quiz-options">
+        <legend className="sr-only">Pilih jawaban</legend>
+        {question.options.map((option, i) => (
+          <label className={'w-answer ' + (answers[step] === i ? 'is-selected' : '')} key={i}>
+            <input
+              type="radio"
+              name={'question-' + step}
+              value={i}
+              checked={answers[step] === i}
+              disabled={revealed}
+              onChange={() => setAnswers({ ...answers, [step]: i })}
+            />
+            <strong>{option}</strong>
+            <WIcon name="chevron" size={18} />
+          </label>
+        ))}
+      </fieldset>
+      {revealed && (
+        <section className="w-card w-feedback">
+          <h3>{answers[step] === question.answer ? 'Benar' : 'Lihat penjelasannya'}</h3>
+          <p>{question.explanation}</p>
+        </section>
+      )}
+      {message && <WError>{message}</WError>}
+      <div className="w-mobile-action">
+        <WButton
+          disabled={answers[step] === undefined || busy}
+          onClick={() => {
+            if (!revealed) setRevealed(true);
+            else if (step < scenario.content.steps.length - 1) {
+              setStep(step + 1);
+              setRevealed(false);
+            } else void finish();
           }}
         >
-          <h2>{scenario.content.title}</h2>
-          <p>{scenario.content.description}</p>
-          {scenario.content.steps.map((s, i) => (
-            <fieldset key={i}>
-              <legend>
-                {i + 1}. {s.question}
-              </legend>
-              <div className="training-options">
-                {s.options.map((o, j) => (
-                  <label key={j}>
-                    <input
-                      type="radio"
-                      name={'question-' + i}
-                      required
-                      checked={answers[i] === j}
-                      onChange={() => setAnswers({ ...answers, [i]: j })}
-                    />
-                    <span>{o}</span>
-                  </label>
-                ))}
-              </div>
-              {result && (
-                <Notice tone={answers[i] === s.answer ? 'success' : 'warning'}>
-                  {s.explanation}
-                </Notice>
-              )}
-            </fieldset>
-          ))}
-          <Field
-            label="Bagian yang perlu diperjelas (opsional)"
-            hint="Jangan menuliskan data pribadi. Feedback hanya untuk pengelola latihan."
-          >
-            <textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              maxLength={500}
-            />
-          </Field>
-          <button className="primary" disabled={busy || !!result}>
-            {busy ? 'Menyimpan…' : 'Selesaikan latihan'}
-          </button>
-          {message && (
-            <Notice>
-              {message}
-              {result && (
-                <p>
-                  {result.score} dari {result.total} jawaban sesuai materi latihan. Ini bukan ukuran
-                  keamanan Anda.
-                </p>
-              )}
-            </Notice>
-          )}
-        </form>
-      ) : (
-        <Empty title="Belum ada latihan">Pengelola belum membuat skenario untuk wilayah ini.</Empty>
-      )}
+          {busy
+            ? 'Menyimpan…'
+            : !revealed
+              ? 'Pilih jawaban'
+              : step < scenario.content.steps.length - 1
+                ? 'Pertanyaan berikutnya'
+                : 'Lihat hasil'}
+        </WButton>
+      </div>
     </div>
   );
 }

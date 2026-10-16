@@ -13,4 +13,6 @@ export * from './modules/jobs.js';
 export { createAiAdapter } from './modules/adapters.js';
 export * from './modules/ai.js';
 export * from './modules/knowledge.js';
+export * from './modules/residents.js';
+export * from './modules/observations.js';
 export { startTelemetry, stopTelemetry } from './platform/telemetry.js';

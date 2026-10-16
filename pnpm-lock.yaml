@@ -176,6 +176,9 @@ importers:
       dexie:
         specifier: 4.4.6
         version: 4.4.6
+      maplibre-gl:
+        specifier: 6.14.0
+        version: 6.14.0
       react:
         specifier: 19.3.0
         version: 19.3.0
@@ -289,6 +292,9 @@ importers:
       otpauth:
         specifier: 9.4.1
         version: 9.4.1
+      parse5:
+        specifier: 7.3.0
+        version: 7.3.0
       pino:
         specifier: 10.4.0
         version: 10.4.0

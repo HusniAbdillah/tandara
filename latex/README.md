@@ -57,9 +57,13 @@ pada ukuran A4 penuh. Proporsi aset sangat dekat dengan A4. PNG header/footer
 mempertahankan transparansi. Latar isi berasal dari warna LaTeX #F8F8F6.
 Nomor halaman merupakan teks otomatis dan ditempatkan di kanan bawah.
 
-Cover tidak menerima overlay atau nomor halaman tambahan. Identitas dan foto
+Cover tidak memakai header/footer halaman isi atau nomor halaman tambahan. Identitas dan foto
 tim menyatu dalam gambar pengguna. Nama lengkap anggota tetap tersedia di
 metadata PDF. Teks cover raster tidak dapat dipilih seperti teks halaman isi.
+
+Koreksi spasi pada kalimat terakhir cover berada di `cover-caption.tex`:
+"bahkan ketika konektivitas terbatas." Teks ini ditata di atas baris raster
+yang salah, dengan warna dan posisi yang sama, tanpa mengubah aset asli.
 
 Untuk mengganti kedua aset, pertahankan ukuran dan nama berkas. Untuk mengubah
 posisi isi atau nomor halaman, edit geometry dan fancyfoot pada style.
