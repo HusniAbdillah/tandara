@@ -28,9 +28,10 @@ export function AccountForm({
   const location = useLocation();
   const next = returnPath(new URLSearchParams(location.search).get('next'));
   const nextQuery = next ? '?next=' + encodeURIComponent(next) : '';
-  const [phone, setPhone] = useState(''),
+  // Public judging account, provisioned by the simulation seed.
+  const [phone, setPhone] = useState(register ? '' : '081234560001'),
     [name, setName] = useState(''),
-    [password, setPassword] = useState(''),
+    [password, setPassword] = useState(register ? '' : 'TandaraDemo2026!'),
     [show, setShow] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');

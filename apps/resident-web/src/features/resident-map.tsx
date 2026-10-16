@@ -24,7 +24,7 @@ type MapPin = {
   latitude: number;
   longitude: number;
   label: string;
-  type: 'place' | 'water' | 'earthquake' | 'picked';
+  type: 'place' | 'water' | 'earthquake' | 'report' | 'picked';
   status?: string;
 };
 export function planPoints(plan?: Plan): MapPoint[] {
@@ -207,7 +207,7 @@ export function StreetMap({
         img.height = 20;
         img.alt = '';
         el.appendChild(img);
-        if (pin.type === 'water' || pin.type === 'earthquake') {
+        if (pin.type === 'water' || pin.type === 'earthquake' || pin.type === 'report') {
           const span = document.createElement('span');
           span.textContent = pin.label;
           el.appendChild(span);
@@ -386,6 +386,18 @@ export function MapPage({ app }: { app: ResidentData }) {
     app.data.data?.reports.filter((report) =>
       (report.summary + ' ' + (report.landmarkText ?? '')).toLocaleLowerCase('id').includes(query),
     ) ?? [];
+  const reportPins = useMemo<MapPin[]>(
+    () =>
+      (app.data.data?.reports ?? [])
+        .filter((report) => report.location)
+        .map((report) => ({
+          id: report.id,
+          ...report.location!,
+          label: report.summary,
+          type: 'report' as const,
+        })),
+    [app.data.data?.reports],
+  );
   function open(next: string, nextId?: string) {
     setParams({ panel: next, ...(nextId ? { id: nextId } : {}) });
   }
@@ -408,8 +420,9 @@ export function MapPage({ app }: { app: ResidentData }) {
             type: 'earthquake' as const,
           })) ?? [])
         : []),
+      ...reportPins,
     ],
-    [feed.data, waterVisible, quakeVisible],
+    [feed.data, waterVisible, quakeVisible, reportPins],
   );
   const visiblePins = pins.filter((pin) => withinRadius(pin, center, radius));
   const visiblePoints = points.filter((point) => withinRadius(point, center, radius));
@@ -421,7 +434,8 @@ export function MapPage({ app }: { app: ResidentData }) {
           ? source.id === 'bmkg'
           : true,
     ) ?? [];
-  const selected = water?.location ?? quake?.location ?? place;
+  const selected =
+    water?.location ?? quake?.location ?? place ?? publicReport?.location ?? undefined;
   const panelTitle =
     panel === 'water'
       ? 'Tinggi air'
@@ -442,7 +456,16 @@ export function MapPage({ app }: { app: ResidentData }) {
         pins={visiblePins}
         selected={selected}
         onSelect={(nextId, type) =>
-          open(type === 'water' ? 'water' : type === 'earthquake' ? 'earthquakes' : 'place', nextId)
+          open(
+            type === 'water'
+              ? 'water'
+              : type === 'earthquake'
+                ? 'earthquakes'
+                : type === 'report'
+                  ? 'report'
+                  : 'place',
+            nextId,
+          )
         }
       />
       {!!feed.data?.sources.length && (
@@ -613,7 +636,6 @@ export function MapPage({ app }: { app: ResidentData }) {
             {panel === 'report' && publicReport && (
               <div className="w-observation">
                 <h2>{publicReport.summary}</h2>
-                {publicReport.landmarkText && <p>{publicReport.landmarkText}</p>}
                 <small>Ditinjau Posko · {observationTime(publicReport.reviewedAt)}</small>
               </div>
             )}
@@ -654,7 +676,7 @@ export function MapPage({ app }: { app: ResidentData }) {
                 <WRow
                   key={report.id}
                   title={report.summary}
-                  subtitle={report.landmarkText ?? 'Ditinjau Posko'}
+                  subtitle={`Ditinjau Posko · ${observationTime(report.reviewedAt)}`}
                   icon="report"
                   onClick={() => open('report', report.id)}
                 />
