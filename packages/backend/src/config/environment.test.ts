@@ -22,6 +22,7 @@ describe('server configuration', () => {
     expect(parseEnvironment(production).APP_MODE).toBe('production');
     for (const patch of [
       { DEMO_PASSWORD: 'simulation-only' },
+      { DEMO_LOGIN_ENABLED: 'true' },
       { MFA_ENCRYPTION_KEY: '' },
       { SESSION_SECURE: 'false' },
       { WEB_ORIGINS: 'http://localhost' },
