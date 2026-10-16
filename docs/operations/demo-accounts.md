@@ -41,6 +41,15 @@ pnpm db:seed
 pnpm db:seed:demo
 ```
 
+`pnpm db:seed` menambahkan delapan contoh antrean Posko dan 13 laporan Warga yang
+terhubung ke akun Rani dan Budi. Contohnya mencakup dua wilayah, permintaan
+informasi, penugasan, penanganan, persetujuan, penolakan, penyelesaian, dan umpan
+balik. Kontak laporan Warga mengikuti masa retensi wilayah. ID fixture stabil,
+jadi seed ulang tidak menggandakan laporan atau menimpa perubahan pada laporan
+yang sudah ada. Laporan Warga hanya ditambahkan ke Kampung Ciliwung dan Pesisir
+Semarang yang sudah tersedia; seeder laporan tidak membuat wilayah atau organisasi.
+`pnpm db:seed:demo` hanya menyinkronkan akun demo.
+
 Jalankan API dan kedua frontend seperti biasa. Restart API setelah mengubah `.env`;
 frontend mengambil konfigurasi saat halaman masuk dibuka, tanpa rebuild untuk
 perubahan kata sandi. Akun demo menggunakan hash kata sandi yang sama mekanismenya
@@ -68,11 +77,14 @@ di stack `compose.yaml`.
 
 ## Deployment Tencent + Vercel
 
-Gunakan tiga nilai yang sama di `/opt/tandara/.env`. Workflow menjalankan migrasi,
-seed awal bila diperlukan, lalu sinkronisasi akun demo pada setiap release ketika
-demo diaktifkan. Ini juga menambahkan akun Warga pada database demo yang sudah ada,
-tanpa menjalankan ulang seluruh fixture laporan. Vercel membaca konfigurasi dari
-API melalui rewrite `/api`; tidak perlu menambahkan kata sandi ke environment Vercel.
+Gunakan tiga nilai yang sama di `/opt/tandara/.env`. Workflow menjalankan migrasi
+dan baseline seed saat bootstrap. Pada setiap release ketika demo diaktifkan, Docker
+juga menjalankan `demo-seed` untuk akun dan `seed-resident` untuk menambahkan 25
+laporan Warga (13 Kampung Ciliwung dan 12 Pesisir Semarang) yang terhubung ke akun
+Rani dan Budi. Seeder incremental ini idempoten:
+laporan baru masuk ke database demo yang sudah ada tanpa menjalankan ulang seluruh
+baseline seed atau menimpa laporan yang sudah tersimpan. Vercel membaca konfigurasi
+dari API melalui rewrite `/api`; tidak perlu menambahkan kata sandi ke environment Vercel.
 
 Set `DEMO_LOGIN_ENABLED=false` dan restart API untuk menyembunyikan pilihan serta
 menghentikan publikasi kata sandi. Penonaktifan ini tidak menghapus akun.

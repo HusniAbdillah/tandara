@@ -84,6 +84,15 @@ services:
     mem_limit: 256m
     depends_on: { postgres: { condition: service_healthy } }
     logging: *logging
+  seed-resident:
+    image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
+    environment: *server
+    command: [node, api/node_modules/@tandara/backend/database-command.mjs, seed-resident]
+    profiles: [operations]
+    networks: [database]
+    mem_limit: 256m
+    depends_on: { postgres: { condition: service_healthy } }
+    logging: *logging
   api:
     image: ${APP_IMAGE:?Set APP_IMAGE to the release image}
     environment: *server

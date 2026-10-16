@@ -794,59 +794,85 @@ test('audit storage rejects tampering and governance can erase sensitive records
   assert.equal(erased.rows[0].erased, true);
 });
 test('administrator can configure organizations, regions and scoped user accounts', async () => {
-  const org = await call(
-    'POST',
-    '/admin/organizations',
-    {
-      name: 'Organisasi uji sintetis ' + crypto.randomUUID().slice(0, 8),
-      description: 'Profil fiktif dari pengujian otomatis.',
-    },
-    admin,
-  );
-  assert.equal(org.statusCode, 201);
-  const config = (await call('GET', '/regions/' + region + '/public')).json().region.config;
-  const created = await call(
-    'POST',
-    '/admin/regions',
-    {
-      name: 'Wilayah uji sintetis',
-      organizationId: org.json().id,
-      config,
-      boundary: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [106, -7],
-            [106.01, -7],
-            [106.01, -6.99],
-            [106, -6.99],
-            [106, -7],
-          ],
-        ],
+  let organizationId;
+  let userId;
+  let existingRegion;
+  try {
+    const org = await call(
+      'POST',
+      '/admin/organizations',
+      {
+        name: 'Organisasi uji sintetis ' + crypto.randomUUID().slice(0, 8),
+        description: 'Profil fiktif dari pengujian otomatis.',
       },
-      suspended: false,
-    },
-    admin,
-  );
-  assert.equal(created.statusCode, 201, created.body);
-  const newUser = await call(
-    'POST',
-    '/admin/users',
-    {
-      name: 'Koordinator uji sintetis',
-      email: crypto.randomUUID() + '@test.tandara.test',
-      password: 'test-only-long-password',
-      role: 'coordinator',
-      regionIds: [created.json().id],
-      suspended: false,
-    },
-    admin,
-  );
-  assert.equal(newUser.statusCode, 201, newUser.body);
-  const memberships = await db.query('SELECT region_id FROM memberships WHERE user_id=$1', [
-    newUser.json().id,
-  ]);
-  assert.equal(memberships.rows[0].region_id, created.json().id);
+      admin,
+    );
+    assert.equal(org.statusCode, 201);
+    organizationId = org.json().id;
+    const regions = await call('GET', '/admin/regions', undefined, admin);
+    assert.equal(regions.statusCode, 200, regions.body);
+    existingRegion = regions.json().find((item) => item.id === region);
+    assert.ok(existingRegion, 'seeded Ciliwung region should be available');
+    const updated = await call(
+      'POST',
+      '/admin/regions',
+      {
+        id: existingRegion.id,
+        name: existingRegion.name,
+        organizationId,
+        config: existingRegion.config,
+        boundary: existingRegion.boundary,
+        suspended: existingRegion.suspended,
+      },
+      admin,
+    );
+    assert.equal(updated.statusCode, 201, updated.body);
+    const newUser = await call(
+      'POST',
+      '/admin/users',
+      {
+        name: 'Koordinator uji sintetis',
+        email: crypto.randomUUID() + '@test.tandara.test',
+        password: 'test-only-long-password',
+        role: 'coordinator',
+        regionIds: [existingRegion.id],
+        suspended: false,
+      },
+      admin,
+    );
+    assert.equal(newUser.statusCode, 201, newUser.body);
+    userId = newUser.json().id;
+    const memberships = await db.query('SELECT region_id FROM memberships WHERE user_id=$1', [
+      userId,
+    ]);
+    assert.equal(memberships.rows[0].region_id, existingRegion.id);
+  } finally {
+    if (existingRegion && organizationId) {
+      const restored = await call(
+        'POST',
+        '/admin/regions',
+        {
+          id: existingRegion.id,
+          name: existingRegion.name,
+          organizationId: existingRegion.organizationId,
+          config: existingRegion.config,
+          boundary: existingRegion.boundary,
+          suspended: existingRegion.suspended,
+        },
+        admin,
+      );
+      assert.equal(restored.statusCode, 201, restored.body);
+    }
+    if (userId) {
+      await db.query('DELETE FROM notification_preferences WHERE user_id=$1', [userId]);
+      await db.query('DELETE FROM memberships WHERE user_id=$1', [userId]);
+      await db.query('DELETE FROM sessions WHERE user_id=$1', [userId]);
+      await db.query('DELETE FROM users WHERE id=$1', [userId]);
+    }
+    if (organizationId) {
+      await db.query('DELETE FROM organizations WHERE id=$1', [organizationId]);
+    }
+  }
 });
 test('login abuse is rate limited without disclosing account existence', async () => {
   let limited = false;
