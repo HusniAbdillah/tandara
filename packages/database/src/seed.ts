@@ -2,6 +2,7 @@ import { randomBytes, scryptSync } from 'node:crypto';
 import { sql } from 'kysely';
 import { createDatabase } from './client.js';
 import { seedWorkflow } from './seed-workflow.js';
+import { seedDemoAccounts } from './demo-accounts.js';
 
 if (process.env['APP_MODE'] !== 'simulation')
   throw new Error('Seed allowed only in explicit simulation mode.');
@@ -110,6 +111,40 @@ try {
       await sql`INSERT INTO plan_versions(region_id,version,content,state,author_id) VALUES(${region}::uuid,2,${JSON.stringify({ ...content, title: 'Draf pembaruan rencana warga' })}::jsonb,'in_review',${author}::uuid) ON CONFLICT DO NOTHING`.execute(
         tx,
       );
+      const seededReferences = [
+        [
+          region === ids.region1
+            ? '51000000-0000-4000-8000-000000000001'
+            : '52000000-0000-4000-8000-000000000001',
+          'Panduan Evakuasi Mandiri, Kelompok Rentan, dan Titik Kumpul (Simulasi)',
+          'Keluarga perlu menyiapkan tas siaga 72 jam berisi dokumen penting dalam kantong kedap air, obat rutin pribadi, air minum, senter, dan pakaian ganti sebelum musim hujan puncak.\n\nPrioritaskan pendampingan bagi kelompok rentan seperti lansia, balita, ibu hamil, dan penyandang disabilitas saat menuju titik kumpul sementara di balai warga atau sekolah yang telah ditinjau koordinator.',
+          'https://example.org/tandara/sop-evakuasi-simulasi',
+          'Referensi simulasi latihan komunitas Tandara; ditinjau independen oleh koordinator dan admin.',
+        ],
+        [
+          region === ids.region1
+            ? '51000000-0000-4000-8000-000000000002'
+            : '52000000-0000-4000-8000-000000000002',
+          'SOP Triase Laporan Warga, Verifikasi Silang, dan Komunikasi Publik Posko (Simulasi)',
+          'Setiap laporan warga diperlakukan sebagai observasi awal yang memerlukan tinjauan manusia di Posko dan verifikasi silang terhadap pengamatan tinggi muka air serta kanal resmi BMKG atau BPBD.\n\nApabila patokan lokasi, waktu pengamatan, atau dampak genangan belum jelas, koordinator meminta klarifikasi secara sopan kepada pelapor sebelum menerbitkan ringkasan publik yang tenang dan faktual.',
+          'https://example.org/tandara/sop-triase-posko-simulasi',
+          'Pedoman internal simulasi operasional Posko Tandara untuk tata kelola komunikasi warga.',
+        ],
+        [
+          region === ids.region1
+            ? '51000000-0000-4000-8000-000000000003'
+            : '52000000-0000-4000-8000-000000000003',
+          'Protokol Keselamatan Listrik, Drainase Lingkungan, dan Pascabanjir (Simulasi)',
+          'Segera matikan panel listrik utama rumah apabila air mulai memasuki teras atau lantai dasar, dan hindari berjalan maupun berkendara melewati genangan berarus atau saluran terbuka.\n\nPembersihan sumbatan sampah atau ranting pada drainase lingkungan dilakukan secara berkelompok dengan alat pelindung dasar serta dilaporkan kemajuannya ke Posko untuk pembaruan status penanganan.',
+          'https://example.org/tandara/sop-keselamatan-drainase-simulasi',
+          'Panduan keselamatan lingkungan simulasi komunitas; bukan pengganti instruksi darurat resmi.',
+        ],
+      ] as const;
+      for (const [refId, refTitle, refText, refUrl, refLicense] of seededReferences) {
+        await sql`INSERT INTO knowledge_references(id,region_id,version,title,text,source_url,license_note,expires_at,state,author_id,reviewer_id,review_note) VALUES(${refId}::uuid,${region}::uuid,1,${refTitle},${refText},${refUrl},${refLicense},${new Date(now.getTime() + 90 * 86400000).toISOString()}::timestamptz,'approved',${author}::uuid,${ids.admin}::uuid,'Disetujui secara independen untuk pustaka pengetahuan RAG wilayah.') ON CONFLICT DO NOTHING`.execute(
+          tx,
+        );
+      }
       for (const [provider, name, enabled, mode, url, note] of [
         [
           'fixture',
@@ -242,6 +277,7 @@ try {
     }
   });
   await seedWorkflow(db);
+  await seedDemoAccounts(db, password, process.env['DEMO_LOGIN_ENABLED'] === 'true');
   console.info('Development seed complete. Existing records preserved.');
 } finally {
   await db.destroy();

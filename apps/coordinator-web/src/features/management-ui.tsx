@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import {
+  aiRunSchema,
   assistanceSchema,
   auditSchema,
   planSchema,
@@ -267,6 +268,36 @@ function PlanEditor({
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const aiRuns = useQuery({
+    queryKey: ['plan-ai-runs', regionId],
+    queryFn: () => request('/regions/' + regionId + '/ai/runs', z.array(aiRunSchema)),
+  });
+  const latestPlanDraft = aiRuns.data?.find(
+    (r) => r.task === 'plan_draft' && r.output && !r.output.abstained,
+  );
+  async function requestAiPlanDraft() {
+    setBusy(true);
+    setError('');
+    try {
+      await run(
+        () =>
+          request('/regions/' + regionId + '/ai/runs', z.object({ id: z.uuid() }), {
+            method: 'POST',
+            body: {
+              task: 'plan_draft',
+              question:
+                'Susun draf langkah kesiapsiagaan warga, daftar periksa keluarga, dan persiapan titik kumpul berdasarkan referensi SOP wilayah.',
+            },
+          }),
+        'Penyusunan draf rencana AI & RAG dijadwalkan.',
+      );
+      await aiRuns.refetch();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal meminta draf AI.');
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <form
       className="panel"
@@ -301,6 +332,55 @@ function PlanEditor({
       }}
     >
       <h2>{plan ? 'Edit draf v' + plan.version : 'Draf baru'}</h2>
+      <div className="mb-4 rounded-lg border border-[#cfe0d9] bg-[#f7faf8] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <strong className="text-sm text-ink">Kopilot Penyusun Rencana (AI & RAG)</strong>
+            <p className="m-0 text-xs text-muted-foreground">
+              Susun usulan instruksi lokal & checklist dari SOP terverifikasi dan laporan wilayah.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="small"
+              disabled={busy}
+              onClick={() => void requestAiPlanDraft()}
+            >
+              Buat Usulan Draf AI (RAG)
+            </button>
+            {latestPlanDraft?.output && (
+              <button
+                type="button"
+                className="small primary"
+                onClick={() => {
+                  const claimsText = latestPlanDraft.output!.claims.map((c) => c.text);
+                  const draftSections =
+                    latestPlanDraft.output!.draft?.sections.map((s) => s.text) ?? [];
+                  if (claimsText.length) {
+                    setInstructions(claimsText.join('\n'));
+                  } else if (draftSections.length) {
+                    setInstructions(draftSections.join('\n'));
+                  }
+                  if (latestPlanDraft.output!.questions.length) {
+                    setChecklist(latestPlanDraft.output!.questions.join('\n'));
+                  }
+                  if (!reason) {
+                    setReason('Disusun bersama draf asisten AI berdasarkan referensi wilayah');
+                  }
+                }}
+              >
+                Terapkan Draf AI ke Form
+              </button>
+            )}
+          </div>
+        </div>
+        {latestPlanDraft?.output && (
+          <p className="mt-2 mb-0 whitespace-pre-line text-xs text-ink">
+            {latestPlanDraft.output.title}
+          </p>
+        )}
+      </div>
       <Field label="Judul rencana">
         <input
           required
@@ -961,6 +1041,36 @@ function TrainingEditor({
   ]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const aiRuns = useQuery({
+    queryKey: ['training-ai-runs', regionId],
+    queryFn: () => request('/regions/' + regionId + '/ai/runs', z.array(aiRunSchema)),
+  });
+  const latestTrainingDraft = aiRuns.data?.find(
+    (r) => r.task === 'training_draft' && r.output && !r.output.abstained,
+  );
+  async function requestAiTrainingDraft() {
+    setBusy(true);
+    setError('');
+    try {
+      await run(
+        () =>
+          request('/regions/' + regionId + '/ai/runs', z.object({ id: z.uuid() }), {
+            method: 'POST',
+            body: {
+              task: 'training_draft',
+              question:
+                'Susun draf skenario latihan simulasi kesiapsiagaan warga berdasarkan SOP evakuasi mandiri, keselamatan listrik, dan titik kumpul wilayah.',
+            },
+          }),
+        'Penyusunan draf skenario latihan AI & RAG dijadwalkan.',
+      );
+      await aiRuns.refetch();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Gagal meminta draf AI.');
+    } finally {
+      setBusy(false);
+    }
+  }
   const update = (i: number, patch: Partial<Training['content']['steps'][number]>) =>
     setSteps(steps.map((s, j) => (j === i ? { ...s, ...patch } : s)));
   return (
@@ -990,6 +1100,64 @@ function TrainingEditor({
       }}
     >
       <h2>Skenario simulasi baru</h2>
+      <div className="mb-4 rounded-lg border border-[#cfe0d9] bg-[#f7faf8] p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <strong className="text-sm text-ink">Kopilot Skenario Latihan (AI & RAG)</strong>
+            <p className="m-0 text-xs text-muted-foreground">
+              Susun draf tujuan dan pertanyaan simulasi warga dari basis pengetahuan wilayah.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="small"
+              disabled={busy}
+              onClick={() => void requestAiTrainingDraft()}
+            >
+              Buat Usulan Skenario AI (RAG)
+            </button>
+            {latestTrainingDraft?.output && (
+              <button
+                type="button"
+                className="small primary"
+                onClick={() => {
+                  if (!title) {
+                    setTitle('Simulasi Kesiapsiagaan & Titik Kumpul Warga');
+                  }
+                  const draftSections =
+                    latestTrainingDraft.output!.draft?.sections.map(
+                      (s) => `${s.heading}: ${s.text}`,
+                    ) ?? [];
+                  if (draftSections.length) {
+                    setDescription(draftSections.join('\n'));
+                  } else {
+                    setDescription(latestTrainingDraft.output!.title);
+                  }
+                  const claimSteps = latestTrainingDraft
+                    .output!.claims.slice(0, 3)
+                    .map((c, idx) => ({
+                      question:
+                        latestTrainingDraft.output!.questions[idx] ??
+                        `Langkah apa yang sesuai referensi wilayah terkait poin ${idx + 1}?`,
+                      options: [
+                        c.text.slice(0, 140),
+                        'Menunggu kabar tidak terverifikasi tanpa memeriksa rencana wilayah',
+                      ],
+                      answer: 0,
+                      explanation: c.text.slice(0, 240),
+                    }));
+                  if (claimSteps.length) {
+                    setSteps(claimSteps);
+                  }
+                }}
+              >
+                Terapkan Skenario AI ke Form
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
       <Field label="Judul latihan">
         <input
           required

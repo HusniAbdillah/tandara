@@ -3,6 +3,23 @@ export const deploymentSchema = z.object({
   mode: z.enum(['simulation', 'production']),
   residentOrigin: z.url(),
   coordinatorOrigin: z.url(),
+  demoLogin: z
+    .object({
+      password: z.string(),
+      coordinators: z.array(
+        z.object({
+          id: z.uuid(),
+          email: z.email(),
+          name: z.string(),
+          role: z.enum(['coordinator', 'admin']),
+        }),
+      ),
+      residents: z.array(
+        z.object({ id: z.uuid(), phone: z.string(), name: z.string(), regionId: z.uuid() }),
+      ),
+    })
+    .nullable()
+    .optional(),
 });
 
 export const aiTaskSchema = z.enum([

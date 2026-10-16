@@ -90,6 +90,9 @@ export async function seedWorkflow(db: Kysely<Database>) {
         await sql`INSERT INTO report_updates(report_id,actor_id,action,message,rating) VALUES(${id}::uuid,${coordinator}::uuid,${status},${status === 'needs_information' ? 'Mohon informasikan patokan lokasi terdekat dan waktu pengamatan.' : description},${status === 'closed' ? 5 : null})`.execute(
           tx,
         );
+      await sql`INSERT INTO outbox_jobs(kind,entity_id,region_id,dedupe_key) VALUES('triage',${id}::uuid,${region}::uuid,${`seed-workflow-triage-${id}`}) ON CONFLICT DO NOTHING`.execute(
+        tx,
+      );
     }
   });
 }

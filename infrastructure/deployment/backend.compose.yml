@@ -5,6 +5,8 @@ x-logging: &logging
 x-server: &server
   NODE_ENV: production
   APP_MODE: simulation
+  DEMO_LOGIN_ENABLED: ${DEMO_LOGIN_ENABLED:-true}
+  DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD for shared demo accounts}
   DATABASE_URL: postgres://tandara:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/tandara
   REDIS_URL: redis://unused:6379
   API_HOST: 0.0.0.0

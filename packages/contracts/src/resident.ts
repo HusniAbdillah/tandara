@@ -16,6 +16,9 @@ export const residentCredentialsSchema = z.strictObject({
   phone: residentPhoneSchema,
   password: z.string().min(8, 'Kata sandi minimal 8 karakter.').max(200),
 });
+export const residentRegistrationSchema = residentCredentialsSchema.extend({
+  name: z.string().trim().min(2, 'Nama minimal 2 karakter.').max(100),
+});
 export const residentProfileSchema = z.object({
   id: z.uuid(),
   phone: z.string(),

@@ -23,6 +23,7 @@ const environmentSchema = z
     ...aiEnvironmentShape,
     ...aiOperationsShape,
     DEMO_PASSWORD: z.string().optional(),
+    DEMO_LOGIN_ENABLED: z.enum(['true', 'false']).default('false'),
     SESSION_SECURE: z.enum(['true', 'false']).default('false'),
     TRUST_PROXY: z.enum(['true', 'false']).default('false'),
     ALLOW_LIVE_SOURCES: z.enum(['true', 'false']).default('false'),
@@ -58,6 +59,7 @@ const environmentSchema = z
         }
       }), 'WEB_ORIGINS');
     require(!value.DEMO_PASSWORD, 'DEMO_PASSWORD');
+    require(value.DEMO_LOGIN_ENABLED !== 'true', 'DEMO_LOGIN_ENABLED');
     require(value.OBSERVATIONS_MODE !== 'simulation', 'OBSERVATIONS_MODE');
     require(new URL(value.DATABASE_URL).searchParams.get('sslmode') ===
       'verify-full', 'DATABASE_URL');
