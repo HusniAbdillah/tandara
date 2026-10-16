@@ -2,8 +2,11 @@
   <img src="logo/assets/tandara-logo.svg" alt="Tandara Logo" width="180" />
   <h1>Tandara (ArahSiaga)</h1>
   <p><strong>Community-Driven Disaster Preparedness & AI-Augmented Flood Response Platform</strong></p>
-  <p>Bridging vulnerable communities and disaster command centers — powered by Agentic RAG, LangGraph workflows, and offline-first progressive web apps.</p>
-  <p><a href="http://127.0.0.1:8080" target="_blank"><strong>Resident Portal (Warga)</strong></a> • <a href="http://127.0.0.1:8081" target="_blank"><strong>Coordinator Workspace (Posko)</strong></a></p>
+  <p>
+    🌐 <strong>Live Production Deployment:</strong><br/>
+    <a href="https://tandara.my.id/" target="_blank"><strong>Resident Portal (Warga): https://tandara.my.id/</strong></a> • 
+    <a href="https://posko.tandara.my.id/" target="_blank"><strong>Coordinator Workspace (Posko): https://posko.tandara.my.id/</strong></a>
+  </p>
 </div>
 
 ---
@@ -171,11 +174,11 @@ Open your browser or run:
 
 ## 🔑 Demo & Evaluation Access
 
-| Portal            | Target URL                                     | Description                           | Default Credentials                                                                  |
-| :---------------- | :--------------------------------------------- | :------------------------------------ | :----------------------------------------------------------------------------------- |
-| **Tandara Warga** | [http://127.0.0.1:8080](http://127.0.0.1:8080) | Resident PWA (Mobile / Desktop)       | Phone: `081234560001`<br/>Password: `TandaraDemo2026!` _(Prefilled on login screen)_ |
-| **Tandara Posko** | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Coordinator / Admin Dashboard         | Email: `ciliwung@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env` |
-| **System Admin**  | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Cross-Region Administrator & Reviewer | Email: `admin@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env`    |
+| Portal            | Target URL                                                                      | Description                           | Default Credentials                                                                  |
+| :---------------- | :------------------------------------------------------------------------------ | :------------------------------------ | :----------------------------------------------------------------------------------- |
+| **Tandara Warga** | [https://tandara.my.id/](https://tandara.my.id/) _(Local: `:8080`)_             | Resident PWA (Mobile / Desktop)       | Phone: `081234560001`<br/>Password: `TandaraDemo2026!` _(Prefilled on login screen)_ |
+| **Tandara Posko** | [https://posko.tandara.my.id/](https://posko.tandara.my.id/) _(Local: `:8081`)_ | Coordinator / Admin Dashboard         | Email: `ciliwung@demo.tandara.test`<br/>Password: `TandaraDemo2026!`                 |
+| **System Admin**  | [https://posko.tandara.my.id/](https://posko.tandara.my.id/) _(Local: `:8081`)_ | Cross-Region Administrator & Reviewer | Email: `admin@demo.tandara.test`<br/>Password: `TandaraDemo2026!`                    |
 
 ---
 
