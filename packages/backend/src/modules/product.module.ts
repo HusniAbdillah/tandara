@@ -7,10 +7,19 @@ import { AdministrationService } from './administration.js';
 import { JobsService } from './jobs.js';
 import { AiService } from './ai.js';
 import { KnowledgeService } from './knowledge.js';
+import { ResidentsService } from './residents.js';
+import {
+  ObservationsService,
+  OBSERVATION_PROVIDER,
+  PendingObservationProvider,
+} from './observations.js';
 
 @Module({
   imports: [DatabaseModule],
   providers: [
+    ResidentsService,
+    ObservationsService,
+    { provide: OBSERVATION_PROVIDER, useClass: PendingObservationProvider },
     IdentityService,
     ReportsService,
     PreparednessService,
@@ -20,6 +29,8 @@ import { KnowledgeService } from './knowledge.js';
     KnowledgeService,
   ],
   exports: [
+    ResidentsService,
+    ObservationsService,
     IdentityService,
     ReportsService,
     PreparednessService,

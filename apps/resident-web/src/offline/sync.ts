@@ -44,7 +44,14 @@ async function drain() {
         headers: { 'Idempotency-Key': draft.idempotencyKey },
       });
       await residentDb.transaction('rw', residentDb.receipts, residentDb.drafts, async () => {
-        await residentDb.receipts.put({ ...receipt, createdAt: new Date().toISOString() });
+        await residentDb.receipts.put({
+          ...receipt,
+          createdAt: new Date().toISOString(),
+          description: draft.payload.description,
+          category: draft.payload.category,
+          landmark: draft.payload.landmarkText,
+          followUp: draft.payload.followUpRequested,
+        });
         await residentDb.drafts.delete(draft.localId);
       });
     } catch (error) {

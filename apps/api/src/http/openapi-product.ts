@@ -31,6 +31,8 @@ import {
   aiOperationsSchema,
   knowledgeResultSchema,
   aiEvaluationSchema,
+  observationsSchema,
+  residentSessionSchema,
 } from '@tandara/contracts';
 const ok = z.object({ ok: z.boolean() });
 const id = z.object({ id: z.uuid() });
@@ -38,11 +40,28 @@ const reason = z.string().min(5).max(1000);
 type Route = [
   string,
   'get' | 'post' | 'put',
-  'public' | 'coordinator' | 'admin' | 'receipt',
+  'public' | 'coordinator' | 'admin' | 'receipt' | 'resident',
   z.ZodType,
   z.ZodType?,
 ];
 export const productRoutes: Route[] = [
+  ['/regions/{regionId}/observations', 'get', 'public', observationsSchema],
+  ['/resident/auth/me', 'get', 'public', residentSessionSchema],
+  [
+    '/resident/auth/login',
+    'post',
+    'public',
+    residentSessionSchema,
+    z.strictObject({ phone: z.string(), password: z.string().min(8).max(200) }),
+  ],
+  [
+    '/resident/auth/register',
+    'post',
+    'public',
+    residentSessionSchema,
+    z.strictObject({ phone: z.string(), password: z.string().min(8).max(200) }),
+  ],
+  ['/resident/auth/logout', 'post', 'resident', ok],
   ['/admin/ai/releases/{id}/evaluations', 'post', 'admin', id, aiEvaluationSchema],
   [
     '/regions/{regionId}/knowledge/references',
@@ -338,7 +357,7 @@ export function buildProductPaths() {
         required: true,
         schema: { const: 'web' },
       });
-    if (method !== 'get' && ['coordinator', 'admin'].includes(role))
+    if (method !== 'get' && ['coordinator', 'admin', 'resident'].includes(role))
       parameters.push({
         name: 'X-CSRF-Token',
         in: 'header',
@@ -377,7 +396,12 @@ export function buildProductPaths() {
         role +
         '. All demo workflows are simulation; scoped permissions are enforced server-side.',
       parameters,
-      security: role === 'coordinator' || role === 'admin' ? [{ session: [] }] : [],
+      security:
+        role === 'resident'
+          ? [{ residentSession: [] }]
+          : role === 'coordinator' || role === 'admin'
+            ? [{ session: [] }]
+            : [],
       ...(input
         ? {
             requestBody: {

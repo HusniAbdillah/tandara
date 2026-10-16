@@ -8,7 +8,10 @@ export function buildOpenApiDocument() {
     openapi: '3.1.0',
     info: { title: 'Tandara API', version: '1.0.0' },
     components: {
-      securitySchemes: { session: { type: 'apiKey', in: 'cookie', name: 'tandara_session' } },
+      securitySchemes: {
+        session: { type: 'apiKey', in: 'cookie', name: 'tandara_session' },
+        residentSession: { type: 'apiKey', in: 'cookie', name: 'tandara_resident' },
+      },
     },
     paths: {
       ...buildProductPaths(),

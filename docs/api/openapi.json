@@ -10,10 +10,586 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "tandara_session"
+      },
+      "residentSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "tandara_resident"
       }
     }
   },
   "paths": {
+    "/api/v1/regions/{regionId}/observations": {
+      "get": {
+        "summary": "GET /regions/{regionId}/observations",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "regionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "mode": {
+                      "type": "string",
+                      "enum": [
+                        "live",
+                        "simulation",
+                        "unconfigured"
+                      ]
+                    },
+                    "fetchedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "water": {
+                      "maxItems": 2000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "location": {
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "heightCm": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "normal",
+                              "siaga",
+                              "awas"
+                            ]
+                          },
+                          "updatedAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "thresholds": {
+                            "minItems": 3,
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "normal",
+                                    "siaga",
+                                    "awas"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "status",
+                                "label"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "location",
+                          "heightCm",
+                          "status",
+                          "updatedAt",
+                          "thresholds"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "earthquakes": {
+                      "maxItems": 1000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "location": {
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "occurredAt": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "magnitude": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "depthKm": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "region": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "felt": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "location",
+                          "occurredAt",
+                          "magnitude",
+                          "depthKm",
+                          "region",
+                          "felt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "mode",
+                    "fetchedAt",
+                    "water",
+                    "earthquakes"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/resident/auth/me": {
+      "get": {
+        "summary": "GET /resident/auth/me",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "phone": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "phone",
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "user"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/resident/auth/login": {
+      "post": {
+        "summary": "POST /resident/auth/login",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          }
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "phone",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "phone": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "phone",
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "user"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/resident/auth/register": {
+      "post": {
+        "summary": "POST /resident/auth/register",
+        "description": "Access: public. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          }
+        ],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "phone": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "phone",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "phone": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "phone",
+                            "name"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "user"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/v1/resident/auth/logout": {
+      "post": {
+        "summary": "POST /resident/auth/logout",
+        "description": "Access: resident. All demo workflows are simulation; scoped permissions are enforced server-side.",
+        "parameters": [
+          {
+            "name": "X-Tandara-Client",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "const": "web"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "residentSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "ok"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "401": {
+            "description": "Session absent or expired"
+          },
+          "403": {
+            "description": "Scope/CSRF/origin rejected"
+          },
+          "409": {
+            "description": "Stale revision or invalid transition"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
     "/api/v1/admin/ai/releases/{id}/evaluations": {
       "post": {
         "summary": "POST /admin/ai/releases/{id}/evaluations",

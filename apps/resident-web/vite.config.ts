@@ -21,7 +21,7 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         theme_color: '#1F6F7A',
-        background_color: '#f3f7f8',
+        background_color: '#f8f8f6',
         icons: [
           { src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
@@ -29,7 +29,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff,woff2}'],
         navigateFallbackDenylist: [/^\/api\//, /^\/health$/, /^\/ready$/],
         // API and sensitive data are never runtime-cached by the service worker.
         runtimeCaching: [],

@@ -7,6 +7,8 @@ import {
   ReportsService,
   AiService,
   KnowledgeService,
+  ResidentsService,
+  ObservationsService,
 } from '@tandara/backend';
 
 @Controller('api/v1')
@@ -18,7 +20,46 @@ export class ProductController {
     @Inject(AdministrationService) readonly admin: AdministrationService,
     @Inject(AiService) readonly ai: AiService,
     @Inject(KnowledgeService) readonly knowledge: KnowledgeService,
+    @Inject(ResidentsService) readonly residents: ResidentsService,
+    @Inject(ObservationsService) readonly observations: ObservationsService,
   ) {}
+  @Get('regions/:regionId/observations') observationFeed(@Param('regionId') region: string) {
+    return this.observations.read(region);
+  }
+  @Get('resident/auth/me') async residentMe(@Req() req: FastifyRequest) {
+    return { user: await this.residents.session(req.cookies['tandara_resident']) };
+  }
+  @Post('resident/auth/:action') async residentAuth(
+    @Param('action') action: string,
+    @Body() body: unknown,
+    @Req() req: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
+  ) {
+    const options = {
+      httpOnly: true,
+      secure: process.env['SESSION_SECURE'] === 'true',
+      sameSite: 'strict' as const,
+      path: '/',
+      maxAge: 28800,
+    };
+    if (action === 'logout') {
+      await this.residents.logout(
+        req.cookies['tandara_resident'],
+        String(req.headers['x-csrf-token'] ?? ''),
+      );
+      reply.clearCookie('tandara_resident', { path: '/' });
+      reply.clearCookie('tandara_resident_csrf', { path: '/' });
+      return { ok: true };
+    }
+    if (!['login', 'register'].includes(action))
+      return reply
+        .status(404)
+        .send({ error: { code: 'NOT_FOUND', message: 'Halaman tidak ditemukan.' } });
+    const result = await this.residents.signIn(body, req.ip, action === 'register');
+    reply.setCookie('tandara_resident', result.token, options);
+    reply.setCookie('tandara_resident_csrf', result.csrf, { ...options, httpOnly: false });
+    return { user: result.user };
+  }
   user(req: FastifyRequest) {
     return this.identity.authenticate(
       req.cookies['tandara_session'],

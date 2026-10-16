@@ -68,6 +68,9 @@ test('isolated backup restore replays later erasures and withdrawals before serv
       "INSERT INTO sessions(token_hash,user_id,csrf_hash,expires_at) VALUES($1,$2,$1,now()+interval '1 hour')",
       ['restore-fixture-session', users[0].id],
     );
+    await client.query(
+      "WITH resident AS (INSERT INTO residents(phone,password_hash) VALUES('+6281234567890','restore-fixture-only') RETURNING id) INSERT INTO resident_sessions(token_hash,resident_id,csrf_hash,expires_at) SELECT 'restore-resident-session',id,'restore-fixture-csrf',now()+interval '1 hour' FROM resident",
+    );
     await client.end();
     run('docker', [
       'exec',
@@ -124,6 +127,11 @@ test('isolated backup restore replays later erasures and withdrawals before serv
     );
     assert.equal(
       (await restoredClient.query('SELECT count(*)::int count FROM sessions')).rows[0].count,
+      0,
+    );
+    assert.equal(
+      (await restoredClient.query('SELECT count(*)::int count FROM resident_sessions')).rows[0]
+        .count,
       0,
     );
   } finally {

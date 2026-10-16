@@ -25,6 +25,11 @@ export interface Receipt {
   trackingToken: string;
   createdAt: string;
   state: string;
+  description?: string;
+  category?: string;
+  landmark?: string | undefined;
+  followUp?: boolean;
+  title?: string | undefined;
 }
 
 // Only consented text drafts and receipt secrets are persisted; private contacts and GPS stay online.

@@ -82,9 +82,20 @@ jobs:
           PG_DRILL_CONTAINER: tandara-ci-db
       - name: Verify OpenAPI matches the implementation
         run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
-      - name: Install Chromium for full E2E
-        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
+      - name: Install Chromium for UI checks
         run: pnpm exec playwright install --with-deps chromium
+      - name: Verify Chalk desktop and mobile flows
+        run: pnpm test:e2e:warga
+      - name: Upload Chalk browser failure evidence
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: chalk-browser-evidence
+          retention-days: 3
+          if-no-files-found: ignore
+          path: |
+            playwright-report/warga/
+            test-results/
       - name: Build and start full browser stack
         id: browser_stack
         if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
@@ -113,5 +124,5 @@ jobs:
           CHECK_STATUS: ${{ job.status }}
         run: |
           printf 'CI status: %s\n\n' "$CHECK_STATUS" >> "$GITHUB_STEP_SUMMARY"
-          printf 'Routine gate: formatting, lint/boundaries, typecheck, unit/HTTP tests, all builds, real PostGIS/API integration, repeatable migrations/seed, OpenAPI and deployment validation.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          printf 'Routine gate: formatting, lint/boundaries, typecheck, unit/HTTP tests, all builds, real PostGIS/API integration, repeatable migrations/seed, OpenAPI, deployment validation and Chalk desktop/mobile browser checks.\n\n' >> "$GITHUB_STEP_SUMMARY"
           printf 'Full Docker/browser E2E requested: %s. Enable full_e2e on a manual CI run before the jury rehearsal.\n' "$FULL_E2E" >> "$GITHUB_STEP_SUMMARY"

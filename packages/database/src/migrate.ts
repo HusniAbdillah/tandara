@@ -8,6 +8,7 @@ import * as knowledge from './migrations/006_knowledge.js';
 import * as governance from './migrations/007_ai_governance.js';
 import * as delivery from './migrations/008_ai_delivery.js';
 import * as warnings from './migrations/009_public_warnings.js';
+import * as residents from './migrations/010_residents.js';
 import { createDatabase } from './client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -30,6 +31,7 @@ try {
           '007_ai_governance': governance,
           '008_ai_delivery': delivery,
           '009_public_warnings': warnings,
+          '010_residents': residents,
         };
       },
     },
