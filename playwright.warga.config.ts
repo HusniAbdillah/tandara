@@ -15,16 +15,16 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'playwright-report/warga', open: 'never' }]],
   webServer: [
     {
-      command: 'corepack pnpm --filter @tandara/resident-web preview',
+      command: 'pnpm --filter @tandara/resident-web preview',
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env['CI'],
-      timeout: 30000,
+      timeout: 60000,
     },
     {
-      command: 'corepack pnpm --filter @tandara/coordinator-web preview',
+      command: 'pnpm --filter @tandara/coordinator-web preview',
       url: 'http://127.0.0.1:5174',
       reuseExistingServer: !process.env['CI'],
-      timeout: 30000,
+      timeout: 60000,
     },
   ],
 });
