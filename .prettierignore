@@ -13,3 +13,9 @@ test-results
 logo/doc-page.js
 logo/support.js
 logo/*.dc.html
+
+# Generated proposal artifacts; keep the published reports checked.
+latex/build/**
+!latex/build/QUALITY.md
+!latex/build/validation.json
+latex/research/figma-public.html
