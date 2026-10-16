@@ -46,7 +46,7 @@ export function ResidentApp() {
   if (path === '/login' || path === '/register')
     return (
       <div className="warga-app">
-        <AccountForm register={path === '/register'} />
+        <AccountForm register={path === '/register'} onChooseRegion={app.choose} />
       </div>
     );
   const mapPage = path === '/map';

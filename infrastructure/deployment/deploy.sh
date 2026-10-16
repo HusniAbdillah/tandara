@@ -57,6 +57,10 @@ trap recover ERR
 "${dc[@]}" up -d --wait --wait-timeout 180 postgres
 "${dc[@]}" run --rm --no-deps migrate
 if [[ -z "$previous" ]]; then "${dc[@]}" run --rm --no-deps seed; fi
+# Keep only the reserved public demo accounts aligned with the configured password.
+if [[ ${DEMO_LOGIN_ENABLED:-true} == true ]]; then
+  "${dc[@]}" run --rm --no-deps seed node api/node_modules/@tandara/backend/database-command.mjs demo-seed
+fi
 "${dc[@]}" up -d --wait --wait-timeout 180 api worker caddy
 curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-all-errors "https://$API_DOMAIN/ready" >/dev/null
 ln -sfn "$release" "$root/current.new"

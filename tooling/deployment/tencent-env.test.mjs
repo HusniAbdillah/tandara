@@ -63,7 +63,8 @@ test('selected Tencent profile enables Vikey/Gemini and forwards every configura
     assert.ok(Object.hasOwn(api, key), `${key} must reach the application`);
   }
   assert.deepEqual(config.services.worker.environment, api);
-  assert.ok(!Object.hasOwn(api, 'DEMO_PASSWORD'));
+  assert.equal(api.DEMO_LOGIN_ENABLED, 'true');
+  assert.equal(api.DEMO_PASSWORD, 'replace-with-demo-password');
 });
 
 test('Tencent forwards configured chat, embeddings, MFA and funded budgets to API and worker', () => {

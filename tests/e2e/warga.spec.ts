@@ -437,6 +437,7 @@ test('phone auth screens are centered, accessible and route into the app', async
   await page.getByRole('button', { name: 'Masuk', exact: true }).click();
   await expect(page).toHaveURL('/');
   await page.goto('/register');
+  await page.getByLabel('Nama', { exact: true }).fill('Rani Uji');
   await page.getByLabel('Nomor telepon').fill('081234567890');
   await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Daftar', exact: true }).click();

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { createApp } from '../../apps/api/dist/bootstrap.js';
 import { parseEnvironment } from '../../packages/backend/dist/index.js';
+import { demoAccounts } from '../../packages/database/dist/index.js';
 
 let app;
 const phone = '0812' + String(Date.now()).slice(-8);
@@ -26,6 +27,7 @@ before(async () => {
       AI_EMBEDDING_MODE: 'disabled',
       LOG_LEVEL: 'silent',
       OBSERVATIONS_MODE: 'simulation',
+      DEMO_LOGIN_ENABLED: 'true',
     }),
   );
   await app.init();
@@ -34,12 +36,48 @@ before(async () => {
 after(async () => {
   await app?.close();
 });
+
+test('published demo accounts authenticate with the configured password and personal names', async () => {
+  const config = await call('GET', '/deployment');
+  assert.equal(config.statusCode, 200);
+  assert.equal(config.headers['cache-control'], 'no-store');
+  assert.ok(
+    config.json().demoLogin.password === process.env.DEMO_PASSWORD,
+    'Demo picker must use the configured password',
+  );
+  for (const account of demoAccounts.residents) {
+    const login = await call('POST', '/resident/auth/login', {
+      phone: account.phone,
+      password: process.env.DEMO_PASSWORD,
+    });
+    assert.equal(login.statusCode, 201, login.body);
+    assert.equal(login.json().user.name, account.name);
+  }
+  for (const account of demoAccounts.coordinators) {
+    const login = await call('POST', '/auth/login', {
+      email: account.email,
+      password: process.env.DEMO_PASSWORD,
+    });
+    assert.equal(login.statusCode, 201, login.body);
+    assert.equal(login.json().user.name, account.name);
+    assert.equal(login.json().user.role, account.role);
+  }
+});
 test('resident accounts use persistent password verification, independent sessions and CSRF logout', async () => {
   const anonymous = await call('GET', '/resident/auth/me');
   assert.equal(anonymous.statusCode, 200);
   assert.equal(anonymous.json().user, null);
-  const registration = await call('POST', '/resident/auth/register', { phone, password });
+  assert.equal(
+    (await call('POST', '/resident/auth/register', { phone, password })).statusCode,
+    400,
+  );
+  const registration = await call('POST', '/resident/auth/register', {
+    phone,
+    password,
+    name: 'Rani Uji',
+  });
   assert.equal(registration.statusCode, 201, registration.body);
+  assert.equal(registration.json().user.name, 'Rani Uji');
   assert.equal(registration.json().user.phone, '+62' + phone.slice(1));
   assert.equal('password' in registration.json().user, false);
   const cookies = registration.headers['set-cookie'];
