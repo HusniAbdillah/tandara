@@ -344,14 +344,22 @@
 .p-filters {
   padding: 20px 24px 4px;
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
+}
+.p-filters .actions {
+  flex-wrap: nowrap;
+}
+.p-filters .actions input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .p-filters label {
   font-size: 12px;
 }
 .p-pagination {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
@@ -589,7 +597,7 @@ meter::-webkit-meter-bar {
   .p-filters {
     grid-template-columns: 1fr 1fr;
   }
-  .p-filters > div:first-child {
+  .p-filters > :first-child {
     grid-column: 1/-1;
   }
   .p-report-owner {
@@ -652,6 +660,7 @@ meter::-webkit-meter-bar {
   }
   .p-page-heading {
     align-items: flex-start;
+    flex-wrap: wrap;
   }
   .p-page-heading h1 {
     font-size: 23px;
@@ -692,7 +701,26 @@ meter::-webkit-meter-bar {
     padding: 20px;
   }
   .p-card-heading {
+    align-items: flex-start;
+    flex-direction: column;
     gap: 8px;
+  }
+  .p-card-heading > div {
+    width: 100%;
+    min-width: 0;
+  }
+  .p-card-heading > .actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .p-card-heading > .actions > * {
+    width: 100%;
+  }
+  .p-main .panel-heading,
+  .p-main .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .p-card h2 {
     font-size: 16px;
@@ -721,6 +749,10 @@ meter::-webkit-meter-bar {
   .p-filters {
     padding: 16px 16px 0;
     gap: 12px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .p-filters > :first-child {
+    grid-column: auto;
   }
   .p-pagination {
     padding: 16px;
