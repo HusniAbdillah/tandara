@@ -123,7 +123,13 @@ const tile = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP49esXAAXgAu/NVObIAAAAAElFTkSuQmCC',
   'base64',
 );
-async function fixtures(page: Page) {
+async function fixtures(page: Page, authenticated = true) {
+  const resident = {
+    id: '60000000-0000-4000-8000-000000000001',
+    phone: '+6281234567890',
+    name: 'Warga',
+  };
+  let signedIn = authenticated;
   const { createReportSchema } = await import('../../packages/contracts/dist/index.js');
   const payloads: unknown[] = [];
   await page.context().route('https://tile.openstreetmap.org/**', (route) =>
@@ -146,15 +152,15 @@ async function fixtures(page: Page) {
         sources: [],
         fetchedAt: '2026-10-16T00:00:00Z',
       };
-    else if (path === '/resident/auth/me') body = { user: null };
-    else if (path === '/resident/auth/login' || path === '/resident/auth/register')
-      body = {
-        user: {
-          id: '60000000-0000-4000-8000-000000000001',
-          phone: '+6281234567890',
-          name: 'Warga',
-        },
-      };
+    else if (path === '/resident/auth/me') body = { user: signedIn ? resident : null };
+    else if (path === '/resident/auth/login' || path === '/resident/auth/register') {
+      signedIn = true;
+      body = { user: resident };
+    } else if (path === '/resident/auth/logout') {
+      signedIn = false;
+      body = { ok: true };
+    } else if (path === '/resident/reports') body = { items: [], page: 1, total: 0 };
+    else if (path === '/resident/notifications') body = { items: [], unreadCount: 0 };
     else if (path.endsWith('/observations'))
       body = {
         mode: 'simulation',
@@ -389,9 +395,9 @@ test('support contact switch omits private contact when disabled', async ({ page
     .getByLabel('Bantuan yang dibutuhkan')
     .fill('Perlu air minum untuk keluarga di balai warga.');
   await page.getByRole('button', { name: 'Lanjut', exact: true }).click();
-  await page.getByLabel('Nomor telepon').fill('081234567890');
-  await page.getByRole('switch', { name: /Boleh dihubungi/ }).check();
-  await page.getByRole('button', { name: 'Lanjut tanpa nomor' }).click();
+  await page.getByLabel('Nomor tambahan', { exact: true }).fill('081234567890');
+  await page.getByRole('switch', { name: /Bagikan nomor tambahan/ }).check();
+  await page.getByRole('button', { name: 'Gunakan nomor akun' }).click();
   await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
   await page.getByRole('button', { name: 'Kirim permintaan' }).click();
   await expect(page).toHaveURL(/tracking/);
@@ -423,7 +429,7 @@ test('guide checklist, downloaded plan and quiz remain connected', async ({ page
   await page.screenshot({ path: 'test-results/chalk-desktop-result.png', fullPage: true });
 });
 test('phone auth screens are centered, accessible and route into the app', async ({ page }) => {
-  await fixtures(page);
+  await fixtures(page, false);
   await page.goto('/login');
   const form = await page.locator('.w-auth-form').boundingBox();
   expect(Math.abs(form!.x + form!.width / 2 - 720)).toBeLessThan(1);
@@ -441,6 +447,80 @@ test('phone auth screens are centered, accessible and route into the app', async
   await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Daftar', exact: true }).click();
   await expect(page).toHaveURL('/area');
+});
+
+test('signed-out routes redirect to login and registration returns to the requested page', async ({
+  page,
+}) => {
+  await fixtures(page, false);
+  for (const path of [
+    '/',
+    '/map',
+    '/support',
+    '/tracking',
+    '/training',
+    '/report?category=blocked_access',
+  ]) {
+    await page.goto(path);
+    await expect(page).toHaveURL('/login?next=' + encodeURIComponent(path));
+    await expect(page.getByRole('button', { name: 'Kirim laporan', exact: true })).toHaveCount(0);
+  }
+  await page.getByRole('link', { name: 'Daftar', exact: true }).click();
+  await expect(page).toHaveURL(
+    '/register?next=' + encodeURIComponent('/report?category=blocked_access'),
+  );
+  await page.getByLabel('Nomor telepon').fill('081234567890');
+  await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Daftar', exact: true }).click();
+  await expect(page).toHaveURL('/report?category=blocked_access');
+  await expect(page.getByLabel('Apa yang Anda amati?')).toBeVisible();
+});
+
+test('a 401 during submission redirects to login and preserves the queued report', async ({
+  page,
+}) => {
+  await fixtures(page);
+  await page.goto('/report');
+  await page
+    .getByLabel('Apa yang Anda amati?')
+    .fill('Antrean laporan harus tetap ada setelah sesi berakhir.');
+  await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
+  await page.route('**/api/v1/resident/auth/me', (r) => r.fulfill({ json: { user: null } }));
+  await page.route('**/api/v1/reports', (r) =>
+    r.fulfill({
+      status: 401,
+      json: { error: { code: 'UNAUTHORIZED', message: 'Silakan masuk kembali.' } },
+    }),
+  );
+  await page.getByRole('button', { name: 'Kirim laporan', exact: true }).click();
+  await expect(page).toHaveURL('/login?next=%2Freport');
+  await expect(page.locator('.w-auth-form')).toBeVisible();
+  const drafts = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('tandara-resident');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      return await new Promise<number>((resolve, reject) => {
+        const request = db.transaction('drafts').objectStore('drafts').count();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      db.close();
+    }
+  });
+  expect(drafts).toBe(1);
+});
+
+test('login return URLs cannot redirect to an external site', async ({ page }) => {
+  await fixtures(page, false);
+  await page.goto('/login?next=' + encodeURIComponent('https://example.test/steal'));
+  await page.getByLabel('Nomor telepon').fill('081234567890');
+  await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Masuk', exact: true }).click();
+  await expect(page).toHaveURL('/');
 });
 
 test('account history opens on a fresh device and personal notifications retain read state', async ({
@@ -631,7 +711,7 @@ test('another account cannot see or synchronize locally queued reports owned by 
   expect(payloads).toHaveLength(0);
 });
 
-test('saved plan survives an offline reload and queued report synchronizes once', async ({
+test('an authenticated open session can use downloaded plans and queue reports until reconnect', async ({
   page,
   context,
 }) => {
@@ -644,7 +724,6 @@ test('saved plan survives an offline reload and queued report synchronizes once'
   });
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
   await context.setOffline(true);
-  await page.reload();
   await expect(page.getByText('Siapkan dokumen penting')).toBeVisible();
   await expect(page.getByText('Tanpa internet · Menampilkan unduhan')).toBeVisible();
   await page.getByRole('link', { name: 'Laporan saya', exact: true }).first().click();
@@ -661,6 +740,25 @@ test('saved plan survives an offline reload and queued report synchronizes once'
   expect(payloads).toHaveLength(1);
   await page.reload();
   await expect(page.locator('.w-report-list .w-row')).toHaveCount(1);
+});
+
+test('an offline reload cannot open protected content without revalidating the session', async ({
+  page,
+  context,
+}) => {
+  await fixtures(page);
+  await page.goto('/plan');
+  await page.getByRole('button', { name: 'Unduh rencana' }).click();
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await page.route('**/api/v1/resident/auth/me', (r) => r.abort('internetdisconnected'));
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page).toHaveURL('/login?next=%2Fplan');
+  await expect(page.locator('.w-auth-form')).toBeVisible();
+  await expect(page.getByText('Siapkan dokumen penting', { exact: true })).toHaveCount(0);
 });
 
 test('mobile pages remain readable at 360px and all design assets load locally', async ({

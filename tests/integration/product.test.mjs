@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { createServer } from 'node:http';
 import { createApp, JobsService } from '../../apps/api/dist/bootstrap.js';
 import { parseEnvironment } from '../../packages/backend/dist/index.js';
+import { registerResident, residentWrite } from './helpers/resident.mjs';
 
 const require = createRequire(new URL('../../packages/database/package.json', import.meta.url));
 const { Client } = require('pg');
@@ -13,6 +14,7 @@ const db = new Client({ connectionString: process.env.DATABASE_URL });
 let app;
 let coordinator;
 let admin;
+let resident;
 let report;
 let assistanceReport;
 let planId;
@@ -32,6 +34,7 @@ const base = {
 const key = crypto.randomUUID();
 const token = crypto.randomUUID() + crypto.randomUUID();
 function call(method, url, payload, session, extra = {}) {
+  if (!session && residentWrite(method, url)) session = resident;
   return app.inject({
     method,
     url: '/api/v1' + url,
@@ -88,6 +91,7 @@ before(async () => {
   await app.getHttpAdapter().getInstance().ready();
   coordinator = await login('ciliwung@demo.tandara.test');
   admin = await login('admin@demo.tandara.test');
+  resident = await registerResident(app);
 });
 after(async () => {
   await app?.close();

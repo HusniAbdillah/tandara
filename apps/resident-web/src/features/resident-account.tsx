@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
@@ -8,10 +8,14 @@ import { WAvatar, WButton, WEmpty, WError, WIcon, WLink, WRow } from './chalk-ui
 import type { ResidentData } from './resident-data.js';
 import { residentCsrf } from './resident-data.js';
 import { residentDb } from '../offline/database.js';
+import { returnPath } from '../account/session.js';
 
 export function AccountForm({ register = false }: { register?: boolean }) {
   const navigate = useNavigate(),
     client = useQueryClient();
+  const location = useLocation();
+  const next = returnPath(new URLSearchParams(location.search).get('next'));
+  const nextQuery = next ? '?next=' + encodeURIComponent(next) : '';
   const [phone, setPhone] = useState(''),
     [password, setPassword] = useState(''),
     [show, setShow] = useState(false),
@@ -36,8 +40,9 @@ export function AccountForm({ register = false }: { register?: boolean }) {
               residentSessionSchema,
               { method: 'POST', body: result.data },
             );
+            await client.cancelQueries({ queryKey: ['resident-session'] });
             client.setQueryData(['resident-session'], session);
-            navigate(register ? '/area' : '/', { replace: true });
+            navigate(next ?? (register ? '/area' : '/'), { replace: true });
           } catch (err) {
             setError(err instanceof Error ? err.message : 'Tidak dapat masuk.');
           } finally {
@@ -90,11 +95,10 @@ export function AccountForm({ register = false }: { register?: boolean }) {
         </WButton>
         <p className="w-auth-switch">
           {register ? 'Sudah punya akun?' : 'Belum punya akun?'}{' '}
-          <Link to={register ? '/login' : '/register'}>{register ? 'Masuk' : 'Daftar'}</Link>
+          <Link to={(register ? '/login' : '/register') + nextQuery}>
+            {register ? 'Masuk' : 'Daftar'}
+          </Link>
         </p>
-        <Link className="w-guest-link" to="/">
-          Lihat peta dan panduan
-        </Link>
       </form>
     </main>
   );

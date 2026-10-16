@@ -402,7 +402,7 @@ test('all assistance tasks produce separate drafts without mutating reports or p
     },
     null,
   );
-  assert.equal(r.statusCode, 400, 'report requires idempotency header');
+  assert.equal(r.statusCode, 401, 'report requires a resident session before payload validation');
   const reportId = (
     await db.query(
       "INSERT INTO reports(region_id,category,description,tracking_hash,idempotency_key,payload_hash) VALUES($1,'road_flooding',$2,$3,$4,$5) RETURNING id",

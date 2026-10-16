@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Navigate, useLocation, useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { WAvatar, WBrand, WButton, WEmpty, WIcon, WLink, WProgress, WRow } from './chalk-ui.js';
 import type { WargaIconName } from './chalk-ui.js';
 import { useChecklist, useDesktop, useResidentData } from './resident-data.js';
@@ -29,11 +30,13 @@ const destinations: { to: string; label: string; icon: WargaIconName; matches: s
   },
 ];
 export function ResidentApp() {
+  const client = useQueryClient();
   const app = useResidentData(),
     location = useLocation(),
     desktop = useDesktop(),
     navigate = useNavigate();
   const path = location.pathname;
+  const refreshSession = app.session.refetch;
   const [update, setUpdate] = useState<(() => Promise<void>) | null>(null);
   useEffect(() => {
     const handler = (event: Event) =>
@@ -44,11 +47,44 @@ export function ResidentApp() {
   useEffect(() => {
     if (path !== '/map') window.scrollTo(0, 0);
   }, [path]);
+  useEffect(() => {
+    if (!['/login', '/register'].includes(path) && navigator.onLine) void refreshSession();
+  }, [path, refreshSession]);
+  useEffect(() => {
+    const expired = (event: Event) => {
+      const failedPath = (event as CustomEvent<{ path: string }>).detail.path;
+      if (failedPath === '/resident/auth/login' || failedPath === '/resident/auth/register') return;
+      for (const key of [
+        'resident-account-reports',
+        'resident-account-report',
+        'resident-personal-notifications',
+        'receipt',
+      ])
+        client.removeQueries({ queryKey: [key] });
+      client.setQueryData(['resident-session'], { user: null });
+    };
+    window.addEventListener('tandara:unauthorized', expired);
+    return () => window.removeEventListener('tandara:unauthorized', expired);
+  }, [client]);
   if (path === '/login' || path === '/register')
     return (
       <div className="warga-app">
         <AccountForm register={path === '/register'} />
       </div>
+    );
+  if (app.session.isPending)
+    return (
+      <div className="w-loading" role="status">
+        Memeriksa sesi…
+      </div>
+    );
+  const resident = app.session.data?.user;
+  if (!resident || app.session.isError)
+    return (
+      <Navigate
+        replace
+        to={'/login?next=' + encodeURIComponent(path + location.search + location.hash)}
+      />
     );
   const mapPage = path === '/map';
   const formPage = path === '/report' || path === '/support' || path === '/training';
@@ -88,7 +124,7 @@ export function ResidentApp() {
         key={app.activeRegion + path}
         region={app.region}
         online={app.online}
-        residentId={app.session.data?.user?.id}
+        residentId={resident.id}
       />
     );
   else if (path === '/training')

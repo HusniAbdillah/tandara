@@ -50,14 +50,14 @@ const reason = z.string().min(5).max(1000);
 type Route = [
   string,
   'get' | 'post' | 'put',
-  'public' | 'coordinator' | 'admin' | 'receipt' | 'resident',
+  'public' | 'coordinator' | 'admin' | 'receipt' | 'resident' | 'residentReceipt',
   z.ZodType,
   z.ZodType?,
 ];
 export const productRoutes: Route[] = [
   ['/reports/{id}/workflow', 'get', 'coordinator', workflowDetailSchema],
   ['/reports/{id}/workflow', 'post', 'coordinator', ok, workflowActionSchema],
-  ['/reports/{id}/feedback', 'post', 'receipt', ok, citizenFeedbackSchema],
+  ['/reports/{id}/feedback', 'post', 'residentReceipt', ok, citizenFeedbackSchema],
   ['/regions/{regionId}/team', 'get', 'coordinator', z.array(teamMemberSchema)],
   ['/regions/{regionId}/report-analytics', 'get', 'coordinator', reportAnalyticsSchema],
   ['/regions/{regionId}/observations', 'get', 'public', observationsSchema],
@@ -220,13 +220,13 @@ export const productRoutes: Route[] = [
   ],
   ['/regions', 'get', 'public', z.array(regionSchema)],
   ['/regions/{regionId}/public', 'get', 'public', publicDataSchema],
-  ['/reports', 'post', 'public', receiptSchema, createReportSchema],
+  ['/reports', 'post', 'resident', receiptSchema, createReportSchema],
   ['/reports/{id}/tracking', 'get', 'receipt', trackingSchema],
-  ['/reports/{id}/deletion-request', 'post', 'receipt', ok],
+  ['/reports/{id}/deletion-request', 'post', 'residentReceipt', ok],
   [
     '/reports/{id}/attachments',
     'post',
-    'receipt',
+    'residentReceipt',
     id,
     z.strictObject({ data: z.string().max(2800000) }),
   ],
@@ -290,7 +290,7 @@ export const productRoutes: Route[] = [
   [
     '/regions/{regionId}/training/{id}/results',
     'post',
-    'public',
+    'resident',
     z.object({ score: z.number(), total: z.number() }),
     z.strictObject({
       answers: z.array(z.number().int()),
@@ -386,14 +386,14 @@ export function buildProductPaths() {
         required: true,
         schema: { const: 'web' },
       });
-    if (method !== 'get' && ['coordinator', 'admin', 'resident'].includes(role))
+    if (method !== 'get' && ['coordinator', 'admin', 'resident', 'residentReceipt'].includes(role))
       parameters.push({
         name: 'X-CSRF-Token',
         in: 'header',
         required: true,
         schema: { type: 'string' },
       });
-    if (role === 'receipt')
+    if (role === 'receipt' || role === 'residentReceipt')
       parameters.push({
         name: 'X-Tracking-Token',
         in: 'header',
@@ -432,7 +432,7 @@ export function buildProductPaths() {
         '. All demo workflows are simulation; scoped permissions are enforced server-side.',
       parameters,
       security:
-        role === 'resident'
+        role === 'resident' || role === 'residentReceipt'
           ? [{ residentSession: [] }]
           : role === 'coordinator' || role === 'admin'
             ? [{ session: [] }]

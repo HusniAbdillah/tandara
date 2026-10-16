@@ -36,7 +36,10 @@ export function ReportFeedback({
             z.object({ ok: z.boolean() }),
             {
               method: 'POST',
-              headers: token ? { 'X-Tracking-Token': token } : { 'X-CSRF-Token': residentCsrf() },
+              headers: {
+                'X-CSRF-Token': residentCsrf(),
+                ...(token ? { 'X-Tracking-Token': token } : {}),
+              },
               body: {
                 action: clarify ? 'clarify' : action,
                 message,

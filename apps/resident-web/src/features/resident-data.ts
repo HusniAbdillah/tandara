@@ -73,9 +73,11 @@ export function useResidentData() {
   });
   const session = useQuery({
     queryKey: ['resident-session'],
+    networkMode: 'always',
     queryFn: () => request('/resident/auth/me', residentSessionSchema),
     retry: false,
     refetchInterval: online ? 30000 : false,
+    refetchOnWindowFocus: 'always',
   });
   const notifications = useQuery({
     queryKey: ['resident-personal-notifications', session.data?.user?.id],

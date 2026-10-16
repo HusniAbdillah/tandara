@@ -6,7 +6,7 @@ import { createUuid } from '@tandara/ui';
 import { residentDb } from './database.js';
 
 let running: Promise<void> | null = null;
-export async function enqueue(payload: CreateReport, residentId?: string) {
+export async function enqueue(payload: CreateReport, residentId: string) {
   const localId = createUuid();
   await residentDb.drafts.put({
     localId,
@@ -28,13 +28,14 @@ async function drain() {
   const drafts = await residentDb.drafts.toArray();
   if (!drafts.length || !navigator.onLine) return;
   const session = await request('/resident/auth/me', residentSessionSchema);
+  if (!session.user) return;
   for (const draft of drafts) {
     if (
       !navigator.onLine ||
       draft.state === 'draft' ||
       draft.state === 'submitted' ||
       draft.retryCount >= 5 ||
-      (draft.residentId && draft.residentId !== session.user?.id)
+      draft.residentId !== session.user.id
     )
       continue;
     await residentDb.drafts.update(draft.localId, {
@@ -64,6 +65,11 @@ async function drain() {
         await residentDb.drafts.delete(draft.localId);
       });
     } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        await residentDb.drafts.update(draft.localId, { state: 'queued' });
+        window.dispatchEvent(new Event('tandara:queue'));
+        return;
+      }
       await residentDb.drafts.update(draft.localId, {
         state: 'sync_failed',
         retryCount: draft.retryCount + 1,

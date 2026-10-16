@@ -4,6 +4,8 @@ import { before, after, test } from 'node:test';
 import { createApp } from '../../apps/api/dist/bootstrap.js';
 import { parseEnvironment } from '../../packages/backend/dist/index.js';
 import { createRequire } from 'node:module';
+import { createHash } from 'node:crypto';
+import { createLegacyReport } from './helpers/resident.mjs';
 const { Client } = createRequire(new URL('../../packages/database/package.json', import.meta.url))(
   'pg',
 );
@@ -49,6 +51,12 @@ function session(response, resident = true) {
   };
 }
 async function submit(owner, extra = {}) {
+  if (!owner)
+    return createLegacyReport(app, {
+      ...base,
+      ...extra,
+      trackingToken: crypto.randomUUID() + crypto.randomUUID(),
+    });
   const response = await call(
     'POST',
     '/reports',
@@ -61,6 +69,15 @@ async function submit(owner, extra = {}) {
 }
 before(async () => {
   assert.equal(process.env.APP_MODE, 'simulation');
+  const setup = new Client({ connectionString: process.env.DATABASE_URL });
+  await setup.connect();
+  try {
+    await setup.query('DELETE FROM rate_limits WHERE key=$1', [
+      createHash('sha256').update('resident-login-ip:127.0.0.1').digest('hex'),
+    ]);
+  } finally {
+    await setup.end();
+  }
   app = await createApp(
     parseEnvironment({
       ...process.env,
@@ -154,6 +171,72 @@ test('signed-in reports persist across devices and isolate accounts and Posko se
     { 'idempotency-key': crypto.randomUUID(), 'x-resident-id': a.user.id },
   );
   assert.equal(swapped.statusCode, 403);
+});
+
+test('all resident submissions require a valid resident session, CSRF and report ownership', async () => {
+  const expired = session(await call('POST', '/resident/auth/login', { phone, password: pass }));
+  const token = expired.cookie.match(/tandara_resident=([a-f0-9]{64})/)[1];
+  const db = new Client({ connectionString: process.env.DATABASE_URL });
+  await db.connect();
+  try {
+    await db.query(
+      "UPDATE resident_sessions SET expires_at=now()-interval '1 second' WHERE token_hash=$1",
+      [createHash('sha256').update(token).digest('hex')],
+    );
+    const paths = [
+      ['/reports', { ...base, trackingToken: crypto.randomUUID() + crypto.randomUUID() }],
+      [
+        `/reports/${report.id}/feedback`,
+        { action: 'clarify', revision: 1, message: 'Informasi tambahan sintetis.' },
+      ],
+      [`/reports/${report.id}/attachments`, { data: 'synthetic' }],
+      [`/reports/${report.id}/deletion-request`, undefined],
+      [
+        `/regions/${region}/training/${crypto.randomUUID()}/results`,
+        { answers: [], feedback: '', completionKey: crypto.randomUUID() },
+      ],
+    ];
+    for (const [path, body] of paths) {
+      const headers = {
+        'idempotency-key': crypto.randomUUID(),
+        'x-tracking-token': report.trackingToken,
+      };
+      for (const identity of [
+        undefined,
+        { cookie: 'tandara_resident=' + 'f'.repeat(64), csrf: a.csrf },
+        expired,
+        posko,
+      ]) {
+        const response = await call('POST', path, body, identity, headers);
+        assert.equal(response.statusCode, 401, path + ': ' + response.body);
+      }
+      assert.equal(
+        (await call('POST', path, body, a, { ...headers, 'x-csrf-token': 'wrong' })).statusCode,
+        403,
+      );
+      if (path.startsWith('/reports/')) {
+        assert.equal((await call('POST', path, body, b, headers)).statusCode, 404);
+      }
+    }
+    assert.equal(
+      (
+        await db.query('SELECT count(*)::int AS count FROM deletion_requests WHERE report_id=$1', [
+          report.id,
+        ])
+      ).rows[0].count,
+      0,
+    );
+    assert.equal(
+      (
+        await db.query('SELECT count(*)::int AS count FROM report_attachments WHERE report_id=$1', [
+          report.id,
+        ])
+      ).rows[0].count,
+      0,
+    );
+  } finally {
+    await db.end();
+  }
 });
 
 test('registered phone is staff-only, separate from optional contacts, and follows retention', async () => {

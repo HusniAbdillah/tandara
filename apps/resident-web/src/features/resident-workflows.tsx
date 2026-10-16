@@ -55,7 +55,7 @@ export function ReportForm({
 }: {
   region: Region;
   online: boolean;
-  residentId?: string | undefined;
+  residentId: string;
 }) {
   const queryClient = useQueryClient();
   const currentLocation = useLocation();
@@ -183,7 +183,7 @@ export function ReportForm({
           await request('/reports/' + receipt.id + '/attachments', z.object({ id: z.uuid() }), {
             method: 'POST',
             body: { data: encoded },
-            headers: { 'X-Tracking-Token': receipt.trackingToken },
+            headers: { 'X-Tracking-Token': receipt.trackingToken, 'X-CSRF-Token': residentCsrf() },
           });
         } catch {
           setError(
@@ -713,9 +713,12 @@ export function TrackingPage({ app }: { app: ResidentData }) {
     refetchInterval: navigator.onLine ? 30000 : false,
   });
   async function sync() {
+    if (!residentId) return;
     setSyncing(true);
     try {
-      await residentDb.drafts.toCollection().modify({ retryCount: 0 });
+      await residentDb.drafts
+        .filter((draft) => !draft.residentId || draft.residentId === residentId)
+        .modify({ retryCount: 0, residentId });
       await synchronize();
       await stored.refetch();
       setMessage('Antrean diperbarui.');
@@ -1033,6 +1036,7 @@ export function TrainingPage({ region }: { region: Region }) {
             feedback: '',
             completionKey: key,
           },
+          headers: { 'X-CSRF-Token': residentCsrf() },
         },
       );
       setResult(score);

@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { registerResident } from './helpers/resident.js';
 
-const warga = process.env['WARGA_URL'] ?? 'http://localhost:5173';
-const posko = process.env['POSKO_URL'] ?? 'http://localhost:5174';
+const warga = process.env['WARGA_URL'] ?? 'http://127.0.0.1:8080';
+const posko = process.env['POSKO_URL'] ?? 'http://127.0.0.1:8081';
 test.use({ serviceWorkers: 'block' });
 test('Warga → Admin → Koordinator → Admin → Warga, with responsive layout and preserved drafts', async ({
   browser,
@@ -30,6 +31,7 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
     await page.getByRole('button', { name: 'Masuk', exact: true }).click();
     await expect(page.getByRole('heading', { name: /Selamat datang/ })).toBeVisible();
   }
+  await registerResident(resident, warga);
   await resident.goto(warga + '/report');
   await resident
     .getByLabel('Apa yang Anda amati?')
@@ -57,7 +59,12 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
     );
     await page.locator('button[type=submit]').click();
     expect((await response).status()).toBe(201);
-    await expect(page.locator('textarea')).toHaveValue('');
+    await expect
+      .poll(async () => {
+        const field = page.locator('textarea');
+        return (await field.count()) === 0 || (await field.inputValue()) === '';
+      })
+      .toBe(true);
   }
   await admin.goto(posko + '/reports/' + receipt.id);
   await act(admin, 'verify', 'Lokasi dan informasi genangan telah diperiksa.');
@@ -106,7 +113,13 @@ test('Warga → Admin → Koordinator → Admin → Warga, with responsive layou
   await expect(admin.getByText('Data belum dapat dimuat.', { exact: false })).toHaveCount(0);
   // Erase only the report created by this test, using the normal privacy workflow.
   await resident.request.post(warga + `/api/v1/reports/${receipt.id}/deletion-request`, {
-    headers: { 'X-Tandara-Client': 'web', 'X-Tracking-Token': receipt.trackingToken },
+    headers: {
+      'X-Tandara-Client': 'web',
+      'X-Tracking-Token': receipt.trackingToken,
+      'X-CSRF-Token': (await residentContext.cookies()).find(
+        (c) => c.name === 'tandara_resident_csrf',
+      )!.value,
+    },
   });
   const csrf = (await adminContext.cookies()).find((c) => c.name === 'tandara_csrf')!.value;
   const operations = await (await admin.request.get(posko + '/api/v1/admin/operations')).json();

@@ -297,14 +297,14 @@ export class ProductController {
     return this.plans.publicData(region);
   }
   @Post('reports') async create(@Body() body: unknown, @Req() req: FastifyRequest) {
-    const resident = req.cookies['tandara_resident'] ? await this.resident(req) : undefined;
+    const resident = await this.resident(req);
     if (req.headers['x-resident-id'] && req.headers['x-resident-id'] !== resident?.id)
       throw new ForbiddenException('Akun telah berubah. Muat ulang lalu coba lagi.');
     return this.reports.create(
       body,
       String(req.headers['idempotency-key'] ?? ''),
       req.ip,
-      resident?.id,
+      resident.id,
     );
   }
   @Get('reports/:id/tracking') track(@Param('id') id: string, @Req() req: FastifyRequest) {
@@ -324,11 +324,12 @@ export class ProductController {
   ) {
     return updateWorkflow(this.reports, await this.user(req), id, body);
   }
-  @Post('reports/:id/feedback') feedback(
+  @Post('reports/:id/feedback') async feedback(
     @Param('id') id: string,
     @Req() req: FastifyRequest,
     @Body() body: unknown,
   ) {
+    await this.residents.report(await this.resident(req), id);
     return citizenFeedback(this.reports, id, String(req.headers['x-tracking-token'] ?? ''), body);
   }
   @Get('regions/:regionId/team') async reportTeam(
@@ -343,14 +344,19 @@ export class ProductController {
   ) {
     return reportAnalytics(this.reports, await this.user(req), region);
   }
-  @Post('reports/:id/deletion-request') erase(@Param('id') id: string, @Req() req: FastifyRequest) {
+  @Post('reports/:id/deletion-request') async erase(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    await this.residents.report(await this.resident(req), id);
     return this.reports.eraseRequest(id, String(req.headers['x-tracking-token'] ?? ''));
   }
-  @Post('reports/:id/attachments') upload(
+  @Post('reports/:id/attachments') async upload(
     @Param('id') id: string,
     @Req() req: FastifyRequest,
     @Body() input: unknown,
   ) {
+    await this.residents.report(await this.resident(req), id);
     return this.reports.upload(id, String(req.headers['x-tracking-token'] ?? ''), input);
   }
   @Get('regions/:regionId/reports') async inbox(
@@ -476,12 +482,13 @@ export class ProductController {
   ) {
     return this.plans.createTraining(await this.user(req), region, body);
   }
-  @Post('regions/:regionId/training/:id/results') completeTraining(
+  @Post('regions/:regionId/training/:id/results') async completeTraining(
     @Param('regionId') region: string,
     @Param('id') id: string,
     @Req() req: FastifyRequest,
     @Body() body: unknown,
   ) {
+    await this.resident(req);
     return this.plans.completeTraining(region, id, body, req.ip);
   }
   @Get('regions/:regionId/sources') async sources(
