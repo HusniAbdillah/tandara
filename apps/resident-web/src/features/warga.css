@@ -531,6 +531,31 @@ body:has(.warga-app) {
 .w-map-pin.unknown {
   background: #6b7280;
 }
+.w-header-actions .w-icon-button {
+  position: relative;
+}
+.w-notification-count {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: #1f6f7a;
+  color: white;
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+}
+.w-personal-notifications {
+  margin: 24px 0;
+}
+.w-personal-notifications .is-unread {
+  border-left: 3px solid #1f6f7a;
+  background: #f0f6f6;
+  border-radius: 12px;
+}
 .w-map-pin.pin-earthquake {
   background: white;
   border: 1px solid var(--w-teal);

@@ -181,6 +181,7 @@ export const receiptSchema = z.object({
   id: z.uuid(),
   trackingToken: z.string(),
   state: reportReviewStateSchema,
+  residentId: z.uuid().optional(),
 });
 export const trackingSchema = z.object({
   workflow: workflowSchema.optional(),

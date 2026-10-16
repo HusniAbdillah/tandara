@@ -38,6 +38,11 @@ import {
   aiEvaluationSchema,
   observationsSchema,
   residentSessionSchema,
+  residentReportPageSchema,
+  residentReportSchema,
+  residentClaimSchema,
+  residentClaimResultSchema,
+  residentNotificationsSchema,
 } from '@tandara/contracts';
 const ok = z.object({ ok: z.boolean() });
 const id = z.object({ id: z.uuid() });
@@ -57,6 +62,19 @@ export const productRoutes: Route[] = [
   ['/regions/{regionId}/report-analytics', 'get', 'coordinator', reportAnalyticsSchema],
   ['/regions/{regionId}/observations', 'get', 'public', observationsSchema],
   ['/resident/auth/me', 'get', 'public', residentSessionSchema],
+  ['/resident/reports', 'get', 'resident', residentReportPageSchema],
+  ['/resident/reports/{id}', 'get', 'resident', residentReportSchema],
+  ['/resident/reports/claim', 'post', 'resident', residentClaimResultSchema, residentClaimSchema],
+  ['/resident/reports/{id}/tracking', 'get', 'resident', trackingSchema],
+  ['/resident/reports/{id}/deletion-request', 'post', 'resident', ok],
+  ['/resident/notifications', 'get', 'resident', residentNotificationsSchema],
+  [
+    '/resident/notifications/read',
+    'post',
+    'resident',
+    ok,
+    z.strictObject({ id: z.uuid().optional() }),
+  ],
   [
     '/resident/auth/login',
     'post',
@@ -387,6 +405,12 @@ export function buildProductPaths() {
         in: 'header',
         required: true,
         schema: { type: 'string', format: 'uuid' },
+      });
+    if (route === '/resident/reports')
+      parameters.push({
+        name: 'page',
+        in: 'query',
+        schema: { type: 'integer', minimum: 1, maximum: 10000 },
       });
     if (route === '/regions/{regionId}/reports')
       for (const [name, type] of [

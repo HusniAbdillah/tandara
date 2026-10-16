@@ -91,7 +91,7 @@ jobs:
         run: pnpm api:openapi && git diff --exit-code -- docs/api/openapi.json
       - name: Install Chromium for UI checks
         run: pnpm exec playwright install --with-deps chromium
-      - name: Verify Chalk desktop and mobile flows
+      - name: Verify Warga flows and Posko observation integration
         run: pnpm test:e2e:warga
       - name: Upload Chalk browser failure evidence
         uses: actions/upload-artifact@v4

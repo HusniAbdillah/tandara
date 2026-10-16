@@ -11,6 +11,7 @@ export interface SavedPlan {
 }
 
 export interface ReportDraft {
+  residentId?: string | undefined;
   localId: string;
   idempotencyKey: string;
   payload: CreateReport;
@@ -22,7 +23,8 @@ export interface ReportDraft {
 
 export interface Receipt {
   id: string;
-  trackingToken: string;
+  trackingToken?: string;
+  residentId?: string | undefined;
   createdAt: string;
   state: string;
   description?: string;

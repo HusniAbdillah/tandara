@@ -137,6 +137,10 @@ export function ProfilePage({ app }: { app: ResidentData }) {
                   method: 'POST',
                   headers: { 'X-CSRF-Token': residentCsrf() },
                 });
+                client.removeQueries({ queryKey: ['resident-account-reports'] });
+                client.removeQueries({ queryKey: ['resident-account-report'] });
+                client.removeQueries({ queryKey: ['resident-personal-notifications'] });
+                client.removeQueries({ queryKey: ['receipt'] });
                 client.setQueryData(['resident-session'], { user: null });
                 navigate('/login');
               } catch (err) {

@@ -443,6 +443,168 @@ test('phone auth screens are centered, accessible and route into the app', async
   await expect(page).toHaveURL('/area');
 });
 
+test('account history opens on a fresh device and personal notifications retain read state', async ({
+  page,
+}) => {
+  await fixtures(page);
+  const user = {
+    id: '60000000-0000-4000-8000-000000000001',
+    phone: '+6281234567890',
+    name: 'Warga',
+  };
+  const summary = {
+    id: reportId,
+    regionId,
+    state: 'under_review',
+    description: 'Laporan akun dari perangkat lain.',
+    category: 'road_flooding',
+    landmark: null,
+    followUp: false,
+    createdAt: '2026-10-16T00:00:00Z',
+  };
+  let loggedIn = true,
+    read = false;
+  await page.route('**/api/v1/resident/**', async (route) => {
+    const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
+    if (path === '/resident/auth/me')
+      return route.fulfill({ json: { user: loggedIn ? user : null } });
+    if (path === '/resident/auth/logout') {
+      loggedIn = false;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (path === '/resident/notifications')
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              id: '70000000-0000-4000-8000-000000000001',
+              reportId,
+              action: 'under_review',
+              createdAt: '2026-10-16T00:00:00Z',
+              readAt: read ? '2026-10-16T01:00:00Z' : null,
+              followUp: false,
+            },
+          ],
+          unreadCount: read ? 0 : 1,
+        },
+      });
+    if (path === '/resident/notifications/read') {
+      read = true;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (path === '/resident/reports')
+      return route.fulfill({ json: { items: [summary], page: 1, total: 1 } });
+    if (path === '/resident/reports/' + reportId) return route.fulfill({ json: summary });
+    if (path.endsWith('/tracking'))
+      return route.fulfill({
+        json: {
+          id: reportId,
+          state: 'under_review',
+          createdAt: summary.createdAt,
+          updatedAt: summary.createdAt,
+          history: [],
+          assistanceState: null,
+          erased: false,
+        },
+      });
+    return route.fallback();
+  });
+  await page.goto('/notifications');
+  await expect(page.locator('.w-notification-count').first()).toHaveText('1');
+  await page.getByRole('button', { name: /Posko sedang meninjau laporanmu/ }).click();
+  await expect(page).toHaveURL('/tracking?id=' + reportId);
+  await expect(page.locator('.w-report-list').getByText(summary.description)).toBeVisible();
+  expect(read).toBe(true);
+  await expect(page.locator('.w-notification-count')).toHaveCount(0);
+  await page.goto('/tracking?id=99999999-9999-4999-8999-999999999999');
+  await expect(
+    page.getByRole('heading', { name: 'Laporan tidak ditemukan', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.w-status-detail')).toHaveCount(0);
+  await page.goto('/profile');
+  await page.getByRole('button', { name: 'Keluar', exact: true }).click();
+  await page.goto('/tracking');
+  await expect(page.getByText(summary.description)).toHaveCount(0);
+});
+
+test('another account cannot see or synchronize locally queued reports owned by someone else', async ({
+  page,
+}) => {
+  const payloads = await fixtures(page);
+  let sessionCalls = 0;
+  const owner = '60000000-0000-4000-8000-000000000001';
+  await page.route('**/api/v1/resident/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) {
+      sessionCalls++;
+      return route.fulfill({
+        json: {
+          user: {
+            id: '60000000-0000-4000-8000-000000000002',
+            phone: '+6281399999999',
+            name: 'Warga lain',
+          },
+        },
+      });
+    }
+    if (path.endsWith('/notifications'))
+      return route.fulfill({ json: { items: [], unreadCount: 0 } });
+    if (path.endsWith('/reports')) return route.fulfill({ json: { items: [], page: 1, total: 0 } });
+    return route.fallback();
+  });
+  await page.goto('/');
+  await page.evaluate(
+    async ({ owner, regionId, reportId }) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const r = indexedDB.open('tandara-resident');
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(['receipts', 'drafts'], 'readwrite');
+        tx.objectStore('receipts').put({
+          id: reportId,
+          trackingToken: 'a'.repeat(72),
+          residentId: owner,
+          createdAt: new Date().toISOString(),
+          state: 'submitted',
+          description: 'PRIVATE_OTHER_ACCOUNT_REPORT',
+        });
+        tx.objectStore('drafts').put({
+          localId: reportId,
+          idempotencyKey: reportId,
+          residentId: owner,
+          state: 'queued',
+          retryCount: 0,
+          updatedAt: new Date().toISOString(),
+          payload: {
+            regionId,
+            category: 'road_flooding',
+            description: 'PRIVATE_OTHER_ACCOUNT_QUEUED_REPORT',
+            observationTime: null,
+            followUpRequested: false,
+            contactPermission: false,
+            privacyConsent: true,
+            trackingToken: 'b'.repeat(72),
+          },
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+    },
+    { owner, regionId, reportId },
+  );
+  sessionCalls = 0;
+  await page.goto('/tracking');
+  await expect.poll(() => sessionCalls).toBeGreaterThanOrEqual(2);
+  await expect(page.getByText('PRIVATE_OTHER_ACCOUNT_REPORT', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_OTHER_ACCOUNT_QUEUED_REPORT', { exact: true })).toHaveCount(
+    0,
+  );
+  expect(payloads).toHaveLength(0);
+});
+
 test('saved plan survives an offline reload and queued report synchronizes once', async ({
   page,
   context,

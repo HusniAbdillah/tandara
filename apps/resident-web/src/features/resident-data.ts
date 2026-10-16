@@ -6,6 +6,7 @@ import {
   regionSchema,
   planSchema,
   residentSessionSchema,
+  residentNotificationsSchema,
 } from '@tandara/contracts';
 import type { Plan, PublicData } from '@tandara/contracts';
 import { z } from 'zod';
@@ -74,6 +75,14 @@ export function useResidentData() {
     queryKey: ['resident-session'],
     queryFn: () => request('/resident/auth/me', residentSessionSchema),
     retry: false,
+    refetchInterval: online ? 30000 : false,
+  });
+  const notifications = useQuery({
+    queryKey: ['resident-personal-notifications', session.data?.user?.id],
+    enabled: !!session.data?.user && online,
+    queryFn: () => request('/resident/notifications', residentNotificationsSchema),
+    refetchInterval: online ? 15000 : false,
+    retry: false,
   });
   useEffect(() => {
     const sync = () => {
@@ -86,7 +95,7 @@ export function useResidentData() {
       window.removeEventListener('online', sync);
       clearInterval(timer);
     };
-  }, []);
+  }, [session.data?.user?.id]);
   function choose(id: string) {
     localStorage.setItem('tandara:region', id);
     setRegionId(id);
@@ -98,6 +107,7 @@ export function useResidentData() {
     choose,
     data,
     session,
+    notifications,
     region: data.data?.region ?? regions.data?.find((r) => r.id === activeRegion),
     plan: data.data?.plans[0],
   };
@@ -139,11 +149,4 @@ export function useChecklist(plan: Plan | undefined) {
     toggle,
   };
 }
-export function residentCsrf() {
-  return (
-    document.cookie
-      .split('; ')
-      .find((c) => c.startsWith('tandara_resident_csrf='))
-      ?.split('=')[1] ?? ''
-  );
-}
+export { residentCsrf } from '../account/session.js';

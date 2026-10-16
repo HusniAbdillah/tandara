@@ -10,6 +10,7 @@ import { PreparednessPage } from './resident-preparedness.js';
 import { ReportForm, TrackingPage, TrainingPage } from './resident-workflows.js';
 import { designAssets } from './design-assets.js';
 import './warga.css';
+import { PersonalNotifications } from './resident-notifications.js';
 
 const destinations: { to: string; label: string; icon: WargaIconName; matches: string[] }[] = [
   { to: '/', label: 'Beranda', icon: 'home', matches: ['/'] },
@@ -56,7 +57,7 @@ export function ResidentApp() {
   if (path === '/area') content = <AreaPage app={app} />;
   else if (path === '/profile') content = <ProfilePage app={app} />;
   else if (path === '/help') content = <PrivacyPage app={app} />;
-  else if (path === '/tracking') content = <TrackingPage />;
+  else if (path === '/tracking') content = <TrackingPage app={app} />;
   else if (mapPage) content = <MapPage app={app} />;
   else if ((app.regions.isError || app.data.isError) && !app.region)
     content = (
@@ -82,7 +83,14 @@ export function ResidentApp() {
       </div>
     );
   else if (path === '/report' || path === '/support')
-    content = <ReportForm key={app.activeRegion + path} region={app.region} online={app.online} />;
+    content = (
+      <ReportForm
+        key={app.activeRegion + path}
+        region={app.region}
+        online={app.online}
+        residentId={app.session.data?.user?.id}
+      />
+    );
   else if (path === '/training')
     content = <TrainingPage key={app.activeRegion} region={app.region} />;
   else if (['/guide', '/plan', '/checklist', '/downloads'].includes(path))
@@ -111,6 +119,11 @@ export function ResidentApp() {
     <div className="w-header-actions">
       <Link className="w-icon-button" to="/notifications" aria-label="Notifikasi">
         <WIcon name="bell" />
+        {!!app.notifications.data?.unreadCount && app.session.data?.user && (
+          <span className="w-notification-count">
+            {app.notifications.data.unreadCount > 99 ? '99+' : app.notifications.data.unreadCount}
+          </span>
+        )}
       </Link>
       <Link className="w-icon-button" to="/profile" aria-label="Profil">
         <WAvatar />
@@ -350,7 +363,9 @@ function UpdatesPage({ app }: { app: ResidentData }) {
     app.data.data?.information.filter((item) => !selected || item.id === selected) ?? [];
   return (
     <div className="w-narrow">
-      <h1>Kabar sekitar</h1>
+      <h1>Notifikasi</h1>
+      {app.session.data?.user && <PersonalNotifications app={app} />}
+      <h2>Kabar sekitar</h2>
       <div className="w-stack">
         {items.map((item) => (
           <article className="w-card w-stack" key={item.id}>

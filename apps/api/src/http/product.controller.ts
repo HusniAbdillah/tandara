@@ -1,4 +1,16 @@
-import { Body, Controller, Get, Inject, Param, Post, Put, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  ForbiddenException,
+} from '@nestjs/common';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import {
   workflowDetail,
@@ -33,6 +45,51 @@ export class ProductController {
   }
   @Get('resident/auth/me') async residentMe(@Req() req: FastifyRequest) {
     return { user: await this.residents.session(req.cookies['tandara_resident']) };
+  }
+  resident(req: FastifyRequest) {
+    return this.residents.authenticate(
+      req.cookies['tandara_resident'],
+      ['GET', 'HEAD'].includes(req.method) ? undefined : String(req.headers['x-csrf-token'] ?? ''),
+    );
+  }
+  @Get('resident/reports') async residentReports(
+    @Req() req: FastifyRequest,
+    @Query('page') page: string | undefined,
+  ) {
+    return this.residents.reports(await this.resident(req), page);
+  }
+  @Post('resident/reports/claim') async claimReports(
+    @Req() req: FastifyRequest,
+    @Body() body: unknown,
+  ) {
+    return this.residents.claim(await this.resident(req), body);
+  }
+  @Get('resident/reports/:id/tracking') async residentTrack(
+    @Req() req: FastifyRequest,
+    @Param('id') id: string,
+  ) {
+    return this.reports.track(id, undefined, (await this.resident(req)).id);
+  }
+  @Get('resident/reports/:id') async residentReport(
+    @Req() req: FastifyRequest,
+    @Param('id') id: string,
+  ) {
+    return this.residents.report(await this.resident(req), id);
+  }
+  @Post('resident/reports/:id/deletion-request') async residentErase(
+    @Req() req: FastifyRequest,
+    @Param('id') id: string,
+  ) {
+    return this.reports.eraseRequest(id, undefined, (await this.resident(req)).id);
+  }
+  @Get('resident/notifications') async residentNotifications(@Req() req: FastifyRequest) {
+    return this.residents.notifications(await this.resident(req));
+  }
+  @Post('resident/notifications/read') async readResidentNotifications(
+    @Req() req: FastifyRequest,
+    @Body() body: unknown,
+  ) {
+    return this.residents.readNotifications(await this.resident(req), body);
   }
   @Post('resident/auth/:action') async residentAuth(
     @Param('action') action: string,
@@ -232,8 +289,16 @@ export class ProductController {
   @Get('regions/:regionId/public') publicData(@Param('regionId') region: string) {
     return this.plans.publicData(region);
   }
-  @Post('reports') create(@Body() body: unknown, @Req() req: FastifyRequest) {
-    return this.reports.create(body, String(req.headers['idempotency-key'] ?? ''), req.ip);
+  @Post('reports') async create(@Body() body: unknown, @Req() req: FastifyRequest) {
+    const resident = req.cookies['tandara_resident'] ? await this.resident(req) : undefined;
+    if (req.headers['x-resident-id'] && req.headers['x-resident-id'] !== resident?.id)
+      throw new ForbiddenException('Akun telah berubah. Muat ulang lalu coba lagi.');
+    return this.reports.create(
+      body,
+      String(req.headers['idempotency-key'] ?? ''),
+      req.ip,
+      resident?.id,
+    );
   }
   @Get('reports/:id/tracking') track(@Param('id') id: string, @Req() req: FastifyRequest) {
     return this.reports.track(id, String(req.headers['x-tracking-token'] ?? ''));

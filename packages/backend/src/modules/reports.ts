@@ -33,7 +33,7 @@ export class ReportsService {
   get db() {
     return this.identity.db;
   }
-  async create(input: unknown, key: string | undefined, ip: string) {
+  async create(input: unknown, key: string | undefined, ip: string, residentId?: string) {
     const data = parse(createReportSchema, input);
     if (data.privacyConsent !== true)
       throw new BadRequestException('Persetujuan penyimpanan laporan diperlukan.');
@@ -54,7 +54,8 @@ export class ReportsService {
           payload_hash: string;
           tracking_hash: string;
           state: ReportReviewState;
-        }>`SELECT id,payload_hash,tracking_hash,state FROM reports WHERE idempotency_key=${key!}::uuid`.execute(
+          resident_id: string | null;
+        }>`SELECT id,payload_hash,tracking_hash,state,resident_id FROM reports WHERE idempotency_key=${key!}::uuid`.execute(
           tx,
         )
       ).rows[0];
@@ -65,7 +66,14 @@ export class ReportsService {
           existing.tracking_hash !== hash(token)
         )
           conflict('Kunci sinkronisasi telah digunakan. Isi laporan harus tetap sama.');
-        return { id: existing.id, trackingToken: token, state: existing.state };
+        if (residentId && existing.resident_id && existing.resident_id !== residentId)
+          conflict('Laporan terhubung ke akun lain.');
+        return {
+          id: existing.id,
+          trackingToken: token,
+          state: existing.state,
+          ...(residentId && existing.resident_id === residentId ? { residentId } : {}),
+        };
       }
       await rateLimit(tx, `report:${ip}`, 20, 3600);
       const region = found(
@@ -100,7 +108,7 @@ export class ReportsService {
           await sql<{
             id: string;
             state: ReportReviewState;
-          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash,simulation) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash},${process.env['APP_MODE'] !== 'production'}) RETURNING id,state`.execute(
+          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash,simulation,resident_id) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash},${process.env['APP_MODE'] !== 'production'},${residentId ?? null}::uuid) RETURNING id,state`.execute(
             tx,
           )
         ).rows[0],
@@ -125,10 +133,15 @@ export class ReportsService {
       await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,${'Laporan warga baru menunggu verifikasi.'} FROM users u LEFT JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE (m.region_id=${data.regionId}::uuid OR u.role='admin') AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
         tx,
       );
-      return { id: row.id, trackingToken: token, state: row.state };
+      return {
+        id: row.id,
+        trackingToken: token,
+        state: row.state,
+        ...(residentId ? { residentId } : {}),
+      };
     });
   }
-  async track(id: string, token: string | undefined) {
+  async track(id: string, token: string | undefined, residentId?: string) {
     parse(z.uuid(), id);
     const r = found(
       (
@@ -139,7 +152,7 @@ export class ReportsService {
           updatedAt: string;
           assistanceState: string | null;
           erased: boolean;
-        }>`SELECT r.id,r.state,r.erased,r.created_at::text AS "createdAt",r.updated_at::text AS "updatedAt",a.state AS "assistanceState" FROM reports r LEFT JOIN assistance_requests a ON a.report_id=r.id WHERE r.id=${id}::uuid AND r.tracking_hash=${hash(token ?? '')}`.execute(
+        }>`SELECT r.id,r.state,r.erased,r.created_at::text AS "createdAt",r.updated_at::text AS "updatedAt",a.state AS "assistanceState" FROM reports r LEFT JOIN assistance_requests a ON a.report_id=r.id WHERE r.id=${id}::uuid AND (r.tracking_hash=${hash(token ?? '')} OR (r.resident_id=${residentId ?? null}::uuid AND NOT r.erased))`.execute(
           this.db,
         )
       ).rows[0],
@@ -153,8 +166,8 @@ export class ReportsService {
     const detail = await workflowDetail(this, id, true);
     return { ...r, history, workflow: detail.workflow, updates: r.erased ? [] : detail.events };
   }
-  async eraseRequest(id: string, token: string | undefined) {
-    await this.track(id, token);
+  async eraseRequest(id: string, token: string | undefined, residentId?: string) {
+    await this.track(id, token, residentId);
     await sql`INSERT INTO deletion_requests(report_id,region_id) SELECT id,region_id FROM reports WHERE id=${id}::uuid ON CONFLICT(report_id) DO NOTHING`.execute(
       this.db,
     );

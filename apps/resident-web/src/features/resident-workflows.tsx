@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import {
@@ -10,11 +10,16 @@ import {
   receiptSchema,
   trackingSchema,
   trainingSchema,
+  residentReportPageSchema,
+  residentReportSchema,
+  residentClaimResultSchema,
 } from '@tandara/contracts';
 import type { Region } from '@tandara/contracts';
 import { createUuid, formatTime } from '@tandara/ui';
 import { residentDb } from '../offline/database.js';
 import type { Receipt } from '../offline/database.js';
+import type { ResidentData } from './resident-data.js';
+import { residentCsrf } from '../account/session.js';
 import { enqueue, synchronize } from '../offline/sync.js';
 import { WButton, WEmpty, WError, WIcon, WLink, WProgress, WRow } from './chalk-ui.js';
 import { useDesktop } from './resident-data.js';
@@ -43,7 +48,15 @@ export const stateNames: Record<string, string> = {
   draft: 'Draf di perangkat',
 };
 const ok = z.object({ ok: z.boolean() });
-export function ReportForm({ region, online }: { region: Region; online: boolean }) {
+export function ReportForm({
+  region,
+  online,
+  residentId,
+}: {
+  region: Region;
+  online: boolean;
+  residentId?: string | undefined;
+}) {
   const queryClient = useQueryClient();
   const currentLocation = useLocation();
   const parameters = new URLSearchParams(currentLocation.search);
@@ -79,6 +92,7 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
     key: string;
     payload: z.infer<typeof createReportSchema>;
     durable: boolean;
+    residentId?: string | undefined;
   } | null>(null);
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -110,7 +124,7 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
         const offlinePayload = { ...payload.data, contactPermission: false };
         delete offlinePayload.contactDetails;
         delete offlinePayload.location;
-        await enqueue(offlinePayload);
+        await enqueue(offlinePayload, residentId);
         await queryClient.invalidateQueries({ queryKey: ['resident-receipts'] });
         navigate('/tracking', { state: { queued: true } });
         return;
@@ -120,8 +134,9 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
           key: createUuid(),
           payload: payload.data,
           durable: !payload.data.contactDetails && !payload.data.location,
+          residentId,
         };
-      const { key, payload: original, durable } = attempt.current;
+      const { key, payload: original, durable, residentId: attemptResidentId } = attempt.current;
       setQueued(durable);
       // Persist before network so a timeout or browser restart can replay exactly this payload.
       if (durable)
@@ -132,11 +147,16 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
           state: 'queued',
           retryCount: 0,
           updatedAt: new Date().toISOString(),
+          residentId: attemptResidentId,
         });
       const receipt = await request('/reports', receiptSchema, {
         method: 'POST',
         body: original,
-        headers: { 'Idempotency-Key': key },
+        headers: {
+          'Idempotency-Key': key,
+          'X-CSRF-Token': residentCsrf(),
+          ...(attemptResidentId ? { 'X-Resident-Id': attemptResidentId } : {}),
+        },
       });
       await residentDb.transaction('rw', residentDb.receipts, residentDb.drafts, async () => {
         await residentDb.receipts.put({
@@ -607,7 +627,18 @@ export function ReportForm({ region, online }: { region: Region; online: boolean
   );
 }
 
-export function TrackingPage() {
+export function TrackingPage({ app }: { app: ResidentData }) {
+  const client = useQueryClient();
+  const residentId = app.session.data?.user?.id;
+  const accountReports = useInfiniteQuery({
+    queryKey: ['resident-account-reports', residentId],
+    enabled: !!residentId && app.online,
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) =>
+      request('/resident/reports?page=' + pageParam, residentReportPageSchema),
+    getNextPageParam: (last) => (last.page * 50 < last.total ? last.page + 1 : undefined),
+    refetchInterval: app.online ? 30000 : false,
+  });
   const desktop = useDesktop(),
     location = useLocation(),
     navigate = useNavigate();
@@ -632,18 +663,52 @@ export function TrackingPage() {
     window.addEventListener('tandara:queue', reload);
     return () => window.removeEventListener('tandara:queue', reload);
   }, [reloadStored]);
-  const receipts = stored.data?.receipts ?? [],
-    drafts = stored.data?.drafts ?? [];
-  const selected =
-    receipts.find((r) => r.id === selectedId) ??
-    (desktop || location.state?.submitted ? receipts[0] : undefined);
+  const localReceipts = (stored.data?.receipts ?? []).filter(
+    (receipt) => !receipt.residentId || receipt.residentId === residentId,
+  );
+  const asReceipt = (record: z.infer<typeof residentReportSchema>): Receipt => ({
+    ...record,
+    landmark: record.landmark ?? undefined,
+    residentId,
+  });
+  const requested = useQuery({
+    queryKey: ['resident-account-report', residentId, selectedId],
+    enabled: !!residentId && !!selectedId && app.online,
+    queryFn: () =>
+      request('/resident/reports/' + encodeURIComponent(selectedId ?? ''), residentReportSchema),
+    retry: false,
+  });
+  const receiptMap = new Map(localReceipts.map((r) => [r.id, r]));
+  if (residentId)
+    for (const record of [
+      ...(accountReports.data?.pages.flatMap((page) => page.items) ?? []),
+      ...(requested.data ? [requested.data] : []),
+    ])
+      receiptMap.set(record.id, { ...receiptMap.get(record.id), ...asReceipt(record) });
+  const receipts = [...receiptMap.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const drafts = (stored.data?.drafts ?? []).filter(
+    (draft) => !draft.residentId || draft.residentId === residentId,
+  );
+  const selected = selectedId
+    ? receipts.find((r) => r.id === selectedId)
+    : desktop || location.state?.submitted
+      ? receipts[0]
+      : undefined;
   const tracking = useQuery({
-    queryKey: ['receipt', selected?.id],
+    queryKey: ['receipt', selected?.id, residentId],
     enabled: !!selected,
     queryFn: () =>
-      request('/reports/' + selected!.id + '/tracking', trackingSchema, {
-        headers: { 'X-Tracking-Token': selected!.trackingToken },
-      }),
+      request(
+        (!selected!.trackingToken && selected!.residentId === residentId && residentId
+          ? '/resident/reports/'
+          : '/reports/') +
+          selected!.id +
+          '/tracking',
+        trackingSchema,
+        {
+          headers: selected!.trackingToken ? { 'X-Tracking-Token': selected!.trackingToken } : {},
+        },
+      ),
     refetchInterval: navigator.onLine ? 30000 : false,
   });
   async function sync() {
@@ -780,6 +845,47 @@ export function TrackingPage() {
       )}
       {message && <p role="status">{message}</p>}
       {stored.isError && <WError>Laporan di perangkat belum dapat dibaca.</WError>}
+      {selectedId && !selected && (!residentId || requested.isError) && (
+        <WEmpty title="Laporan tidak ditemukan" />
+      )}
+      {residentId && accountReports.isPending && <p role="status">Memuat laporan akun…</p>}
+      {residentId && accountReports.isError && <WError>Laporan akun belum dapat dimuat.</WError>}
+      {residentId && localReceipts.some((r) => !r.residentId && r.trackingToken) && (
+        <WButton
+          secondary
+          disabled={syncing}
+          onClick={async () => {
+            setSyncing(true);
+            try {
+              const old = localReceipts
+                .filter((r) => !r.residentId && r.trackingToken)
+                .slice(0, 100);
+              const result = await request('/resident/reports/claim', residentClaimResultSchema, {
+                method: 'POST',
+                body: { reports: old.map((r) => ({ id: r.id, trackingToken: r.trackingToken })) },
+                headers: { 'X-CSRF-Token': residentCsrf() },
+              });
+              await residentDb.transaction('rw', residentDb.receipts, async () => {
+                for (const id of result.claimedIds)
+                  await residentDb.receipts.update(id, { residentId });
+              });
+              await stored.refetch();
+              await client.invalidateQueries({ queryKey: ['resident-account-reports'] });
+              setMessage(
+                result.claimedIds.length
+                  ? 'Laporan tersambung ke akunmu.'
+                  : 'Laporan tidak dapat dihubungkan ke akun ini.',
+              );
+            } catch (err) {
+              setMessage(err instanceof Error ? err.message : 'Laporan belum tersambung.');
+            } finally {
+              setSyncing(false);
+            }
+          }}
+        >
+          Hubungkan laporan di perangkat ini ke akun
+        </WButton>
+      )}
       {drafts.length > 0 && (
         <section className="w-card w-stack">
           <div className="w-page-heading">
@@ -821,15 +927,27 @@ export function TrackingPage() {
               onClick={() => navigate('/tracking?id=' + receipt.id)}
             />
           ))}
+          {accountReports.hasNextPage && (
+            <WButton
+              secondary
+              disabled={accountReports.isFetchingNextPage}
+              onClick={() => void accountReports.fetchNextPage()}
+            >
+              Lihat laporan lainnya
+            </WButton>
+          )}
         </div>
         {detail}
       </div>
-      {!stored.isPending && !receipts.length && !drafts.length && (
-        <WEmpty title="Belum ada laporan">
-          <p>Laporan dan permintaan bantuanmu muncul di sini.</p>
-          <WLink to="/report">Buat laporan</WLink>
-        </WEmpty>
-      )}
+      {!stored.isPending &&
+        (!residentId || !accountReports.isPending) &&
+        !receipts.length &&
+        !drafts.length && (
+          <WEmpty title="Belum ada laporan">
+            <p>Laporan dan permintaan bantuanmu muncul di sini.</p>
+            <WLink to="/report">Buat laporan</WLink>
+          </WEmpty>
+        )}
       {confirm && (
         <div className="w-dialog-backdrop">
           <section
@@ -846,10 +964,23 @@ export function TrackingPage() {
                 if (!selected) return;
                 setDeleting(true);
                 try {
-                  await request('/reports/' + selected.id + '/deletion-request', ok, {
-                    method: 'POST',
-                    headers: { 'X-Tracking-Token': selected.trackingToken },
-                  });
+                  await request(
+                    (!selected.trackingToken && selected.residentId === residentId && residentId
+                      ? '/resident/reports/'
+                      : '/reports/') +
+                      selected.id +
+                      '/deletion-request',
+                    ok,
+                    {
+                      method: 'POST',
+                      headers: {
+                        'X-CSRF-Token': residentCsrf(),
+                        ...(selected.trackingToken
+                          ? { 'X-Tracking-Token': selected.trackingToken }
+                          : {}),
+                      },
+                    },
+                  );
                   setMessage('Permintaan penghapusan diterima.');
                   setConfirm(false);
                 } catch (err) {

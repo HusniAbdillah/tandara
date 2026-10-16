@@ -9,6 +9,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { categories, statuses } from './reports-ui.js';
 import { basemapStyle, loadBasemap } from './basemap.js';
+import { ObservationPanel } from './observation-panel.js';
 
 export function SituationMap({ region, user }: { region: Region; user: User }) {
   const element = useRef<HTMLDivElement>(null);
@@ -375,6 +376,7 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
         Tile peta diminta langsung ke penyedia sesuai tampilan wilayah. Teks laporan, kontak dan
         token akses tidak dikirim ke penyedia. Peta jalan bukan panduan jalur aman.
       </p>
+      <ObservationPanel regionId={region.id} mapRef={mapRef} ready={ready} />
       {coverage.data ? (
         <>
           <Notice tone="warning">

@@ -1,14 +1,16 @@
 import { request, ApiError } from '@tandara/api-client';
-import { receiptSchema } from '@tandara/contracts';
+import { receiptSchema, residentSessionSchema } from '@tandara/contracts';
+import { residentCsrf } from '../account/session.js';
 import type { CreateReport } from '@tandara/contracts';
 import { createUuid } from '@tandara/ui';
 import { residentDb } from './database.js';
 
 let running: Promise<void> | null = null;
-export async function enqueue(payload: CreateReport) {
+export async function enqueue(payload: CreateReport, residentId?: string) {
   const localId = createUuid();
   await residentDb.drafts.put({
     localId,
+    residentId,
     idempotencyKey: localId,
     payload: { ...payload, trackingToken: createUuid() + createUuid() },
     state: 'queued',
@@ -24,12 +26,15 @@ async function drain() {
     .below(new Date(Date.now() - 7 * 86400000).toISOString())
     .delete();
   const drafts = await residentDb.drafts.toArray();
+  if (!drafts.length || !navigator.onLine) return;
+  const session = await request('/resident/auth/me', residentSessionSchema);
   for (const draft of drafts) {
     if (
       !navigator.onLine ||
       draft.state === 'draft' ||
       draft.state === 'submitted' ||
-      draft.retryCount >= 5
+      draft.retryCount >= 5 ||
+      (draft.residentId && draft.residentId !== session.user?.id)
     )
       continue;
     await residentDb.drafts.update(draft.localId, {
@@ -41,7 +46,11 @@ async function drain() {
       const receipt = await request('/reports', receiptSchema, {
         method: 'POST',
         body: draft.payload,
-        headers: { 'Idempotency-Key': draft.idempotencyKey },
+        headers: {
+          'Idempotency-Key': draft.idempotencyKey,
+          'X-CSRF-Token': residentCsrf(),
+          ...(draft.residentId ? { 'X-Resident-Id': draft.residentId } : {}),
+        },
       });
       await residentDb.transaction('rw', residentDb.receipts, residentDb.drafts, async () => {
         await residentDb.receipts.put({
