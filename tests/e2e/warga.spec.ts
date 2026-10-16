@@ -460,7 +460,7 @@ test('support contact switch omits private contact when disabled', async ({ page
 test('guide checklist, downloaded plan and quiz remain connected', async ({ page }) => {
   await fixtures(page);
   await page.goto('/guide');
-  await page.getByRole('checkbox').first().check();
+  await page.getByRole('checkbox').first().check({ force: true });
   await page.reload();
   await expect(page.getByRole('checkbox').first()).toBeChecked();
   await page.getByRole('button', { name: 'Unduh rencana' }).click();
@@ -531,6 +531,7 @@ test('signed-out routes redirect to login and registration returns to the reques
   await expect(page).toHaveURL(
     '/register?next=' + encodeURIComponent('/report?category=blocked_access'),
   );
+  await page.getByLabel('Nama', { exact: true }).fill('Rani Uji');
   await page.getByLabel('Nomor telepon').fill('081234567890');
   await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
   await page.getByRole('button', { name: 'Daftar', exact: true }).click();

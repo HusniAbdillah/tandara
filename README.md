@@ -1,9 +1,9 @@
 <div align="center">
   <img src="logo/assets/tandara-logo.svg" alt="Tandara Logo" width="180" />
-  <h1>Tandara (ArahSiaga)</h1>
+  <h1>Tandara</h1>
   <p><strong>Community-Driven Disaster Preparedness & AI-Augmented Flood Response Platform</strong></p>
   <p>
-    🌐 <strong>Live Production Deployment:</strong><br/>
+    <strong>Live Production Deployment:</strong><br/>
     <a href="https://tandara.my.id/" target="_blank"><strong>Resident Portal (Warga): https://tandara.my.id/</strong></a> • 
     <a href="https://posko.tandara.my.id/" target="_blank"><strong>Coordinator Workspace (Posko): https://posko.tandara.my.id/</strong></a>
   </p>
@@ -50,9 +50,9 @@
 
 ---
 
-## 🌟 Executive Summary
+## Executive Summary
 
-**Tandara (ArahSiaga)** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
+**Tandara** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
 
 Unlike naive chatbots or isolated dashboards, Tandara integrates:
 
@@ -65,7 +65,7 @@ Unlike naive chatbots or isolated dashboards, Tandara integrates:
 
 ---
 
-## 🎯 Key Innovation & Architectural Highlights
+## Key Innovation & Architectural Highlights
 
 ```mermaid
 graph TD
@@ -126,7 +126,7 @@ graph TD
 
 ---
 
-## 🚀 Quick Start (One-Click Setup via Docker Compose)
+## Quick Start (One-Click Setup via Docker Compose)
 
 The fastest and most reliable way to evaluate the entire system is with Docker Compose.
 
@@ -172,7 +172,7 @@ Open your browser or run:
 
 ---
 
-## 🔑 Demo & Evaluation Access
+## Demo & Evaluation Access
 
 | Portal            | Target URL                                                                      | Description                           | Default Credentials                                                                  |
 | :---------------- | :------------------------------------------------------------------------------ | :------------------------------------ | :----------------------------------------------------------------------------------- |
@@ -182,7 +182,7 @@ Open your browser or run:
 
 ---
 
-## 🧭 Jury Walkthrough & Demonstration Guide
+## Jury Walkthrough & Demonstration Guide
 
 To experience the full end-to-end impact in 5–10 minutes, open two separate browser windows (e.g., standard window for Warga, incognito window for Posko):
 
@@ -217,7 +217,7 @@ To experience the full end-to-end impact in 5–10 minutes, open two separate br
 
 ---
 
-## 🤖 Activating Real AI Models (Optional)
+## Activating Real AI Models (Optional)
 
 By default, Tandara runs in **Deterministic / Heuristic Simulation Mode**, guaranteeing complete functionality offline without third-party API dependencies.
 
@@ -244,7 +244,7 @@ To enable live LLM inference and embeddings with **DeepSeek**, **Vikey**, or any
 
 ---
 
-## 💻 Local Development Workflow
+## Local Development Workflow
 
 For developers wishing to run services outside Docker containers:
 
@@ -289,7 +289,7 @@ pnpm test:e2e
 
 ---
 
-## 📂 Repository Architecture
+## Repository Architecture
 
 ```
 tandara/
@@ -314,7 +314,7 @@ tandara/
 
 ---
 
-## 🔒 Security & Privacy Commitments
+## Security & Privacy Commitments
 
 - **No Public Secret Leakage**: Zero hardcoded secrets; continuous GitGuardian scanning in CI.
 - **Strict Network Isolation**: Internal database and worker networks are not exposed to public routing.
@@ -324,6 +324,6 @@ tandara/
 ---
 
 <div align="center">
-  <p>Built with ❤️ for resilient, community-first disaster response.</p>
+  <p>Built for resilient, community-first disaster response.</p>
   <p>© 2026 Tandara Team. All demonstration data is strictly for simulation purposes.</p>
 </div>

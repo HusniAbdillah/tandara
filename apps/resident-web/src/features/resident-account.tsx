@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
+import { DemoAccountPicker } from '@tandara/ui';
 import {
   deploymentSchema,
   residentCredentialsSchema,
@@ -76,32 +77,26 @@ export function AccountForm({
       >
         <h1>{register ? 'Daftar' : 'Masuk'}</h1>
         {!register && demoLogin && (
-          <fieldset className="w-card w-stack" disabled={busy}>
-            <legend>Coba akun demo</legend>
-            <p className="w-muted">Pilih warga untuk mengisi nomor telepon dan kata sandi.</p>
-            {demoLogin.residents.map((account) => (
-              <WButton
-                key={account.id}
-                type="button"
-                secondary
-                aria-pressed={phone === account.phone}
-                style={{
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 4,
-                  textAlign: 'left',
-                }}
-                onClick={() => {
-                  setPhone(account.phone);
-                  setPassword(demoLogin.password);
-                  setError('');
-                }}
-              >
-                <strong>{account.name}</strong>
-                <small>{account.phone.replace(/^\+62/, '0')}</small>
-              </WButton>
-            ))}
-          </fieldset>
+          <DemoAccountPicker
+            disabled={busy}
+            accounts={demoLogin.residents.map((account) => ({
+              ...account,
+              identifier: account.phone.replace(/^\+62/, '0'),
+              role: 'Warga',
+            }))}
+            selectedId={
+              password === demoLogin.password
+                ? demoLogin.residents.find((account) => account.phone === phone)?.id
+                : undefined
+            }
+            onSelect={(id) => {
+              const account = demoLogin.residents.find((account) => account.id === id);
+              if (!account) return;
+              setPhone(account.phone);
+              setPassword(demoLogin.password);
+              setError('');
+            }}
+          />
         )}
         {register && (
           <label className="w-field">

@@ -34,17 +34,47 @@ export async function request<S extends z.ZodType>(
   });
   if (response.status === 401 && typeof window !== 'undefined')
     window.dispatchEvent(new CustomEvent('tandara:unauthorized', { detail: { path } }));
-  const body: unknown = await response.json();
+  return parseResponse(response, schema);
+}
+
+async function parseResponse<S extends z.ZodType>(
+  response: Response,
+  schema: S,
+): Promise<z.infer<S>> {
+  let body: unknown;
+  try {
+    const text = await response.text();
+    body = text.trim() ? JSON.parse(text) : undefined;
+  } catch {
+    // Proxies can return an empty, HTML, or truncated response during a restart.
+    // Never expose response bodies or JSON parser diagnostics to the user.
+    body = undefined;
+  }
+  const requestId = response.headers.get('x-request-id') ?? undefined;
   if (!response.ok) {
     const parsed = errorResponseSchema.safeParse(body);
+    const fallback =
+      response.status >= 500
+        ? 'Layanan sedang tidak tersedia. Tunggu sebentar lalu coba lagi.'
+        : response.status === 429
+          ? 'Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.'
+          : 'Permintaan belum berhasil. Silakan coba lagi.';
     throw new ApiError(
       response.status,
       parsed.success ? parsed.data.error.code : 'HTTP_ERROR',
-      parsed.success ? parsed.data.error.requestId : undefined,
-      parsed.success ? parsed.data.error.message : 'Permintaan tidak berhasil.',
+      parsed.success ? parsed.data.error.requestId : requestId,
+      parsed.success ? parsed.data.error.message : fallback,
     );
   }
-  return schema.parse(body);
+  const parsed = schema.safeParse(body);
+  if (!parsed.success)
+    throw new ApiError(
+      response.status,
+      'INVALID_RESPONSE',
+      requestId,
+      'Respons layanan belum lengkap. Silakan coba lagi.',
+    );
+  return parsed.data;
 }
 
 export class ApiError extends Error {
@@ -70,17 +100,7 @@ export function createApiClient(options: { baseUrl?: string; fetch?: typeof fetc
         headers: { Accept: 'application/json' },
         ...(signal ? { signal } : {}),
       });
-      const body: unknown = await response.json();
-      if (!response.ok) {
-        const parsed = errorResponseSchema.safeParse(body);
-        throw new ApiError(
-          response.status,
-          parsed.success ? parsed.data.error.code : 'HTTP_ERROR',
-          parsed.success ? parsed.data.error.requestId : undefined,
-          parsed.success ? parsed.data.error.message : 'Permintaan tidak berhasil.',
-        );
-      }
-      return systemInfoSchema.parse(body);
+      return parseResponse(response, systemInfoSchema);
     },
   };
 }

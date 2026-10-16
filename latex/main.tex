@@ -5,7 +5,7 @@
 
 % 01 — Cover dari aset pengguna.
 \thispagestyle{empty}
-\AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{assets/Proposal · Cover.jpg}}}
+\AddToShipoutPictureBG*{\AtPageLowerLeft{\includegraphics[width=\paperwidth,height=\paperheight]{assets/Proposal · Cover New.jpg}}}
 \AddToShipoutPictureFG*{\input{cover-caption}}
 \null\newpage
 
@@ -210,20 +210,21 @@ Prototipe mencakup rencana lokal, checklist, laporan, tanda terima, tinjauan koo
 \end{minipage}\hfill
 \begin{minipage}[t]{.48\linewidth}\vspace{0pt}\raggedright
 \subsection*{Pengembangan sumber informasi}
-Integrasi informasi cuaca dan gempa mengikuti format serta atribusi BMKG. Pengembangan berikutnya menyatukan penyajian sumber, waktu pembaruan, dan konteks wilayah pada pengalaman mobile~\cite{bmkgcap,bmkgforecast,bmkggempa}.
+Integrasi informasi cuaca, gempa, dan tinggi muka air mengikuti format serta atribusi BMKG dan Posko Banjir DSDA DKI. Penyajian sumber menyatukan waktu pembaruan dan konteks wilayah pada pengalaman mobile~\cite{bmkgcap,bmkgforecast,bmkggempa,poskobanjir}.
 \end{minipage}
 \newpage
 
 % 09 — Roadmap.
 \PageTitle{08 / RENCANA PENGEMBANGAN}{Pengembangan bertahap\newline bersama pengelola lokal}{Prioritas dimulai dari alur harian yang utuh dan dilanjutkan dengan perluasan wilayah.}
+{\fontsize{9}{12}\selectfont
 \begin{tabularx}{\linewidth}{@{}P{28mm}YP{47mm}@{}}
 \toprule\rowcolor{Tint}\textbf{Tahap} & \textbf{Fokus kegiatan} & \textbf{Hasil yang dituju}\\\midrule
-Pemantapan prototipe\newline 3 hari & Menyelesaikan alur mobile, penyajian cuaca dan gempa, akses offline, serta tinjauan laporan. & Demonstrasi dari rencana warga hingga pembaruan komunitas.\\
-Pilot tertutup & Melibatkan 8–12 warga dan 2–3 koordinator untuk mencoba tugas persiapan serta pelaporan. & Perbaikan bahasa, navigasi, dan pemahaman status informasi.\\
-Pilot komunitas & Menyusun rencana bersama pengurus, menetapkan jadwal tinjauan, dan mengadakan latihan lingkungan. & Rencana lokal yang terkelola serta prosedur tindak lanjut.\\
-Multiwilayah & Menambah komunitas, menguji kapasitas layanan, dan menyiapkan pendampingan pengelola. & Pengelolaan beberapa wilayah dengan tanggung jawab yang jelas.\\\bottomrule
+Hackathon & Menuntaskan integrasi seluruh fungsi inti Warga dan Posko: informasi cuaca, tinggi air dan gempa; rencana lokal, akses offline, pelaporan, dukungan AI, serta tinjauan dan tindak lanjut. & Prototipe terintegrasi siap diuji pada pilot tertutup.\\
+Pilot tertutup & Menguji alur bersama 8–12 warga dan 2–3 koordinator; memvalidasi sinkronisasi offline dan navigasi. & Temuan uji dan perbaikan prioritas tervalidasi.\\
+Pilot komunitas & Menerapkan alur bersama pengurus RT/RW, menetapkan penanggung jawab, dan simulasi berkala. & Rencana lokal aktif dan prosedur tindak lanjut berjalan.\\
+Perluasan wilayah & Menambah komunitas mitra, menguji kapasitas layanan, dan pendampingan pengelola. & Pengelolaan multiwilayah dengan pembagian peran yang jelas.\\\bottomrule
 \end{tabularx}
-\SmallCaption{Tabel 3. Roadmap pengembangan Tandara dan hasil pada setiap tahap.}
+}\SmallCaption{Tabel 3. Roadmap pengembangan Tandara dan hasil pada setiap tahap.}
 
 \section*{Indikator keberhasilan pilot}
 {\fontsize{9}{12}\selectfont
