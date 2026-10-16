@@ -123,7 +123,13 @@ const tile = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADElEQVQImWP49esXAAXgAu/NVObIAAAAAElFTkSuQmCC',
   'base64',
 );
-async function fixtures(page: Page) {
+async function fixtures(page: Page, authenticated = true) {
+  const resident = {
+    id: '60000000-0000-4000-8000-000000000001',
+    phone: '+6281234567890',
+    name: 'Warga',
+  };
+  let signedIn = authenticated;
   const { createReportSchema } = await import('../../packages/contracts/dist/index.js');
   const payloads: unknown[] = [];
   await page.context().route('https://tile.openstreetmap.org/**', (route) =>
@@ -146,15 +152,15 @@ async function fixtures(page: Page) {
         sources: [],
         fetchedAt: '2026-10-16T00:00:00Z',
       };
-    else if (path === '/resident/auth/me') body = { user: null };
-    else if (path === '/resident/auth/login' || path === '/resident/auth/register')
-      body = {
-        user: {
-          id: '60000000-0000-4000-8000-000000000001',
-          phone: '+6281234567890',
-          name: 'Warga',
-        },
-      };
+    else if (path === '/resident/auth/me') body = { user: signedIn ? resident : null };
+    else if (path === '/resident/auth/login' || path === '/resident/auth/register') {
+      signedIn = true;
+      body = { user: resident };
+    } else if (path === '/resident/auth/logout') {
+      signedIn = false;
+      body = { ok: true };
+    } else if (path === '/resident/reports') body = { items: [], page: 1, total: 0 };
+    else if (path === '/resident/notifications') body = { items: [], unreadCount: 0 };
     else if (path.endsWith('/observations'))
       body = {
         mode: 'simulation',
@@ -354,6 +360,59 @@ test('desktop single-page report submits once and opens the shared status view',
   await page.getByRole('dialog').getByRole('button', { name: 'Ajukan penghapusan' }).click();
   await expect(page.getByText('Permintaan penghapusan diterima.')).toBeVisible();
 });
+test('a rejected photo can be retried without submitting the accepted report again', async ({
+  page,
+}) => {
+  const payloads = await fixtures(page);
+  await page.context().addCookies([
+    {
+      name: 'tandara_resident_csrf',
+      value: 'synthetic-photo-csrf',
+      url: 'http://127.0.0.1:5173',
+    },
+  ]);
+  let uploads = 0;
+  await page.route('**/api/v1/reports/*/attachments', async (route) => {
+    uploads++;
+    expect(route.request().headers()['x-csrf-token']).toBe('synthetic-photo-csrf');
+    expect(route.request().headers()['x-tracking-token']).toBe(receipt.trackingToken);
+    await route.fulfill(
+      uploads === 1
+        ? {
+            status: 403,
+            json: {
+              error: {
+                code: 'FORBIDDEN',
+                message: 'Muat ulang halaman lalu coba lagi.',
+                requestId: 'synthetic-photo-rejection',
+              },
+            },
+          }
+        : { status: 201, json: { id: '80000000-0000-4000-8000-000000000001' } },
+    );
+  });
+  await page.goto('/report');
+  await page.getByLabel('Apa yang Anda amati?').fill('Air menggenang di jalan dekat balai warga.');
+  await page.getByLabel('Foto kejadian', { exact: true }).setInputFiles({
+    name: 'kejadian.png',
+    mimeType: 'image/png',
+    buffer: tile,
+  });
+  await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
+  await page.getByRole('button', { name: 'Kirim laporan', exact: true }).click();
+  await expect(page.getByText(/Laporan sudah diterima. Foto belum terkirim./)).toBeVisible();
+  await expect(page.getByText(/Muat ulang halaman lalu coba lagi./)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Lihat laporan', exact: true })).toHaveAttribute(
+    'href',
+    '/tracking?id=' + receipt.id,
+  );
+  await expect(page.getByLabel('Foto kejadian', { exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Coba kirim foto lagi', exact: true }).click();
+  await expect(page).toHaveURL(/tracking/);
+  expect(payloads).toHaveLength(1);
+  expect(uploads).toBe(2);
+});
+
 test('mobile report uses three steps, preserves inputs and has no horizontal overflow', async ({
   page,
 }) => {
@@ -389,9 +448,9 @@ test('support contact switch omits private contact when disabled', async ({ page
     .getByLabel('Bantuan yang dibutuhkan')
     .fill('Perlu air minum untuk keluarga di balai warga.');
   await page.getByRole('button', { name: 'Lanjut', exact: true }).click();
-  await page.getByLabel('Nomor telepon').fill('081234567890');
-  await page.getByRole('switch', { name: /Boleh dihubungi/ }).check();
-  await page.getByRole('button', { name: 'Lanjut tanpa nomor' }).click();
+  await page.getByLabel('Nomor tambahan', { exact: true }).fill('081234567890');
+  await page.getByRole('switch', { name: /Bagikan nomor tambahan/ }).check();
+  await page.getByRole('button', { name: 'Gunakan nomor akun' }).click();
   await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
   await page.getByRole('button', { name: 'Kirim permintaan' }).click();
   await expect(page).toHaveURL(/tracking/);
@@ -423,8 +482,16 @@ test('guide checklist, downloaded plan and quiz remain connected', async ({ page
   await page.screenshot({ path: 'test-results/chalk-desktop-result.png', fullPage: true });
 });
 test('phone auth screens are centered, accessible and route into the app', async ({ page }) => {
-  await fixtures(page);
+  await fixtures(page, false);
   await page.goto('/login');
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('081234560001');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('TandaraDemo2026!');
+  await page.getByRole('link', { name: 'Daftar', exact: true }).click();
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('');
+  await page.getByRole('link', { name: 'Masuk', exact: true }).click();
+  await expect(page.getByLabel('Nomor telepon')).toHaveValue('081234560001');
+  await expect(page.getByLabel('Kata sandi', { exact: true })).toHaveValue('TandaraDemo2026!');
   const form = await page.locator('.w-auth-form').boundingBox();
   expect(Math.abs(form!.x + form!.width / 2 - 720)).toBeLessThan(1);
   expect(Math.abs(form!.y + form!.height / 2 - 512)).toBeLessThan(1);
@@ -444,7 +511,269 @@ test('phone auth screens are centered, accessible and route into the app', async
   await expect(page).toHaveURL('/area');
 });
 
-test('saved plan survives an offline reload and queued report synchronizes once', async ({
+test('signed-out routes redirect to login and registration returns to the requested page', async ({
+  page,
+}) => {
+  await fixtures(page, false);
+  for (const path of [
+    '/',
+    '/map',
+    '/support',
+    '/tracking',
+    '/training',
+    '/report?category=blocked_access',
+  ]) {
+    await page.goto(path);
+    await expect(page).toHaveURL('/login?next=' + encodeURIComponent(path));
+    await expect(page.getByRole('button', { name: 'Kirim laporan', exact: true })).toHaveCount(0);
+  }
+  await page.getByRole('link', { name: 'Daftar', exact: true }).click();
+  await expect(page).toHaveURL(
+    '/register?next=' + encodeURIComponent('/report?category=blocked_access'),
+  );
+  await page.getByLabel('Nomor telepon').fill('081234567890');
+  await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Daftar', exact: true }).click();
+  await expect(page).toHaveURL('/report?category=blocked_access');
+  await expect(page.getByLabel('Apa yang Anda amati?')).toBeVisible();
+});
+
+test('a 401 during submission redirects to login and preserves the queued report', async ({
+  page,
+}) => {
+  await fixtures(page);
+  await page.goto('/report');
+  await page
+    .getByLabel('Apa yang Anda amati?')
+    .fill('Antrean laporan harus tetap ada setelah sesi berakhir.');
+  await page.getByRole('checkbox', { name: /Saya menyetujui/ }).check();
+  await page.route('**/api/v1/resident/auth/me', (r) => r.fulfill({ json: { user: null } }));
+  await page.route('**/api/v1/reports', (r) =>
+    r.fulfill({
+      status: 401,
+      json: { error: { code: 'UNAUTHORIZED', message: 'Silakan masuk kembali.' } },
+    }),
+  );
+  await page.getByRole('button', { name: 'Kirim laporan', exact: true }).click();
+  await expect(page).toHaveURL('/login?next=%2Freport');
+  await expect(page.locator('.w-auth-form')).toBeVisible();
+  const drafts = await page.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('tandara-resident');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    try {
+      return await new Promise<number>((resolve, reject) => {
+        const request = db.transaction('drafts').objectStore('drafts').count();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    } finally {
+      db.close();
+    }
+  });
+  expect(drafts).toBe(1);
+});
+
+test('login return URLs cannot redirect to an external site', async ({ page }) => {
+  await fixtures(page, false);
+  await page.goto('/login?next=' + encodeURIComponent('https://example.test/steal'));
+  await page.getByLabel('Nomor telepon').fill('081234567890');
+  await page.getByLabel('Kata sandi', { exact: true }).fill('synthetic-password');
+  await page.getByRole('button', { name: 'Masuk', exact: true }).click();
+  await expect(page).toHaveURL('/');
+});
+
+test('account history opens on a fresh device and personal notifications retain read state', async ({
+  page,
+}, testInfo) => {
+  await fixtures(page);
+  await page.context().addCookies([
+    {
+      name: 'tandara_resident_csrf',
+      value: 'fixture-resident-csrf',
+      url: String(testInfo.project.use.baseURL),
+    },
+  ]);
+  const user = {
+    id: '60000000-0000-4000-8000-000000000001',
+    phone: '+6281234567890',
+    name: 'Warga',
+  };
+  const summary = {
+    id: reportId,
+    regionId,
+    state: 'under_review',
+    description: 'Laporan akun dari perangkat lain.',
+    category: 'road_flooding',
+    landmark: null,
+    followUp: false,
+    createdAt: '2026-10-16T00:00:00Z',
+  };
+  let loggedIn = true,
+    read = false;
+  let confirmed = false;
+  await page.route('**/api/v1/resident/**', async (route) => {
+    const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
+    if (path === '/resident/auth/me')
+      return route.fulfill({ json: { user: loggedIn ? user : null } });
+    if (path === '/resident/auth/logout') {
+      loggedIn = false;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (path === '/resident/notifications')
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              id: '70000000-0000-4000-8000-000000000001',
+              reportId,
+              action: 'workflow.resolved',
+              createdAt: '2026-10-16T00:00:00Z',
+              readAt: read ? '2026-10-16T01:00:00Z' : null,
+              followUp: false,
+            },
+          ],
+          unreadCount: read ? 0 : 1,
+        },
+      });
+    if (path === '/resident/notifications/read') {
+      read = true;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (path === '/resident/reports')
+      return route.fulfill({ json: { items: [summary], page: 1, total: 1 } });
+    if (path === '/resident/reports/' + reportId) return route.fulfill({ json: summary });
+    if (path === '/resident/reports/' + reportId + '/feedback') {
+      expect(route.request().headers()['x-csrf-token']).toBe('fixture-resident-csrf');
+      expect(route.request().headers()['x-tracking-token']).toBeUndefined();
+      expect(route.request().postDataJSON().action).toBe('confirm');
+      confirmed = true;
+      return route.fulfill({ json: { ok: true } });
+    }
+    if (path.endsWith('/tracking'))
+      return route.fulfill({
+        json: {
+          id: reportId,
+          state: 'under_review',
+          createdAt: summary.createdAt,
+          updatedAt: summary.createdAt,
+          history: [],
+          assistanceState: null,
+          erased: false,
+          workflow: {
+            status: confirmed ? 'closed' : 'resolved',
+            assigneeId: null,
+            assigneeName: null,
+            priority: 'normal',
+            revision: confirmed ? 3 : 2,
+          },
+        },
+      });
+    return route.fallback();
+  });
+  await page.goto('/notifications');
+  await expect(page.locator('.w-notification-count').first()).toHaveText('1');
+  await page.getByRole('button', { name: /Penanganan selesai, periksa hasilnya/ }).click();
+  await expect(page).toHaveURL('/tracking?id=' + reportId);
+  await expect(page.locator('.w-report-list').getByText(summary.description)).toBeVisible();
+  expect(read).toBe(true);
+  await expect(page.locator('.w-notification-count')).toHaveCount(0);
+  await page.getByLabel('Catatan untuk Posko').fill('Penanganan sudah selesai, terima kasih.');
+  await page.getByRole('button', { name: 'Konfirmasi selesai', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Apakah masalah sudah selesai?' })).toHaveCount(0);
+  expect(confirmed).toBe(true);
+  await page.goto('/tracking?id=99999999-9999-4999-8999-999999999999');
+  await expect(
+    page.getByRole('heading', { name: 'Laporan tidak ditemukan', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('.w-status-detail')).toHaveCount(0);
+  await page.goto('/profile');
+  await page.getByRole('button', { name: 'Keluar', exact: true }).click();
+  await page.goto('/tracking');
+  await expect(page.getByText(summary.description)).toHaveCount(0);
+});
+
+test('another account cannot see or synchronize locally queued reports owned by someone else', async ({
+  page,
+}) => {
+  const payloads = await fixtures(page);
+  let sessionCalls = 0;
+  const owner = '60000000-0000-4000-8000-000000000001';
+  await page.route('**/api/v1/resident/**', (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith('/auth/me')) {
+      sessionCalls++;
+      return route.fulfill({
+        json: {
+          user: {
+            id: '60000000-0000-4000-8000-000000000002',
+            phone: '+6281399999999',
+            name: 'Warga lain',
+          },
+        },
+      });
+    }
+    if (path.endsWith('/notifications'))
+      return route.fulfill({ json: { items: [], unreadCount: 0 } });
+    if (path.endsWith('/reports')) return route.fulfill({ json: { items: [], page: 1, total: 0 } });
+    return route.fallback();
+  });
+  await page.goto('/');
+  await page.evaluate(
+    async ({ owner, regionId, reportId }) => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const r = indexedDB.open('tandara-resident');
+        r.onsuccess = () => resolve(r.result);
+        r.onerror = () => reject(r.error);
+      });
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(['receipts', 'drafts'], 'readwrite');
+        tx.objectStore('receipts').put({
+          id: reportId,
+          trackingToken: 'a'.repeat(72),
+          residentId: owner,
+          createdAt: new Date().toISOString(),
+          state: 'submitted',
+          description: 'PRIVATE_OTHER_ACCOUNT_REPORT',
+        });
+        tx.objectStore('drafts').put({
+          localId: reportId,
+          idempotencyKey: reportId,
+          residentId: owner,
+          state: 'queued',
+          retryCount: 0,
+          updatedAt: new Date().toISOString(),
+          payload: {
+            regionId,
+            category: 'road_flooding',
+            description: 'PRIVATE_OTHER_ACCOUNT_QUEUED_REPORT',
+            observationTime: null,
+            followUpRequested: false,
+            contactPermission: false,
+            privacyConsent: true,
+            trackingToken: 'b'.repeat(72),
+          },
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      db.close();
+    },
+    { owner, regionId, reportId },
+  );
+  sessionCalls = 0;
+  await page.goto('/tracking');
+  await expect.poll(() => sessionCalls).toBeGreaterThanOrEqual(2);
+  await expect(page.getByText('PRIVATE_OTHER_ACCOUNT_REPORT', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_OTHER_ACCOUNT_QUEUED_REPORT', { exact: true })).toHaveCount(
+    0,
+  );
+  expect(payloads).toHaveLength(0);
+});
+
+test('an authenticated open session can use downloaded plans and queue reports until reconnect', async ({
   page,
   context,
 }) => {
@@ -457,7 +786,6 @@ test('saved plan survives an offline reload and queued report synchronizes once'
   });
   await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
   await context.setOffline(true);
-  await page.reload();
   await expect(page.getByText('Siapkan dokumen penting')).toBeVisible();
   await expect(page.getByText('Tanpa internet · Menampilkan unduhan')).toBeVisible();
   await page.getByRole('link', { name: 'Laporan saya', exact: true }).first().click();
@@ -474,6 +802,25 @@ test('saved plan survives an offline reload and queued report synchronizes once'
   expect(payloads).toHaveLength(1);
   await page.reload();
   await expect(page.locator('.w-report-list .w-row')).toHaveCount(1);
+});
+
+test('an offline reload cannot open protected content without revalidating the session', async ({
+  page,
+  context,
+}) => {
+  await fixtures(page);
+  await page.goto('/plan');
+  await page.getByRole('button', { name: 'Unduh rencana' }).click();
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await page.route('**/api/v1/resident/auth/me', (r) => r.abort('internetdisconnected'));
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page).toHaveURL('/login?next=%2Fplan');
+  await expect(page.locator('.w-auth-form')).toBeVisible();
+  await expect(page.getByText('Siapkan dokumen penting', { exact: true })).toHaveCount(0);
 });
 
 test('mobile pages remain readable at 360px and all design assets load locally', async ({

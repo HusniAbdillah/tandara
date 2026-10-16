@@ -52,15 +52,14 @@ test('readiness succeeds when database is available', async () => {
   assert.equal(response.statusCode, 200);
 });
 
-test('invalid reports fail validation before database access', async () => {
+test('anonymous reports require login before database access or payload validation', async () => {
   const response = await app.inject({
     method: 'POST',
     url: '/api/v1/reports',
     headers: { 'x-tandara-client': 'web' },
     payload: {},
   });
-  assert.equal(response.statusCode, 400);
-  assert.equal(response.json().error.code, 'VALIDATION_FAILED');
+  assert.equal(response.statusCode, 401);
 });
 
 test('published OpenAPI describes the implemented metadata contract', async () => {

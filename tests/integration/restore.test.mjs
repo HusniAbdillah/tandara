@@ -71,6 +71,14 @@ test('isolated backup restore replays later erasures and withdrawals before serv
     await client.query(
       "WITH resident AS (INSERT INTO residents(phone,password_hash) VALUES('+6281234567890','restore-fixture-only') RETURNING id) INSERT INTO resident_sessions(token_hash,resident_id,csrf_hash,expires_at) SELECT 'restore-resident-session',id,'restore-fixture-csrf',now()+interval '1 hour' FROM resident",
     );
+    await client.query(
+      "UPDATE reports SET resident_id=(SELECT id FROM residents WHERE phone='+6281234567890') WHERE id=$1",
+      [reportId],
+    );
+    await client.query(
+      "INSERT INTO report_history(report_id,action,reason) VALUES($1,'under_review','Fixture notification before backup')",
+      [reportId],
+    );
     await client.end();
     run('docker', [
       'exec',
@@ -111,6 +119,19 @@ test('isolated backup restore replays later erasures and withdrawals before serv
         .erased,
       false,
     );
+    assert.ok(
+      (await restoredClient.query('SELECT resident_id FROM reports WHERE id=$1', [reportId]))
+        .rows[0].resident_id,
+    );
+    assert.equal(
+      (
+        await restoredClient.query(
+          'SELECT count(*)::int n FROM resident_notifications WHERE report_id=$1',
+          [reportId],
+        )
+      ).rows[0].n,
+      1,
+    );
     run(process.execPath, ['tooling/restore-privacy.mjs', ledger], {
       DATABASE_URL: url(restored),
       RESTORE_QUARANTINE: 'true',
@@ -119,6 +140,20 @@ test('isolated backup restore replays later erasures and withdrawals before serv
       (await restoredClient.query('SELECT erased FROM reports WHERE id=$1', [reportId])).rows[0]
         .erased,
       true,
+    );
+    assert.equal(
+      (await restoredClient.query('SELECT resident_id FROM reports WHERE id=$1', [reportId]))
+        .rows[0].resident_id,
+      null,
+    );
+    assert.equal(
+      (
+        await restoredClient.query(
+          'SELECT count(*)::int n FROM resident_notifications WHERE report_id=$1',
+          [reportId],
+        )
+      ).rows[0].n,
+      0,
     );
     assert.equal(
       (await restoredClient.query('SELECT state FROM knowledge_references WHERE id=$1', [refId]))

@@ -10,6 +10,9 @@ import * as delivery from './migrations/008_ai_delivery.js';
 import * as warnings from './migrations/009_public_warnings.js';
 import * as residents from './migrations/010_residents.js';
 import * as workflow from './migrations/011_report_workflow.js';
+import * as residentIntegration from './migrations/011_resident_integration.js';
+import * as residentWorkflow from './migrations/012_resident_workflow_notifications.js';
+import * as residentPhone from './migrations/013_resident_report_phone.js';
 import { createDatabase } from './client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -20,6 +23,9 @@ const { db } = createDatabase(connectionString, { statementTimeoutMs: 120000 });
 try {
   const migrator = new Migrator({
     db,
+    // Both independent 011 migrations have shipped on separate branches after 010.
+    // Preserve their recorded names and allow either installation to add the missing one.
+    allowUnorderedMigrations: true,
     provider: {
       async getMigrations() {
         return {
@@ -34,6 +40,9 @@ try {
           '009_public_warnings': warnings,
           '010_residents': residents,
           '011_report_workflow': workflow,
+          '011_resident_integration': residentIntegration,
+          '012_resident_workflow_notifications': residentWorkflow,
+          '013_resident_report_phone': residentPhone,
         };
       },
     },

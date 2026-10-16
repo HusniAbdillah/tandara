@@ -91,6 +91,7 @@ export async function citizenFeedback(
   id: string,
   token: string | undefined,
   input: unknown,
+  residentId?: string,
 ) {
   parse(z.uuid(), id);
   const data = parse(citizenFeedbackSchema, input);
@@ -101,7 +102,7 @@ export async function citizenFeedback(
           status: string;
           revision: number;
           region: string;
-        }>`SELECT workflow_status status,revision,region_id region FROM reports WHERE id=${id}::uuid AND tracking_hash=${hash(token ?? '')} AND NOT erased FOR UPDATE`.execute(
+        }>`SELECT workflow_status status,revision,region_id region FROM reports WHERE id=${id}::uuid AND (tracking_hash=${hash(token ?? '')} OR resident_id=${residentId ?? null}::uuid) AND NOT erased FOR UPDATE`.execute(
           tx,
         )
       ).rows[0],

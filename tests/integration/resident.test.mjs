@@ -36,7 +36,6 @@ before(async () => {
 after(async () => {
   await app?.close();
 });
-
 test('published demo accounts authenticate with the configured password and personal names', async () => {
   const config = await call('GET', '/deployment');
   assert.equal(config.statusCode, 200);

@@ -267,7 +267,7 @@ try {
         tx,
       );
       if (help) {
-        await sql`INSERT INTO report_private_details VALUES(${id}::uuid,'Kontak fiktif: warga-demo (bukan nomor telepon)',now(),now()+interval '30 days') ON CONFLICT DO NOTHING`.execute(
+        await sql`INSERT INTO report_private_details(report_id,contact_details,consent_at,retention_until) VALUES(${id}::uuid,'Kontak fiktif: warga-demo (bukan nomor telepon)',now(),now()+interval '30 days') ON CONFLICT DO NOTHING`.execute(
           tx,
         );
         await sql`INSERT INTO assistance_requests(report_id,region_id) VALUES(${id}::uuid,${ids.region1}::uuid) ON CONFLICT DO NOTHING`.execute(

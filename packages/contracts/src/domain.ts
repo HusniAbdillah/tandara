@@ -166,6 +166,7 @@ export const duplicateSchema = z.object({
 export const attachmentSchema = z.object({ id: z.uuid(), name: z.string(), createdAt: z.string() });
 export const reportDetailSchema = z.object({
   report: reportSchema,
+  reporterPhone: z.string().nullable(),
   history: z.array(historySchema),
   suggestions: z.array(suggestionSchema),
   duplicates: z.array(duplicateSchema),
@@ -181,8 +182,10 @@ export const receiptSchema = z.object({
   id: z.uuid(),
   trackingToken: z.string(),
   state: reportReviewStateSchema,
+  residentId: z.uuid().optional(),
 });
 export const trackingSchema = z.object({
+  attachments: z.array(attachmentSchema).default([]),
   workflow: workflowSchema.optional(),
   updates: z.array(workflowEventSchema).optional(),
   id: z.uuid(),

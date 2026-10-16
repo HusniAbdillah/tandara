@@ -3,6 +3,10 @@
 For a timed presentation with exact inputs and presenter lines, use the
 [10–12 minute demo flow](demo-flow.md).
 
+Warga login is prefilled with `081234560001` / `TandaraDemo2026!`. Press **Masuk**.
+The simulation seed creates this account; demo deployment updates provision it
+without changing existing accounts. Registration fields remain empty.
+
 Start the full Compose stack using README. Use two browser contexts (normal and
 private window) so Warga and coordinator decisions can be observed independently.
 All people, regions, report content, source feeds and plans are fictional.

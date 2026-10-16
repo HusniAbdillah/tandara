@@ -15,7 +15,8 @@ Tidak memerlukan Heroku, Redis, object-storage service, atau public container re
 GitHub Actions membangun frontend dan backend. Sesudah CI berhasil pada commit
 main yang sama, workflow menguji production image, mengirim image privat lewat
 SSH, membackup database existing, menjalankan migration, melakukan seed hanya
-pada bootstrap pertama, menunggu backend sehat, lalu menerbitkan dua frontend.
+pada bootstrap pertama, memastikan akun demo Warga tersedia pada setiap deployment,
+menunggu backend sehat, lalu menerbitkan dua frontend.
 Frontend tidak dibangun di VPS atau melalui Git integration Vercel; workflow
 memakai [Build Output API](https://vercel.com/docs/build-output-api/configuration)
 dan [prebuilt deployment](https://vercel.com/docs/cli/deploy).

@@ -632,6 +632,14 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
               <dd>{w?.assigneeName ?? 'Belum ditugaskan'}</dd>
               <dt>Prioritas</dt>
               <dd>{priorityLabels[w?.priority ?? 'normal']}</dd>
+              {d.reporterPhone && (
+                <>
+                  <dt>Nomor telepon pelapor</dt>
+                  <dd>
+                    <a href={'tel:' + d.reporterPhone}>{d.reporterPhone}</a>
+                  </dd>
+                </>
+              )}
               {r.contactDetails && (
                 <>
                   <dt>Kontak warga</dt>
@@ -653,7 +661,11 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
                     target="_blank"
                     rel="noreferrer"
                   >
-                    <img src={`/api/v1/reports/${id}/attachments/${a.id}`} alt={a.name} />
+                    <img
+                      src={`/api/v1/reports/${id}/attachments/${a.id}`}
+                      alt={a.name}
+                      loading="lazy"
+                    />
                     <span>{a.name}</span>
                   </a>
                 ))}

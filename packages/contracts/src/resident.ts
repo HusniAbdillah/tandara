@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { reportCategorySchema, reportReviewStateSchema } from './reports.js';
 
 export const residentPhoneSchema = z
   .string()
@@ -25,4 +26,38 @@ export const residentProfileSchema = z.object({
   name: z.string(),
 });
 export const residentSessionSchema = z.object({ user: residentProfileSchema.nullable() });
+export const residentReportSchema = z.object({
+  id: z.uuid(),
+  regionId: z.uuid(),
+  state: reportReviewStateSchema,
+  description: z.string(),
+  category: reportCategorySchema,
+  landmark: z.string().nullable(),
+  followUp: z.boolean(),
+  createdAt: z.string(),
+});
+export const residentReportPageSchema = z.object({
+  items: z.array(residentReportSchema).max(50),
+  page: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+});
+export const residentClaimSchema = z.strictObject({
+  reports: z
+    .array(z.strictObject({ id: z.uuid(), trackingToken: z.string().regex(/^[a-f0-9-]{72}$/) }))
+    .min(1)
+    .max(100),
+});
+export const residentClaimResultSchema = z.object({ claimedIds: z.array(z.uuid()).max(100) });
+export const residentNotificationSchema = z.object({
+  id: z.uuid(),
+  reportId: z.uuid(),
+  action: z.string().max(100),
+  createdAt: z.string(),
+  readAt: z.string().nullable(),
+  followUp: z.boolean(),
+});
+export const residentNotificationsSchema = z.object({
+  items: z.array(residentNotificationSchema).max(100),
+  unreadCount: z.number().int().nonnegative(),
+});
 export type ResidentProfile = z.infer<typeof residentProfileSchema>;

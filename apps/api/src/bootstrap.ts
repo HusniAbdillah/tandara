@@ -11,7 +11,13 @@ import { AppModule } from './app.module.js';
 import { ApiErrorFilter } from './http/api-error.filter.js';
 
 // Use this API's package graph for DI tokens, including pnpm injected workspaces.
-export { JobsService, AiService, KnowledgeService, DatabaseService } from '@tandara/backend';
+export {
+  JobsService,
+  AiService,
+  KnowledgeService,
+  DatabaseService,
+  ReportsService,
+} from '@tandara/backend';
 
 export function createHttpAdapter(level = 'info'): FastifyAdapter {
   return new FastifyAdapter({

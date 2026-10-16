@@ -38,6 +38,11 @@ import {
   aiEvaluationSchema,
   observationsSchema,
   residentSessionSchema,
+  residentReportPageSchema,
+  residentReportSchema,
+  residentClaimSchema,
+  residentClaimResultSchema,
+  residentNotificationsSchema,
 } from '@tandara/contracts';
 const ok = z.object({ ok: z.boolean() });
 const id = z.object({ id: z.uuid() });
@@ -45,18 +50,33 @@ const reason = z.string().min(5).max(1000);
 type Route = [
   string,
   'get' | 'post' | 'put',
-  'public' | 'coordinator' | 'admin' | 'receipt' | 'resident',
+  'public' | 'coordinator' | 'admin' | 'receipt' | 'resident' | 'residentReceipt',
   z.ZodType,
   z.ZodType?,
 ];
 export const productRoutes: Route[] = [
   ['/reports/{id}/workflow', 'get', 'coordinator', workflowDetailSchema],
   ['/reports/{id}/workflow', 'post', 'coordinator', ok, workflowActionSchema],
-  ['/reports/{id}/feedback', 'post', 'receipt', ok, citizenFeedbackSchema],
+  ['/reports/{id}/feedback', 'post', 'residentReceipt', ok, citizenFeedbackSchema],
   ['/regions/{regionId}/team', 'get', 'coordinator', z.array(teamMemberSchema)],
   ['/regions/{regionId}/report-analytics', 'get', 'coordinator', reportAnalyticsSchema],
   ['/regions/{regionId}/observations', 'get', 'public', observationsSchema],
   ['/resident/auth/me', 'get', 'public', residentSessionSchema],
+  ['/resident/reports', 'get', 'resident', residentReportPageSchema],
+  ['/resident/reports/{id}', 'get', 'resident', residentReportSchema],
+  ['/resident/reports/claim', 'post', 'resident', residentClaimResultSchema, residentClaimSchema],
+  ['/resident/reports/{id}/tracking', 'get', 'resident', trackingSchema],
+  ['/resident/reports/{id}/attachments/{attachmentId}', 'get', 'resident', attachmentSchema],
+  ['/resident/reports/{id}/feedback', 'post', 'resident', ok, citizenFeedbackSchema],
+  ['/resident/reports/{id}/deletion-request', 'post', 'resident', ok],
+  ['/resident/notifications', 'get', 'resident', residentNotificationsSchema],
+  [
+    '/resident/notifications/read',
+    'post',
+    'resident',
+    ok,
+    z.strictObject({ id: z.uuid().optional() }),
+  ],
   [
     '/resident/auth/login',
     'post',
@@ -205,13 +225,13 @@ export const productRoutes: Route[] = [
   ],
   ['/regions', 'get', 'public', z.array(regionSchema)],
   ['/regions/{regionId}/public', 'get', 'public', publicDataSchema],
-  ['/reports', 'post', 'public', receiptSchema, createReportSchema],
+  ['/reports', 'post', 'resident', receiptSchema, createReportSchema],
   ['/reports/{id}/tracking', 'get', 'receipt', trackingSchema],
-  ['/reports/{id}/deletion-request', 'post', 'receipt', ok],
+  ['/reports/{id}/deletion-request', 'post', 'residentReceipt', ok],
   [
     '/reports/{id}/attachments',
     'post',
-    'receipt',
+    'residentReceipt',
     id,
     z.strictObject({ data: z.string().max(2800000) }),
   ],
@@ -275,7 +295,7 @@ export const productRoutes: Route[] = [
   [
     '/regions/{regionId}/training/{id}/results',
     'post',
-    'public',
+    'resident',
     z.object({ score: z.number(), total: z.number() }),
     z.strictObject({
       answers: z.array(z.number().int()),
@@ -371,14 +391,14 @@ export function buildProductPaths() {
         required: true,
         schema: { const: 'web' },
       });
-    if (method !== 'get' && ['coordinator', 'admin', 'resident'].includes(role))
+    if (method !== 'get' && ['coordinator', 'admin', 'resident', 'residentReceipt'].includes(role))
       parameters.push({
         name: 'X-CSRF-Token',
         in: 'header',
         required: true,
         schema: { type: 'string' },
       });
-    if (role === 'receipt')
+    if (role === 'receipt' || role === 'residentReceipt')
       parameters.push({
         name: 'X-Tracking-Token',
         in: 'header',
@@ -391,6 +411,12 @@ export function buildProductPaths() {
         in: 'header',
         required: true,
         schema: { type: 'string', format: 'uuid' },
+      });
+    if (route === '/resident/reports')
+      parameters.push({
+        name: 'page',
+        in: 'query',
+        schema: { type: 'integer', minimum: 1, maximum: 10000 },
       });
     if (route === '/regions/{regionId}/reports')
       for (const [name, type] of [
@@ -411,7 +437,7 @@ export function buildProductPaths() {
         '. All demo workflows are simulation; scoped permissions are enforced server-side.',
       parameters,
       security:
-        role === 'resident'
+        role === 'resident' || role === 'residentReceipt'
           ? [{ residentSession: [] }]
           : role === 'coordinator' || role === 'admin'
             ? [{ session: [] }]

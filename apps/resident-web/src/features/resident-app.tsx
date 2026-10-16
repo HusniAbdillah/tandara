@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Navigate, useLocation, useNavigate } from 'react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { WAvatar, WBrand, WButton, WEmpty, WIcon, WLink, WProgress, WRow } from './chalk-ui.js';
 import type { WargaIconName } from './chalk-ui.js';
 import { useChecklist, useDesktop, useResidentData } from './resident-data.js';
@@ -10,6 +11,7 @@ import { PreparednessPage } from './resident-preparedness.js';
 import { ReportForm, TrackingPage, TrainingPage } from './resident-workflows.js';
 import { designAssets } from './design-assets.js';
 import './warga.css';
+import { PersonalNotifications } from './resident-notifications.js';
 
 const destinations: { to: string; label: string; icon: WargaIconName; matches: string[] }[] = [
   { to: '/', label: 'Beranda', icon: 'home', matches: ['/'] },
@@ -28,11 +30,13 @@ const destinations: { to: string; label: string; icon: WargaIconName; matches: s
   },
 ];
 export function ResidentApp() {
+  const client = useQueryClient();
   const app = useResidentData(),
     location = useLocation(),
     desktop = useDesktop(),
     navigate = useNavigate();
   const path = location.pathname;
+  const refreshSession = app.session.refetch;
   const [update, setUpdate] = useState<(() => Promise<void>) | null>(null);
   useEffect(() => {
     const handler = (event: Event) =>
@@ -43,11 +47,40 @@ export function ResidentApp() {
   useEffect(() => {
     if (path !== '/map') window.scrollTo(0, 0);
   }, [path]);
+  useEffect(() => {
+    if (!['/login', '/register'].includes(path) && navigator.onLine) void refreshSession();
+  }, [path, refreshSession]);
+  useEffect(() => {
+    const expired = (event: Event) => {
+      const failedPath = (event as CustomEvent<{ path: string }>).detail.path;
+      if (failedPath === '/resident/auth/login' || failedPath === '/resident/auth/register') return;
+      for (const key of [
+        'resident-account-reports',
+        'resident-account-report',
+        'resident-personal-notifications',
+        'receipt',
+      ])
+        client.removeQueries({ queryKey: [key] });
+      client.setQueryData(['resident-session'], { user: null });
+    };
+    window.addEventListener('tandara:unauthorized', expired);
+    return () => window.removeEventListener('tandara:unauthorized', expired);
+  }, [client]);
   if (path === '/login' || path === '/register')
+    return <AccountForm key={path} register={path === '/register'} onChooseRegion={app.choose} />;
+  if (app.session.isPending)
     return (
-      <div className="warga-app">
-        <AccountForm register={path === '/register'} onChooseRegion={app.choose} />
+      <div className="w-loading" role="status">
+        Memeriksa sesi…
       </div>
+    );
+  const resident = app.session.data?.user;
+  if (!resident || app.session.isError)
+    return (
+      <Navigate
+        replace
+        to={'/login?next=' + encodeURIComponent(path + location.search + location.hash)}
+      />
     );
   const mapPage = path === '/map';
   const formPage = path === '/report' || path === '/support' || path === '/training';
@@ -56,7 +89,7 @@ export function ResidentApp() {
   if (path === '/area') content = <AreaPage app={app} />;
   else if (path === '/profile') content = <ProfilePage app={app} />;
   else if (path === '/help') content = <PrivacyPage app={app} />;
-  else if (path === '/tracking') content = <TrackingPage />;
+  else if (path === '/tracking') content = <TrackingPage app={app} />;
   else if (mapPage) content = <MapPage app={app} />;
   else if ((app.regions.isError || app.data.isError) && !app.region)
     content = (
@@ -82,7 +115,14 @@ export function ResidentApp() {
       </div>
     );
   else if (path === '/report' || path === '/support')
-    content = <ReportForm key={app.activeRegion + path} region={app.region} online={app.online} />;
+    content = (
+      <ReportForm
+        key={app.activeRegion + path}
+        region={app.region}
+        online={app.online}
+        residentId={resident.id}
+      />
+    );
   else if (path === '/training')
     content = <TrainingPage key={app.activeRegion} region={app.region} />;
   else if (['/guide', '/plan', '/checklist', '/downloads'].includes(path))
@@ -111,6 +151,11 @@ export function ResidentApp() {
     <div className="w-header-actions">
       <Link className="w-icon-button" to="/notifications" aria-label="Notifikasi">
         <WIcon name="bell" />
+        {!!app.notifications.data?.unreadCount && app.session.data?.user && (
+          <span className="w-notification-count">
+            {app.notifications.data.unreadCount > 99 ? '99+' : app.notifications.data.unreadCount}
+          </span>
+        )}
       </Link>
       <Link className="w-icon-button" to="/profile" aria-label="Profil">
         <WAvatar />
@@ -350,7 +395,9 @@ function UpdatesPage({ app }: { app: ResidentData }) {
     app.data.data?.information.filter((item) => !selected || item.id === selected) ?? [];
   return (
     <div className="w-narrow">
-      <h1>Kabar sekitar</h1>
+      <h1>Notifikasi</h1>
+      {app.session.data?.user && <PersonalNotifications app={app} />}
+      <h2>Kabar sekitar</h2>
       <div className="w-stack">
         {items.map((item) => (
           <article className="w-card w-stack" key={item.id}>

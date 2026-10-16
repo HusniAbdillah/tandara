@@ -32,6 +32,8 @@ export async function request<S extends z.ZodType>(
     ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
     signal: options.signal ?? AbortSignal.timeout(20000),
   });
+  if (response.status === 401 && typeof window !== 'undefined')
+    window.dispatchEvent(new CustomEvent('tandara:unauthorized', { detail: { path } }));
   const body: unknown = await response.json();
   if (!response.ok) {
     const parsed = errorResponseSchema.safeParse(body);

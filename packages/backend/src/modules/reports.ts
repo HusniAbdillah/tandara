@@ -14,6 +14,7 @@ import { IdentityService } from './identity.js';
 import { audit, conflict, found, hash, parse, rateLimit, reportProjection } from './shared.js';
 
 import { workflowDetail } from './report-workflow.js';
+import { retainResidentPhone } from './resident-contact.js';
 
 export const transitions: Record<ReportReviewState, ReportReviewState[]> = {
   submitted: ['under_review', 'clarification_requested', 'reviewed', 'rejected', 'closed'],
@@ -33,7 +34,7 @@ export class ReportsService {
   get db() {
     return this.identity.db;
   }
-  async create(input: unknown, key: string | undefined, ip: string) {
+  async create(input: unknown, key: string | undefined, ip: string, residentId?: string) {
     const data = parse(createReportSchema, input);
     if (data.privacyConsent !== true)
       throw new BadRequestException('Persetujuan penyimpanan laporan diperlukan.');
@@ -54,7 +55,8 @@ export class ReportsService {
           payload_hash: string;
           tracking_hash: string;
           state: ReportReviewState;
-        }>`SELECT id,payload_hash,tracking_hash,state FROM reports WHERE idempotency_key=${key!}::uuid`.execute(
+          resident_id: string | null;
+        }>`SELECT id,payload_hash,tracking_hash,state,resident_id FROM reports WHERE idempotency_key=${key!}::uuid`.execute(
           tx,
         )
       ).rows[0];
@@ -65,7 +67,14 @@ export class ReportsService {
           existing.tracking_hash !== hash(token)
         )
           conflict('Kunci sinkronisasi telah digunakan. Isi laporan harus tetap sama.');
-        return { id: existing.id, trackingToken: token, state: existing.state };
+        if (residentId && existing.resident_id && existing.resident_id !== residentId)
+          conflict('Laporan terhubung ke akun lain.');
+        return {
+          id: existing.id,
+          trackingToken: token,
+          state: existing.state,
+          ...(residentId && existing.resident_id === residentId ? { residentId } : {}),
+        };
       }
       await rateLimit(tx, `report:${ip}`, 20, 3600);
       const region = found(
@@ -100,7 +109,7 @@ export class ReportsService {
           await sql<{
             id: string;
             state: ReportReviewState;
-          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash,simulation) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash},${process.env['APP_MODE'] !== 'production'}) RETURNING id,state`.execute(
+          }>`INSERT INTO reports(region_id,category,description,landmark_text,observation_time,location,accuracy_meters,follow_up_requested,tracking_hash,idempotency_key,payload_hash,simulation,resident_id) VALUES(${data.regionId}::uuid,${data.category},${data.description},${data.landmarkText ?? null},${data.observationTime}::timestamptz,CASE WHEN ${location?.longitude ?? null}::float IS NULL THEN NULL ELSE ST_SetSRID(ST_MakePoint(${location?.longitude ?? null},${location?.latitude ?? null}),4326) END,${location?.accuracyMeters ?? null},${data.followUpRequested},${hash(token)},${key!}::uuid,${payloadHash},${process.env['APP_MODE'] !== 'production'},${residentId ?? null}::uuid) RETURNING id,state`.execute(
             tx,
           )
         ).rows[0],
@@ -109,6 +118,7 @@ export class ReportsService {
         await sql`INSERT INTO report_private_details(report_id,contact_details,consent_at,retention_until) VALUES(${row.id}::uuid,${data.contactDetails},now(),now()+${region.config.retentionDays}*interval '1 day')`.execute(
           tx,
         );
+      if (residentId) await retainResidentPhone(tx, row.id);
       if (data.followUpRequested)
         await sql`INSERT INTO assistance_requests(report_id,region_id) VALUES(${row.id}::uuid,${data.regionId}::uuid)`.execute(
           tx,
@@ -125,10 +135,15 @@ export class ReportsService {
       await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,${'Laporan warga baru menunggu verifikasi.'} FROM users u LEFT JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE (m.region_id=${data.regionId}::uuid OR u.role='admin') AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
         tx,
       );
-      return { id: row.id, trackingToken: token, state: row.state };
+      return {
+        id: row.id,
+        trackingToken: token,
+        state: row.state,
+        ...(residentId ? { residentId } : {}),
+      };
     });
   }
-  async track(id: string, token: string | undefined) {
+  async track(id: string, token: string | undefined, residentId?: string) {
     parse(z.uuid(), id);
     const r = found(
       (
@@ -139,7 +154,7 @@ export class ReportsService {
           updatedAt: string;
           assistanceState: string | null;
           erased: boolean;
-        }>`SELECT r.id,r.state,r.erased,r.created_at::text AS "createdAt",r.updated_at::text AS "updatedAt",a.state AS "assistanceState" FROM reports r LEFT JOIN assistance_requests a ON a.report_id=r.id WHERE r.id=${id}::uuid AND r.tracking_hash=${hash(token ?? '')}`.execute(
+        }>`SELECT r.id,r.state,r.erased,r.created_at::text AS "createdAt",r.updated_at::text AS "updatedAt",a.state AS "assistanceState" FROM reports r LEFT JOIN assistance_requests a ON a.report_id=r.id WHERE r.id=${id}::uuid AND (r.tracking_hash=${hash(token ?? '')} OR (r.resident_id=${residentId ?? null}::uuid AND NOT r.erased))`.execute(
           this.db,
         )
       ).rows[0],
@@ -151,10 +166,23 @@ export class ReportsService {
       )
     ).rows;
     const detail = await workflowDetail(this, id, true);
-    return { ...r, history, workflow: detail.workflow, updates: r.erased ? [] : detail.events };
+    const attachments =
+      residentId && !r.erased
+        ? (
+            await sql`SELECT id,name,created_at::text AS "createdAt" FROM report_attachments
+          WHERE report_id=${id}::uuid ORDER BY created_at,id`.execute(this.db)
+          ).rows
+        : [];
+    return {
+      ...r,
+      history,
+      attachments,
+      workflow: detail.workflow,
+      updates: r.erased ? [] : detail.events,
+    };
   }
-  async eraseRequest(id: string, token: string | undefined) {
-    await this.track(id, token);
+  async eraseRequest(id: string, token: string | undefined, residentId?: string) {
+    await this.track(id, token, residentId);
     await sql`INSERT INTO deletion_requests(report_id,region_id) SELECT id,region_id FROM reports WHERE id=${id}::uuid ON CONFLICT(report_id) DO NOTHING`.execute(
       this.db,
     );
@@ -215,15 +243,17 @@ export class ReportsService {
   }
   async detail(user: User, id: string): Promise<ReportDetail> {
     const regionId = await this.accessible(user, id);
-    const report = found(
+    const detail = found(
       (
         await sql<{
           data: Report;
-        }>`SELECT ${reportProjection} AS data FROM reports r LEFT JOIN report_private_details p ON p.report_id=r.id WHERE r.id=${id}::uuid`.execute(
+          reporterPhone: string | null;
+        }>`SELECT ${reportProjection} AS data,CASE WHEN p.retention_until>now() THEN p.resident_phone ELSE NULL END AS "reporterPhone" FROM reports r LEFT JOIN report_private_details p ON p.report_id=r.id WHERE r.id=${id}::uuid`.execute(
           this.db,
         )
       ).rows[0],
-    ).data;
+    );
+    const report = detail.data;
     const history = (
       await sql<
         ReportDetail['history'][number]
@@ -252,9 +282,16 @@ export class ReportsService {
         this.db,
       )
     ).rows;
-    if (report.contactDetails || report.followUpRequested)
+    if (report.contactDetails || report.followUpRequested || detail.reporterPhone)
       await audit(this.db, user.id, regionId, 'report.private_view', id);
-    return { report, history, suggestions, duplicates, attachments };
+    return {
+      report,
+      reporterPhone: detail.reporterPhone,
+      history,
+      suggestions,
+      duplicates,
+      attachments,
+    };
   }
   async review(user: User, id: string, input: unknown) {
     const regionId = await this.accessible(user, id);
@@ -417,6 +454,19 @@ export class ReportsService {
       ).rows[0],
     );
     await audit(this.db, user.id, region, 'attachment.view', attachmentId);
+    return row.content;
+  }
+  async residentAttachment(residentId: string, id: string, attachmentId: string) {
+    parse(z.uuid(), id);
+    parse(z.uuid(), attachmentId);
+    const row = found(
+      (
+        await sql<{ content: Buffer }>`SELECT a.content
+      FROM report_attachments a JOIN reports r ON r.id=a.report_id
+      WHERE a.id=${attachmentId}::uuid AND r.id=${id}::uuid
+      AND r.resident_id=${residentId}::uuid AND NOT r.erased`.execute(this.db)
+      ).rows[0],
+    );
     return row.content;
   }
 }

@@ -3,11 +3,14 @@ import assert from 'node:assert/strict';
 import { before, after, test } from 'node:test';
 import { parseEnvironment } from '../../packages/backend/dist/index.js';
 import { createApp } from '../../apps/api/dist/bootstrap.js';
+import { registerResident, residentWrite } from './helpers/resident.mjs';
 
 let nest, app, admin, coordinator, outsider, receipt;
+let resident;
 const region = '20000000-0000-4000-8000-000000000001';
 const token = crypto.randomUUID() + crypto.randomUUID();
 function call(method, path, body, session, headers = {}) {
+  if (!session && residentWrite(method, path)) session = resident;
   return app.inject({
     method,
     url: '/api/v1' + path,
@@ -39,6 +42,7 @@ before(async () => {
   admin = await login('admin@demo.tandara.test');
   coordinator = await login('ciliwung@demo.tandara.test');
   outsider = await login('semarang@demo.tandara.test');
+  resident = await registerResident(app);
   const r = await call(
     'POST',
     '/reports',
