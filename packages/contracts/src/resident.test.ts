@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { residentCredentialsSchema, residentPhoneSchema } from './resident.js';
+import {
+  residentCredentialsSchema,
+  residentPhoneSchema,
+  residentRegistrationSchema,
+} from './resident.js';
 import { observationsSchema, waterObservationSchema } from './observations.js';
 
 describe('resident credentials', () => {
+  it('requires a personal name only when registering', () => {
+    const credentials = { phone: '081234567890', password: 'synthetic-password' };
+    expect(residentCredentialsSchema.safeParse(credentials).success).toBe(true);
+    expect(residentRegistrationSchema.safeParse(credentials).success).toBe(false);
+    expect(residentRegistrationSchema.safeParse({ ...credentials, name: '  ' }).success).toBe(
+      false,
+    );
+    expect(residentRegistrationSchema.parse({ ...credentials, name: ' Rani ' }).name).toBe('Rani');
+    expect(
+      residentRegistrationSchema.safeParse({ ...credentials, name: 'Rani', role: 'admin' }).success,
+    ).toBe(false);
+  });
   it('normalizes equivalent Indonesian phone numbers', () => {
     for (const value of ['081234567890', '+62 812-3456-7890', '6281234567890'])
       expect(residentPhoneSchema.parse(value)).toBe('+6281234567890');

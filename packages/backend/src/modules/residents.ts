@@ -7,12 +7,14 @@ import {
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { sql } from 'kysely';
+import { demoAccounts } from '@tandara/database';
 import {
   residentCredentialsSchema,
   residentClaimSchema,
   residentReportPageSchema,
   residentReportSchema,
   residentNotificationsSchema,
+  residentRegistrationSchema,
 } from '@tandara/contracts';
 import type { ResidentProfile } from '@tandara/contracts';
 import { DatabaseService } from '../platform/database.service.js';
@@ -24,15 +26,24 @@ import { retainResidentPhone } from './resident-contact.js';
 @Injectable()
 export class ResidentsService {
   constructor(@Inject(DatabaseService) readonly database: DatabaseService) {}
+  demoLogin() {
+    const env = this.database.environment;
+    return env.APP_MODE === 'simulation' && env.DEMO_LOGIN_ENABLED === 'true' && env.DEMO_PASSWORD
+      ? { ...demoAccounts, password: env.DEMO_PASSWORD }
+      : null;
+  }
   async signIn(input: unknown, ip: string, register: boolean) {
-    const data = parse(residentCredentialsSchema, input);
+    const data = register
+      ? parse(residentRegistrationSchema, input)
+      : parse(residentCredentialsSchema, input);
     const db = this.database.db;
     await rateLimit(db, `resident-login-ip:${ip}`, 20, 900);
     await rateLimit(db, `resident-login-phone:${data.phone}`, 10, 900);
     if (register) {
+      const registration = parse(residentRegistrationSchema, input);
       const encoded = await passwordHash(data.password);
       const created =
-        await sql`INSERT INTO residents(phone,password_hash) VALUES(${data.phone},${encoded}) ON CONFLICT(phone) DO NOTHING RETURNING id`.execute(
+        await sql`INSERT INTO residents(phone,name,password_hash) VALUES(${data.phone},${registration.name},${encoded}) ON CONFLICT(phone) DO NOTHING RETURNING id`.execute(
           db,
         );
       if (!created.rows.length)

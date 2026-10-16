@@ -24,7 +24,13 @@ import {
   AnalyticsPage,
   TeamPage,
 } from './operations-ui.js';
-import { PlansPage, AssistancePage, SourcesPage, AuditPage } from './management-ui.js';
+import {
+  PlansPage,
+  AssistancePage,
+  SourcesPage,
+  AuditPage,
+  TrainingManagement,
+} from './management-ui.js';
 import { SituationMap } from './situation-map.js';
 import { AdminPage } from './admin-ui.js';
 import { NotificationsPage } from './notifications-ui.js';
@@ -35,11 +41,13 @@ const authSchema = z.object({ user: userSchema, csrf: z.string() });
 const nav = [
   ['/', 'Ringkasan', 'home'],
   ['/inbox', 'Laporan', 'inbox'],
+  ['/ai', 'Asisten AI & RAG', 'shield'],
   ['/review', 'Tinjau hasil', 'shield'],
   ['/members', 'Anggota & peran', 'help'],
   ['/analytics', 'Rekap laporan', 'report'],
   ['/map', 'Peta situasi', 'map'],
   ['/plans', 'Rencana lokal', 'plan'],
+  ['/training', 'Latihan warga', 'plan'],
   ['/assistance', 'Permintaan bantuan', 'help'],
   ['/sources', 'Sumber informasi', 'source'],
   ['/audit', 'Riwayat aktivitas', 'audit'],
@@ -112,6 +120,7 @@ export function PoskoApp() {
       <>
         <Login
           residentOrigin={deployment.data?.residentOrigin}
+          demoLogin={deployment.data?.demoLogin}
           onLogin={(data) => client.setQueryData(['auth'], data)}
         />
         <PwaUpdateNotice />
@@ -170,6 +179,9 @@ export function PoskoApp() {
           break;
         case '/plans':
           content = <PlansPage {...props} />;
+          break;
+        case '/training':
+          content = <TrainingManagement {...props} />;
           break;
         case '/assistance':
           content = <AssistancePage {...props} />;
@@ -366,9 +378,11 @@ function PwaUpdateNotice() {
 function Login({
   onLogin,
   residentOrigin,
+  demoLogin,
 }: {
   onLogin: (data: z.infer<typeof authSchema>) => void;
   residentOrigin: string | undefined;
+  demoLogin: z.infer<typeof deploymentSchema>['demoLogin'];
 }) {
   const [code, setCode] = useState('');
   const [email, setEmail] = useState('');
@@ -390,6 +404,35 @@ function Login({
       <main className="login-form">
         <h1>Masuk ke Posko</h1>
         <p className="muted">Akses untuk koordinator dan administrator berwenang.</p>
+        {demoLogin && (
+          <fieldset className="my-5 grid gap-2 rounded-xl border p-4" disabled={busy}>
+            <legend className="px-1 font-semibold">Coba akun demo</legend>
+            <p className="text-sm text-muted-foreground">
+              Pilih akun untuk mengisi email dan kata sandi.
+            </p>
+            {demoLogin.coordinators.map((account) => (
+              <button
+                key={account.id}
+                type="button"
+                className="text-left"
+                aria-pressed={email === account.email}
+                style={{ display: 'grid', gap: 4, justifyItems: 'start', padding: '12px 14px' }}
+                onClick={() => {
+                  setEmail(account.email);
+                  setPassword(demoLogin.password);
+                  setCode('');
+                  setNeedsCode(false);
+                  setError('');
+                }}
+              >
+                <strong className="block">{account.name}</strong>
+                <span className="block text-xs">
+                  {account.email} · {account.role}
+                </span>
+              </button>
+            ))}
+          </fieldset>
+        )}
         <form
           onSubmit={async (e) => {
             e.preventDefault();

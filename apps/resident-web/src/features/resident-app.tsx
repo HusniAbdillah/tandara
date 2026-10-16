@@ -68,9 +68,11 @@ export function ResidentApp() {
   }, [client]);
   if (path === '/login' || path === '/register')
     return (
-      <div className="warga-app">
-        <AccountForm key={path} register={path === '/register'} />
-      </div>
+        <AccountForm
+          key={path}
+          register={path === '/register'}
+          onChooseRegion={app.choose}
+        />
     );
   if (app.session.isPending)
     return (

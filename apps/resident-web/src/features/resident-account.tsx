@@ -1,27 +1,43 @@
-import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
-import { residentCredentialsSchema, residentSessionSchema } from '@tandara/contracts';
+import {
+  deploymentSchema,
+  residentCredentialsSchema,
+  residentRegistrationSchema,
+  residentSessionSchema,
+} from '@tandara/contracts';
 import { WAvatar, WButton, WEmpty, WError, WIcon, WLink, WRow } from './chalk-ui.js';
 import type { ResidentData } from './resident-data.js';
 import { residentCsrf } from './resident-data.js';
 import { residentDb } from '../offline/database.js';
 import { returnPath } from '../account/session.js';
 
-export function AccountForm({ register = false }: { register?: boolean }) {
+export function AccountForm({
+  register = false,
+  onChooseRegion,
+}: {
+  register?: boolean;
+  onChooseRegion: (id: string) => void;
+}) {
   const navigate = useNavigate(),
     client = useQueryClient();
   const location = useLocation();
   const next = returnPath(new URLSearchParams(location.search).get('next'));
   const nextQuery = next ? '?next=' + encodeURIComponent(next) : '';
-  // Public judging account, provisioned by the simulation seed.
-  const [phone, setPhone] = useState(register ? '' : '081234560001'),
-    [password, setPassword] = useState(register ? '' : 'TandaraDemo2026!'),
+  const [phone, setPhone] = useState(''),
+    [name, setName] = useState(''),
+    [password, setPassword] = useState(''),
     [show, setShow] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
+  const deployment = useQuery({
+    queryKey: ['deployment'],
+    queryFn: () => request('/deployment', deploymentSchema),
+    retry: false,
+  });
+  const demoLogin = deployment.data?.demoLogin;
   return (
     <main className="w-auth" id="main">
       <form
@@ -29,7 +45,9 @@ export function AccountForm({ register = false }: { register?: boolean }) {
         onSubmit={async (e) => {
           e.preventDefault();
           setError('');
-          const result = residentCredentialsSchema.safeParse({ phone, password });
+          const result = register
+            ? residentRegistrationSchema.safeParse({ phone, password, name })
+            : residentCredentialsSchema.safeParse({ phone, password });
           if (!result.success) {
             setError(result.error.issues[0]?.message ?? 'Periksa isian.');
             return;
@@ -43,6 +61,10 @@ export function AccountForm({ register = false }: { register?: boolean }) {
             );
             await client.cancelQueries({ queryKey: ['resident-session'] });
             client.setQueryData(['resident-session'], session);
+            const account = demoLogin?.residents.find(
+              (account) => account.phone === result.data.phone,
+            );
+            if (!register && account) onChooseRegion(account.regionId);
             navigate(next ?? (register ? '/area' : '/'), { replace: true });
           } catch (err) {
             setError(err instanceof Error ? err.message : 'Tidak dapat masuk.');
@@ -52,6 +74,49 @@ export function AccountForm({ register = false }: { register?: boolean }) {
         }}
       >
         <h1>{register ? 'Daftar' : 'Masuk'}</h1>
+        {!register && demoLogin && (
+          <fieldset className="w-card w-stack" disabled={busy}>
+            <legend>Coba akun demo</legend>
+            <p className="w-muted">Pilih warga untuk mengisi nomor telepon dan kata sandi.</p>
+            {demoLogin.residents.map((account) => (
+              <WButton
+                key={account.id}
+                type="button"
+                secondary
+                aria-pressed={phone === account.phone}
+                style={{
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  gap: 4,
+                  textAlign: 'left',
+                }}
+                onClick={() => {
+                  setPhone(account.phone);
+                  setPassword(demoLogin.password);
+                  setError('');
+                }}
+              >
+                <strong>{account.name}</strong>
+                <small>{account.phone.replace(/^\+62/, '0')}</small>
+              </WButton>
+            ))}
+          </fieldset>
+        )}
+        {register && (
+          <label className="w-field">
+            <span>Nama</span>
+            <input
+              name="name"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              minLength={2}
+              maxLength={100}
+              placeholder="Nama panggilan atau nama lengkap"
+              required
+            />
+          </label>
+        )}
         <label className="w-field">
           <span>Nomor telepon</span>
           <input

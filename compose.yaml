@@ -29,6 +29,7 @@ services:
       LOG_LEVEL: info
       WORKER_ENABLED: 'true'
       DEMO_PASSWORD: ${DEMO_PASSWORD:?Set DEMO_PASSWORD in .env}
+      DEMO_LOGIN_ENABLED: ${DEMO_LOGIN_ENABLED:-false}
       AI_MODE: ${AI_MODE:-heuristic}
       AI_PROVIDER: ${AI_PROVIDER:-custom}
       AI_BASE_URL: ${AI_BASE_URL:-}

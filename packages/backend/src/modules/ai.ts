@@ -786,7 +786,7 @@ export class AiService implements OnApplicationShutdown {
   }
   async sources(run: RunRow, lease: AiLease): Promise<AiEvidence[]> {
     const result: AiEvidence[] = [];
-    if (run.report_id) {
+    if (run.report_id || ['clarification', 'public_summary', 'duplicates'].includes(run.task)) {
       const reports = (
         await sql<{
           id: string;
@@ -796,13 +796,15 @@ export class AiService implements OnApplicationShutdown {
           landmark_text: string | null;
           observation_time: string | null;
           evidence: string | null;
-        }>`SELECT r.id,r.description,r.revision,r.state,r.landmark_text,r.observation_time::text,(SELECT evidence FROM duplicate_candidates d WHERE d.report_id=${run.report_id}::uuid AND d.other_id=r.id LIMIT 1) evidence FROM reports r WHERE region_id=${run.region_id}::uuid AND NOT erased AND (id=${run.report_id}::uuid OR (${run.task === 'duplicates'} AND id IN (SELECT other_id FROM duplicate_candidates WHERE report_id=${run.report_id}::uuid))) ORDER BY (id=${run.report_id}::uuid) DESC,created_at DESC LIMIT 6`.execute(
+        }>`SELECT r.id,r.description,r.revision,r.state,r.landmark_text,r.observation_time::text,(SELECT evidence FROM duplicate_candidates d WHERE d.report_id=COALESCE(${run.report_id ?? null}::uuid,r.id) AND d.other_id=r.id LIMIT 1) evidence FROM reports r WHERE region_id=${run.region_id}::uuid AND NOT erased AND (${run.report_id ? sql`id=${run.report_id}::uuid OR (${run.task === 'duplicates'} AND id IN (SELECT other_id FROM duplicate_candidates WHERE report_id=${run.report_id}::uuid))` : sql`true`}) ORDER BY (${run.report_id ? sql`id=${run.report_id}::uuid` : sql`false`}) DESC,created_at DESC LIMIT ${run.report_id ? 6 : 3}`.execute(
           this.db,
         )
       ).rows;
       for (const r of reports) {
-        if (sensitiveAiText(r.description + ' ' + (r.landmark_text ?? '')))
-          throw new AiInferenceError('provider_rejected', false);
+        if (sensitiveAiText(r.description + ' ' + (r.landmark_text ?? ''))) {
+          if (run.report_id) throw new AiInferenceError('provider_rejected', false);
+          continue;
+        }
         result.push({
           id: 'report:' + r.id,
           entityId: r.id,
@@ -911,15 +913,32 @@ export class AiService implements OnApplicationShutdown {
         ].join('\n'),
       });
     }
-    if (['answer', 'plan_draft', 'training_draft', 'translation'].includes(run.task)) {
+    if (
+      ['answer', 'plan_draft', 'training_draft', 'translation'].includes(run.task) ||
+      (['clarification', 'public_summary'].includes(run.task) &&
+        (Boolean(run.request.question) || !run.report_id))
+    ) {
       let vector: number[] | null = null;
-      if (aiOperationsSettings().AI_EMBEDDING_MODE === 'compatible' && run.request.question)
+      if (
+        aiOperationsSettings().AI_EMBEDDING_MODE === 'compatible' &&
+        run.request.question &&
+        ['answer', 'plan_draft', 'training_draft', 'translation'].includes(run.task)
+      )
         vector = await this.queryEmbedding(run, lease);
-      for (const chunk of await this.knowledge.search(
+      let chunks = await this.knowledge.search(
         run.region_id,
-        run.request.question ?? 'rencana',
+        run.request.question ?? 'rencana kesiapsiagaan langkah dokumen warga',
         vector,
-      ))
+      );
+      if (chunks.length === 0 && run.task !== 'answer') {
+        chunks = await this.knowledge.search(
+          run.region_id,
+          'rencana kesiapsiagaan langkah dokumen warga posko',
+          null,
+        );
+      }
+      const maxChunks = ['clarification', 'public_summary'].includes(run.task) ? 3 : 10;
+      for (const chunk of chunks.slice(0, maxChunks))
         result.push({
           id: chunk.kind + ':' + chunk.id,
           entityId: chunk.entityId,

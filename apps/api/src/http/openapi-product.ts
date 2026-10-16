@@ -89,7 +89,11 @@ export const productRoutes: Route[] = [
     'post',
     'public',
     residentSessionSchema,
-    z.strictObject({ phone: z.string(), password: z.string().min(8).max(200) }),
+    z.strictObject({
+      phone: z.string(),
+      password: z.string().min(8).max(200),
+      name: z.string().trim().min(2).max(100),
+    }),
   ],
   ['/resident/auth/logout', 'post', 'resident', ok],
   ['/admin/ai/releases/{id}/evaluations', 'post', 'admin', id, aiEvaluationSchema],

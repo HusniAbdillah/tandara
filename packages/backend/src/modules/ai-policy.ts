@@ -67,20 +67,129 @@ export function validateAssistance(
   }
   return value;
 }
-export function deterministicAssistance(sources: AiEvidence[]): AiAssistanceOutput {
+export function deterministicAssistance(
+  sources: AiEvidence[],
+  task = 'briefing',
+  question = '',
+): AiAssistanceOutput {
+  const claims = sources.slice(0, 8).map((s) => ({
+    text: s.text.slice(0, 1000),
+    state: 'explicit' as const,
+    citations: [{ sourceId: s.id, quote: s.text.slice(0, 1000) }],
+  }));
+  const first = sources[0];
+  const second = sources[1] ?? first;
+  const instructionSource = sources.find((s) => s.kind === 'instruction');
+  const titles: Record<string, string> = {
+    briefing: 'Briefing situasional operasional Posko',
+    clarification: 'Draf klarifikasi laporan warga untuk ditinjau',
+    public_summary: 'Draf ringkasan publik terverifikasi untuk ditinjau',
+    plan_draft: 'Draf pembaruan rencana kesiapsiagaan komunitas',
+    training_draft: 'Draf skenario latihan kesiapsiagaan warga',
+    translation: 'Draf saran terjemahan komunikasi kesiapsiagaan',
+    answer: 'Sintesis jawaban berbasis pustaka pengetahuan RAG',
+    duplicates: 'Analisis kemiripan dan kandidat laporan duplikat',
+    coverage: 'Analisis cakupan pengamatan spasial wilayah',
+  };
+  const questionsByTask: Record<string, string[]> = {
+    briefing: [
+      'Laporan mana yang masih berstatus menunggu klarifikasi atau memerlukan penugasan koordinator segera?',
+      'Apakah ada pembaruan sensor tinggi muka air atau prakiraan BMKG yang perlu disandingkan dengan laporan warga?',
+    ],
+    clarification: [
+      'Mohon konfirmasi patokan lokasi terdekat (RT/RW, nama jalan/gang, atau bangunan sekitar).',
+      'Kapan waktu pengamatan terakhir dan berapa perkiraan tinggi genangan saat ini?',
+      'Apakah genangan mulai memasuki rumah warga atau menghambat akses kelompok rentan (lansia/anak/disabilitas)?',
+    ],
+    public_summary: [
+      'Apakah seluruh fakta lokasi dan status penanganan telah diverifikasi koordinator lapangan sebelum dibagikan?',
+    ],
+    plan_draft: [
+      'Apakah titik kumpul sementara telah diperiksa aksesibilitasnya bagi lansia dan penyandang disabilitas?',
+      'Apakah daftar kontak koordinator RT/RW pada rencana wilayah ini sudah mutakhir?',
+    ],
+    training_draft: [
+      'Apakah materi latihan sudah menekankan perbedaan antara observasi warga dan peringatan resmi otoritas?',
+    ],
+    translation: [
+      'Apakah istilah lokal dan angka penting telah diperiksa oleh peninjau bahasa yang berkompeten?',
+    ],
+    answer: [
+      'Pastikan versi dokumen rencana dan referensi yang dikutip masih berlaku sebelum disampaikan ke warga.',
+    ],
+    duplicates: [
+      'Apakah jarak lokasi, patokan, dan waktu pengamatan mengacu pada titik kejadian yang sama?',
+    ],
+    coverage: [
+      'Area mana yang belum memiliki laporan terbaru dan memerlukan pengecekan proaktif koordinator?',
+    ],
+  };
+  const draft: AiAssistanceOutput['draft'] = !first
+    ? null
+    : task === 'clarification'
+      ? {
+          kind: 'clarification',
+          sections: [
+            {
+              heading: 'Pesan permintaan klarifikasi ke warga',
+              text: 'Terima kasih atas laporan yang Anda kirimkan ke Posko. Untuk mempercepat verifikasi lapangan, mohon informasikan patokan lokasi terdekat (RT/RW atau bangunan sekitar), waktu pengamatan terbaru, serta apakah air mulai memasuki rumah atau menghambat akses warga rentan.',
+              citations: [{ sourceId: first.id, quote: first.text.slice(0, 300) }],
+            },
+          ],
+        }
+      : task === 'public_summary'
+        ? {
+            kind: 'public_summary',
+            sections: [
+              {
+                heading: 'Ringkasan status publik wilayah',
+                text: 'Posko wilayah telah menerima dan meninjau laporan warga terkait kondisi lingkungan setempat. Petugas koordinator sedang melakukan pemeriksaan lapangan dan koordinasi penanganan. Warga diimbau tetap tenang, menyimpan dokumen penting dalam wadah kedap air, serta memantau informasi resmi BMKG dan BPBD.',
+                citations: [{ sourceId: first.id, quote: first.text.slice(0, 300) }],
+              },
+            ],
+          }
+        : task === 'plan_draft'
+          ? {
+              kind: 'plan_draft',
+              sections: [
+                {
+                  heading: '1. Kesiapsiagaan Rumah Tangga & Tas Siaga 72 Jam',
+                  text: 'Siapkan dokumen penting dalam kantong kedap air, obat rutin pribadi, air minum, senter, serta sepakati cara menghubungi anggota keluarga dan titik temu saat jaringan komunikasi terganggu.',
+                  citations: [{ sourceId: first.id, quote: first.text.slice(0, 300) }],
+                },
+                {
+                  heading: '2. Koordinasi Posko, Kelompok Rentan, & Keselamatan Lingkungan',
+                  text: 'Prioritaskan pendampingan lansia, anak-anak, ibu hamil, dan penyandang disabilitas menuju titik kumpul yang telah ditinjau koordinator. Matikan panel listrik utama bila air mendekati teras dan pantau peringatan resmi BMKG/BPBD.',
+                  citations: [{ sourceId: second!.id, quote: second!.text.slice(0, 300) }],
+                },
+              ],
+            }
+          : task === 'training_draft'
+            ? {
+                kind: 'training_draft',
+                sections: [
+                  {
+                    heading: 'Skenario Latihan: Verifikasi Informasi & Langkah Siaga Banjir',
+                    text: 'Latihan warga untuk membedakan laporan observasi awal dari peringatan resmi, menyiapkan tas siaga 72 jam, mengamankan instalasi listrik rumah, serta mengenali lokasi titik kumpul komunitas.',
+                    citations: [{ sourceId: first.id, quote: first.text.slice(0, 300) }],
+                  },
+                ],
+              }
+            : null;
   return {
-    title: 'Petikan sumber untuk ditinjau',
-    claims: sources.slice(0, 8).map((s) => ({
-      text: s.text.slice(0, 1000),
-      state: 'explicit' as const,
-      citations: [{ sourceId: s.id, quote: s.text.slice(0, 1000) }],
-    })),
-    questions: [],
+    title: first
+      ? (titles[task] ?? 'Petikan sumber untuk ditinjau')
+      : 'Petikan sumber untuk ditinjau',
+    claims,
+    questions: first ? (questionsByTask[task] ?? []) : [],
     abstained: sources.length === 0,
     limitation:
       'Mode aturan lokal; bukan inferensi model. Petikan tidak menetapkan keadaan terkini atau keamanan rute. Perlu tinjauan manusia.',
-    translation: null,
-    draft: null,
+    translation:
+      task === 'translation' && first
+        ? (instructionSource?.text ?? (question || first.text.slice(0, 500)))
+        : null,
+    draft,
     needsHumanReview: true,
   };
 }

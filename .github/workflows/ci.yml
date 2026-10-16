@@ -93,6 +93,8 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify Warga flows and Posko observation integration
         run: pnpm test:e2e:warga
+      - name: Verify demo account pickers on desktop and mobile
+        run: pnpm test:e2e:demo
       - name: Upload Chalk browser failure evidence
         uses: actions/upload-artifact@v4
         if: failure()

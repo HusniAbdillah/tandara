@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import { request } from '@tandara/api-client';
-import { coverageSchema, publicDataSchema, reportPageSchema } from '@tandara/contracts';
+import {
+  aiRunSchema,
+  coverageSchema,
+  publicDataSchema,
+  reportPageSchema,
+} from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
 import { Badge, Notice, PageHeader, formatTime } from '@tandara/ui';
 import type { Map, GeoJSONSource } from 'maplibre-gl';
@@ -12,12 +18,14 @@ import { basemapStyle, loadBasemap } from './basemap.js';
 import { ObservationPanel } from './observation-panel.js';
 
 export function SituationMap({ region, user }: { region: Region; user: User }) {
+  const queryClient = useQueryClient();
   const element = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [failed, setFailed] = useState(false);
   const [ready, setReady] = useState(false);
   const [basemapFailed, setBasemapFailed] = useState(false);
   const [basemapLoaded, setBasemapLoaded] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
   const [layers, setLayers] = useState({
     basemap: true,
     reports: true,
@@ -43,6 +51,28 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
     queryKey: ['map-public', user.id, region.id],
     queryFn: () => request('/regions/' + region.id + '/public', publicDataSchema),
   });
+  const aiRuns = useQuery({
+    queryKey: ['map-ai-coverage', user.id, region.id],
+    queryFn: () => request('/regions/' + region.id + '/ai/runs', z.array(aiRunSchema)),
+  });
+  const latestCoverageAi = aiRuns.data?.find((r) => r.task === 'coverage' && r.output);
+  async function triggerCoverageAi() {
+    setAiBusy(true);
+    try {
+      await request('/regions/' + region.id + '/ai/runs', z.object({ id: z.uuid() }), {
+        method: 'POST',
+        body: {
+          task: 'coverage',
+          question:
+            'Jelaskan sektor grid cakupan mana yang memiliki pengamatan laporan warga dan sektor mana yang masih titik buta informasi.',
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: ['map-ai-coverage'] });
+      await aiRuns.refetch();
+    } finally {
+      setAiBusy(false);
+    }
+  }
   useEffect(() => {
     if (
       !element.current ||
@@ -383,8 +413,36 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
             Coverage gap berarti informasi belum cukup, bukan wilayah aman.
           </Notice>
           <section className="panel">
-            <h2>Cakupan informasi · {coverage.data.hours} jam terakhir</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2>Cakupan informasi · {coverage.data.hours} jam terakhir</h2>
+              <button
+                type="button"
+                className="small"
+                disabled={aiBusy}
+                onClick={() => void triggerCoverageAi()}
+              >
+                Analisis Kesenjangan Cakupan dengan AI
+              </button>
+            </div>
             <p className="hint">{coverage.data.method}</p>
+            {latestCoverageAi?.output && (
+              <div className="mb-4 rounded-lg border border-[#cfe0d9] bg-[#f7faf8] p-4">
+                <strong className="text-sm text-ink">
+                  Penjelasan Titik Buta & Cakupan AI (
+                  {String(latestCoverageAi.provenance['provider'] ?? 'deterministik')})
+                </strong>
+                <p className="mt-1 mb-2 whitespace-pre-line text-sm text-ink">
+                  {latestCoverageAi.output.title}
+                </p>
+                {latestCoverageAi.output.claims.length > 0 && (
+                  <ul className="m-0 space-y-1 pl-5 text-sm text-ink">
+                    {latestCoverageAi.output.claims.map((c, idx) => (
+                      <li key={idx}>{c.text}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <div className="metrics">
               {coverage.data.cells.map((c) => (
                 <div className="metric" key={c.id}>

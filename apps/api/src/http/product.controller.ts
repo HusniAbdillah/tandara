@@ -155,6 +155,7 @@ export class ProductController {
       mode: env.APP_MODE,
       residentOrigin: origins[0] || 'http://127.0.0.1:8080',
       coordinatorOrigin: origins[1] || 'http://127.0.0.1:8081',
+      demoLogin: this.residents.demoLogin(),
     };
   }
   @Get('regions/:regionId/knowledge') knowledgeSearch(
