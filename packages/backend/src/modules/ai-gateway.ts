@@ -1,7 +1,7 @@
 import { RunnableLambda } from '@langchain/core/runnables';
 import { z } from 'zod';
 import { aiAssistanceOutputSchema, type AiEvidence } from '@tandara/contracts';
-import { readAiSettings } from '../config/ai.js';
+import { chatThinkingOptions, readAiSettings } from '../config/ai.js';
 import { AiInferenceError, ProviderHttpError, fetchJson } from './adapters.js';
 import { deterministicAssistance, validateAssistance } from './ai-policy.js';
 
@@ -38,7 +38,7 @@ export async function generateAssistance(
             temperature: 0,
             stream: false,
             max_tokens: maxOutputTokens,
-            ...(settings.AI_PROVIDER === 'deepseek' ? { thinking: { type: 'disabled' } } : {}),
+            ...chatThinkingOptions(settings.AI_PROVIDER, model),
             response_format: { type: 'json_object' },
             messages: [
               {
