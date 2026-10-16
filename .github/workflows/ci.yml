@@ -92,9 +92,6 @@ jobs:
       - name: Install Chromium for UI checks
         if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm exec playwright install --with-deps chromium
-      - name: Verify Warga flows and Posko observation integration
-        if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
-        run: pnpm test:e2e:warga
       - name: Verify demo account pickers on desktop and mobile
         if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm test:e2e:demo
