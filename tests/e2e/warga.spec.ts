@@ -445,8 +445,15 @@ test('phone auth screens are centered, accessible and route into the app', async
 
 test('account history opens on a fresh device and personal notifications retain read state', async ({
   page,
-}) => {
+}, testInfo) => {
   await fixtures(page);
+  await page.context().addCookies([
+    {
+      name: 'tandara_resident_csrf',
+      value: 'fixture-resident-csrf',
+      url: String(testInfo.project.use.baseURL),
+    },
+  ]);
   const user = {
     id: '60000000-0000-4000-8000-000000000001',
     phone: '+6281234567890',
@@ -464,6 +471,7 @@ test('account history opens on a fresh device and personal notifications retain 
   };
   let loggedIn = true,
     read = false;
+  let confirmed = false;
   await page.route('**/api/v1/resident/**', async (route) => {
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
     if (path === '/resident/auth/me')
@@ -479,7 +487,7 @@ test('account history opens on a fresh device and personal notifications retain 
             {
               id: '70000000-0000-4000-8000-000000000001',
               reportId,
-              action: 'under_review',
+              action: 'workflow.resolved',
               createdAt: '2026-10-16T00:00:00Z',
               readAt: read ? '2026-10-16T01:00:00Z' : null,
               followUp: false,
@@ -495,6 +503,13 @@ test('account history opens on a fresh device and personal notifications retain 
     if (path === '/resident/reports')
       return route.fulfill({ json: { items: [summary], page: 1, total: 1 } });
     if (path === '/resident/reports/' + reportId) return route.fulfill({ json: summary });
+    if (path === '/resident/reports/' + reportId + '/feedback') {
+      expect(route.request().headers()['x-csrf-token']).toBe('fixture-resident-csrf');
+      expect(route.request().headers()['x-tracking-token']).toBeUndefined();
+      expect(route.request().postDataJSON().action).toBe('confirm');
+      confirmed = true;
+      return route.fulfill({ json: { ok: true } });
+    }
     if (path.endsWith('/tracking'))
       return route.fulfill({
         json: {
@@ -505,17 +520,28 @@ test('account history opens on a fresh device and personal notifications retain 
           history: [],
           assistanceState: null,
           erased: false,
+          workflow: {
+            status: confirmed ? 'closed' : 'resolved',
+            assigneeId: null,
+            assigneeName: null,
+            priority: 'normal',
+            revision: confirmed ? 3 : 2,
+          },
         },
       });
     return route.fallback();
   });
   await page.goto('/notifications');
   await expect(page.locator('.w-notification-count').first()).toHaveText('1');
-  await page.getByRole('button', { name: /Posko sedang meninjau laporanmu/ }).click();
+  await page.getByRole('button', { name: /Penanganan selesai, periksa hasilnya/ }).click();
   await expect(page).toHaveURL('/tracking?id=' + reportId);
   await expect(page.locator('.w-report-list').getByText(summary.description)).toBeVisible();
   expect(read).toBe(true);
   await expect(page.locator('.w-notification-count')).toHaveCount(0);
+  await page.getByLabel('Catatan untuk Posko').fill('Penanganan sudah selesai, terima kasih.');
+  await page.getByRole('button', { name: 'Konfirmasi selesai', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Apakah masalah sudah selesai?' })).toHaveCount(0);
+  expect(confirmed).toBe(true);
   await page.goto('/tracking?id=99999999-9999-4999-8999-999999999999');
   await expect(
     page.getByRole('heading', { name: 'Laporan tidak ditemukan', exact: true }),

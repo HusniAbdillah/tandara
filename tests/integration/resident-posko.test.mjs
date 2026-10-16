@@ -259,6 +259,82 @@ test('assistance status changes notify the owner without exposing operational no
     0,
   );
 });
+test('main workflow notifications and resident feedback work on a second device without receipt secrets', async () => {
+  const owned = await submit(a);
+  const workflow = async () => {
+    const r = await call('GET', `/resident/reports/${owned.id}/tracking`, undefined, device2);
+    assert.equal(r.statusCode, 200, r.body);
+    return r.json().workflow;
+  };
+  const action = async (name, actor, extra = {}) => {
+    const w = await workflow();
+    const r = await call(
+      'POST',
+      `/reports/${owned.id}/workflow`,
+      {
+        action: name,
+        revision: w.revision,
+        message: 'Pembaruan penanganan untuk warga.',
+        ...extra,
+      },
+      actor,
+    );
+    assert.equal(r.statusCode, 201, r.body);
+  };
+  await action('request_information', posko);
+  let payload = {
+    action: 'clarify',
+    revision: (await workflow()).revision,
+    message: 'Patokan lokasi di pintu balai warga.',
+  };
+  assert.equal(
+    (await call('POST', `/resident/reports/${owned.id}/feedback`, payload, b)).statusCode,
+    404,
+  );
+  assert.equal(
+    (
+      await call('POST', `/resident/reports/${owned.id}/feedback`, payload, device2, {
+        'x-csrf-token': 'wrong',
+      })
+    ).statusCode,
+    403,
+  );
+  assert.equal(
+    (await call('POST', `/resident/reports/${owned.id}/feedback`, payload, posko)).statusCode,
+    401,
+  );
+  assert.equal(
+    (await call('POST', `/resident/reports/${owned.id}/feedback`, payload, device2)).statusCode,
+    201,
+  );
+  await action('verify', posko);
+  await action('assign', admin, { assigneeId: posko.user.id });
+  await action('start', posko);
+  await action('submit_resolution', posko);
+  await action('approve', admin);
+  const feed = (await call('GET', '/resident/notifications', undefined, device2)).json();
+  const events = feed.items.filter((n) => n.reportId === owned.id);
+  assert.ok(events.some((n) => n.action === 'workflow.resolved'));
+  assert.equal(events.length, 7);
+  assert.ok(!JSON.stringify(events).includes('Pembaruan penanganan untuk warga.'));
+  payload = {
+    action: 'confirm',
+    revision: (await workflow()).revision,
+    message: 'Sudah selesai, terima kasih.',
+    rating: 5,
+  };
+  assert.equal(
+    (await call('POST', `/resident/reports/${owned.id}/feedback`, payload, device2)).statusCode,
+    201,
+  );
+  assert.equal((await workflow()).status, 'closed');
+  const final = (await call('GET', '/resident/notifications', undefined, a))
+    .json()
+    .items.filter((n) => n.reportId === owned.id);
+  assert.equal(final.length, 8);
+  assert.ok(final.some((n) => n.action === 'workflow.closed'));
+});
+
 test('report erasure removes account history and personal notifications while retaining a sanitized receipt', async () => {
   const request = await call(
     'POST',

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import type { Workflow } from '@tandara/contracts';
 import { WButton, WError } from './chalk-ui.js';
+import { residentCsrf } from '../account/session.js';
 
 export function ReportFeedback({
   id,
@@ -11,7 +12,7 @@ export function ReportFeedback({
   onSaved,
 }: {
   id: string;
-  token: string;
+  token: string | undefined;
   workflow: Workflow;
   onSaved: () => Promise<unknown>;
 }) {
@@ -30,16 +31,20 @@ export function ReportFeedback({
         setBusy(true);
         setError('');
         try {
-          await request('/reports/' + id + '/feedback', z.object({ ok: z.boolean() }), {
-            method: 'POST',
-            headers: { 'X-Tracking-Token': token },
-            body: {
-              action: clarify ? 'clarify' : action,
-              message,
-              revision: workflow.revision,
-              ...(!clarify && action === 'confirm' ? { rating: Number(rating) } : {}),
+          await request(
+            (token ? '/reports/' : '/resident/reports/') + id + '/feedback',
+            z.object({ ok: z.boolean() }),
+            {
+              method: 'POST',
+              headers: token ? { 'X-Tracking-Token': token } : { 'X-CSRF-Token': residentCsrf() },
+              body: {
+                action: clarify ? 'clarify' : action,
+                message,
+                revision: workflow.revision,
+                ...(!clarify && action === 'confirm' ? { rating: Number(rating) } : {}),
+              },
             },
-          });
+          );
           setMessage('');
           await onSaved();
         } catch (err) {

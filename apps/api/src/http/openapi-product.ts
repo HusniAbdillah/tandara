@@ -66,6 +66,7 @@ export const productRoutes: Route[] = [
   ['/resident/reports/{id}', 'get', 'resident', residentReportSchema],
   ['/resident/reports/claim', 'post', 'resident', residentClaimResultSchema, residentClaimSchema],
   ['/resident/reports/{id}/tracking', 'get', 'resident', trackingSchema],
+  ['/resident/reports/{id}/feedback', 'post', 'resident', ok, citizenFeedbackSchema],
   ['/resident/reports/{id}/deletion-request', 'post', 'resident', ok],
   ['/resident/notifications', 'get', 'resident', residentNotificationsSchema],
   [

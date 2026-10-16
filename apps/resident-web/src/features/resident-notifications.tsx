@@ -17,6 +17,15 @@ const titles: Record<string, string> = {
   'assistance.assigned': 'Permintaan bantuan telah ditugaskan',
   'assistance.in_progress': 'Permintaan bantuan sedang ditangani',
   'assistance.closed': 'Permintaan bantuan ditutup',
+  'workflow.received': 'Informasi laporanmu telah diterima',
+  'workflow.verified': 'Laporanmu telah diverifikasi',
+  'workflow.needs_information': 'Posko meminta informasi tambahan',
+  'workflow.assigned': 'Laporanmu telah ditugaskan',
+  'workflow.in_progress': 'Laporanmu sedang ditangani',
+  'workflow.awaiting_approval': 'Penanganan menunggu persetujuan',
+  'workflow.resolved': 'Penanganan selesai, periksa hasilnya',
+  'workflow.closed': 'Laporanmu ditutup',
+  'workflow.rejected': 'Laporanmu tidak diteruskan',
 };
 export function PersonalNotifications({ app }: { app: ResidentData }) {
   const navigate = useNavigate();

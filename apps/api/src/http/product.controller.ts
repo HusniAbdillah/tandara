@@ -76,6 +76,13 @@ export class ProductController {
   ) {
     return this.residents.report(await this.resident(req), id);
   }
+  @Post('resident/reports/:id/feedback') async residentFeedback(
+    @Req() req: FastifyRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return citizenFeedback(this.reports, id, undefined, body, (await this.resident(req)).id);
+  }
   @Post('resident/reports/:id/deletion-request') async residentErase(
     @Req() req: FastifyRequest,
     @Param('id') id: string,
