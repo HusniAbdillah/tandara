@@ -1,6 +1,6 @@
 <div align="center">
   <img src="logo/assets/tandara-logo.svg" alt="Tandara Logo" width="180" />
-  <h1>Tandara (ArahSiaga)</h1>
+  <h1>Tandara</h1>
   <p><strong>Community-Driven Disaster Preparedness & AI-Augmented Flood Response Platform</strong></p>
   <p>
     <strong>Live Production Deployment:</strong><br/>
@@ -52,7 +52,7 @@
 
 ## Executive Summary
 
-**Tandara (ArahSiaga)** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
+**Tandara** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
 
 Unlike naive chatbots or isolated dashboards, Tandara integrates:
 

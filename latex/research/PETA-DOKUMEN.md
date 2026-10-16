@@ -8,7 +8,7 @@ HEAD: `1c427abb16f5836a4097a9c9d899a71ebacdad22`; 325 berkas tracked; 43 Markdow
 
 135 baris; SHA-256 `43d831104b57712cb26648054d5bcb796c34cbf301ce26f016959b8b9d9b3e56`
 
-- Tandara / ArahSiaga
+- Tandara
 - Run the complete local product
 - Edit .env: choose POSTGRES_PASSWORD and DEMO_PASSWORD (at least 12 characters).
 - Demo and verification
@@ -31,7 +31,7 @@ HEAD: `1c427abb16f5836a4097a9c9d899a71ebacdad22`; 325 berkas tracked; 43 Markdow
 
 167 baris; SHA-256 `fdbd4e0968762391f33861077c2bda1e7f84f6ec69efee7869768592f355866e`
 
-- Tandara / ArahSiaga delivery
+- Tandara delivery
 - Executive summary
 - Repository information
 - Implemented capabilities
