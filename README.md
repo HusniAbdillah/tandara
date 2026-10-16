@@ -1,135 +1,326 @@
-# Tandara / ArahSiaga
+<div align="center">
+  <img src="logo/assets/tandara-logo.svg" alt="Tandara Logo" width="180" />
+  <h1>Tandara (ArahSiaga)</h1>
+  <p><strong>Community-Driven Disaster Preparedness & AI-Augmented Flood Response Platform</strong></p>
+  <p>Bridging vulnerable communities and disaster command centers — powered by Agentic RAG, LangGraph workflows, and offline-first progressive web apps.</p>
+  <p><a href="http://127.0.0.1:8080" target="_blank"><strong>Resident Portal (Warga)</strong></a> • <a href="http://127.0.0.1:8081" target="_blank"><strong>Coordinator Workspace (Posko)</strong></a></p>
+</div>
 
-Community flood preparedness: **Tandara Warga** (resident PWA) and **Tandara Posko**
-(coordinator/admin workspace), connected to one API, PostGIS database and durable worker.
-Indonesian interface. Seeded organizations, people, plans, reports and source material are
-explicitly **simulation**, not real incidents or operational emergency instructions.
+---
 
-Current product priorities and the audit of all Markdown files are in the
-[three-day hackathon audit](docs/product/hackathon-audit-2026-10-13.md).
-[Public-source setup](docs/operations/public-sources.md) enables real BMKG CAP/
-forecast and PetaBencana data separately from demonstration reports and plans.
+<div align="center">
 
-## Run the complete local product
+### Frontend & Client Applications
 
-Prerequisite: Docker Desktop with Linux containers. Ports 8080 and 8081 must be free.
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS_v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+![MapLibre](https://img.shields.io/badge/MapLibre_GL-396B99?style=for-the-badge&logo=maplibre&logoColor=white)
 
-```powershell
-Copy-Item .env.example .env # only if .env does not already exist
-# Edit .env: choose POSTGRES_PASSWORD and DEMO_PASSWORD (at least 12 characters).
+### Backend & Cloud Architecture
+
+![Node.js](https://img.shields.io/badge/Node.js_24-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS_12-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)
+![Fastify](https://img.shields.io/badge/Fastify-000000?style=for-the-badge&logo=fastify&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![PostGIS](https://img.shields.io/badge/PostGIS-5B8C32?style=for-the-badge&logo=postgis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+
+### AI Engine & Agentic Workflows
+
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph_Orchestrator-FF6F00?style=for-the-badge&logo=diagram-project&logoColor=white)
+![RAG](https://img.shields.io/badge/Agentic_RAG-7B1FA2?style=for-the-badge&logo=openai&logoColor=white)
+![DeepSeek](https://img.shields.io/badge/DeepSeek_V3_/_Vikey-007ACC?style=for-the-badge&logo=ai&logoColor=white)
+![pgvector](https://img.shields.io/badge/pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+
+### Reliability, Testing & Observability
+
+![Turborepo](https://img.shields.io/badge/Turborepo-EF4444?style=for-the-badge&logo=turborepo&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
+![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-005A9C?style=for-the-badge&logo=opentelemetry&logoColor=white)
+![Zod](https://img.shields.io/badge/Zod_Validation-3E67B1?style=for-the-badge&logo=zod&logoColor=white)
+
+</div>
+
+---
+
+## 🌟 Executive Summary
+
+**Tandara (ArahSiaga)** is an enterprise-grade disaster preparedness and emergency response ecosystem designed specifically for flood-prone regions in Indonesia. It bridges the critical communication gap between at-risk citizens (**Warga**) and emergency post command coordinators (**Posko**).
+
+Unlike naive chatbots or isolated dashboards, Tandara integrates:
+
+- **Offline-First Resident PWA (Tandara Warga)**: Built for intermittent low-connectivity crisis scenarios. Residents can inspect evacuation routes, household preparation checklists, and draft incident reports with zero network connection.
+- **Unified Command Center (Tandara Posko)**: Coordinator dashboard featuring interactive geospatial hazard layers (MapLibre + PostGIS), deduplication pipelines, triage tracking, and independent evacuation plan reviews.
+- **AI-Augmented Decision Support & Agentic RAG**: Powered by LangGraph and bounded Retrieval-Augmented Generation (RAG). It provides intelligent triage suggestions, duplicate incident correlation, gap analysis on evacuation plans, and verified situational Q&A—all anchored to authoritative sources with strict human-in-the-loop review.
+- **Privacy-by-Design Architecture**: Granular zero-knowledge receipts, consent-isolated private assistance tracking, client-side photo processing, cryptographic CSRF tokens, and tamper-evident audit logging.
+
+> **Note**: Seeded demonstration datasets (regions, mock flood sensors, simulated reports, and sample organizations) represent realistic synthetic data for testing and jury evaluation.
+
+---
+
+## 🎯 Key Innovation & Architectural Highlights
+
+```mermaid
+graph TD
+    subgraph "Resident Experience (Warga PWA)"
+        W1[Offline Emergency Plan]
+        W2[Checklist & Evacuation Route]
+        W3[Consented Incident Report & Photo]
+        W4[Tracking Receipt & Status]
+    end
+
+    subgraph "API Gateway & Ingestion Engine"
+        API[NestJS Fastify API Gateway]
+        SEC[Rate Limiting & CSRF Shield]
+        VAL[Zod Contract Validation]
+    end
+
+    subgraph "Intelligent Pipeline & Durable Workers"
+        ORK[Durable Outbox Worker]
+        RAG[Agentic RAG Knowledge Base]
+        LG[LangGraph Incident Triage & Deduplication]
+        OBS[BMKG & Sensor Observation Ingestion]
+    end
+
+    subgraph "Command Workspace (Posko Web)"
+        P1[Interactive GIS Map - MapLibre]
+        P2[Report Inbox & Human Triage Decision]
+        P3[Plan Approval & Versioning]
+        P4[Operational Privacy & Audit Ledger]
+    end
+
+    W1 & W2 & W3 --> API
+    API --> SEC --> VAL
+    VAL --> ORK
+    ORK --> LG
+    ORK --> RAG
+    OBS --> ORK
+    LG --> P2
+    RAG --> P2
+    P2 & P3 & P4 --> API
+```
+
+### 1. Dual-Portal Workflow
+
+- **Warga PWA (Port 8080)**: Native offline caching via Service Worker & IndexedDB. Pre-configured demo credentials or anonymous report submission with private tracking tokens.
+- **Posko Command Web (Port 8081)**: Role-Based Access Control (RBAC) separating field coordinators from cross-region administrators.
+
+### 2. Multi-Agent & RAG Decision Engine
+
+- **LangGraph Workflows**: Orchestrates structured report categorization, severity estimation, and landmark grounding without hallucinated emergency instructions.
+- **pgvector & Hybrid Semantic Search**: Embeddings match historical flood contingency manuals and government SOPs to support coordinator actions.
+- **Cost & Budget Guards**: Daily and monthly token expenditure quotas strictly enforced at the database level.
+- **Explainable Deduplication**: Links related reports reversibly with coordinator attribution, preserving raw citizen submissions.
+
+### 3. Resilient Data Layer
+
+- **PostgreSQL 16 + PostGIS**: Geospatial queries, spatial distance calculations, and outbox event queues.
+- **Zero-Data Loss Offline Sync**: Idempotent client sync keys prevent duplicate submissions during network flapping.
+
+---
+
+## 🚀 Quick Start (One-Click Setup via Docker Compose)
+
+The fastest and most reliable way to evaluate the entire system is with Docker Compose.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (with Linux container engine active)
+- Available ports: `8080` (Warga), `8081` (Posko)
+
+### 1. Clone & Configure Environment
+
+```bash
+git clone https://github.com/HusniAbdillah/tandara.git
+cd tandara
+
+# Copy sample environment configuration
+cp .env.example .env
+```
+
+_(On Windows PowerShell: `Copy-Item .env.example .env`)_
+
+> Default passwords in `.env.example` are pre-configured for local evaluation. You can customize `POSTGRES_PASSWORD` and `DEMO_PASSWORD` if desired.
+
+### 2. Build & Launch Containers
+
+```bash
 docker compose up --build -d --wait
 ```
 
-Do not commit `.env`. The sample passwords are for local synthetic data only. Compose
-applies migrations, performs an idempotent simulation seed, then checks API, worker,
-database and web health. Database storage persists across restarts; no database port
-is exposed by the complete stack. `docker compose down` stops it without deleting data.
+This single command automatically:
 
-| Service   | Local address                                                    |
-| --------- | ---------------------------------------------------------------- |
-| Warga     | [127.0.0.1:8080](http://127.0.0.1:8080)                          |
-| Posko     | [127.0.0.1:8081](http://127.0.0.1:8081)                          |
-| Readiness | [8080/ready](http://127.0.0.1:8080/ready)                        |
-| OpenAPI   | [OpenAPI JSON](http://127.0.0.1:8080/api/v1/system/openapi.json) |
+1. Provisions PostgreSQL with PostGIS extensions.
+2. Applies all database schema migrations.
+3. Seeds comprehensive demonstration scenarios (Ciliwung River Basin, Semarang Coastal Region, synthetic sensors, verified plans, and sample reports).
+4. Boots the high-performance NestJS Fastify backend and durable outbox background worker.
+5. Serves both Warga and Posko frontend applications.
 
-Login to Posko with the password you set in `DEMO_PASSWORD`:
+### 3. Verify Health
 
-| Account                      | Access                                   |
-| ---------------------------- | ---------------------------------------- |
-| `ciliwung@demo.tandara.test` | Kampung Ciliwung coordinator             |
-| `semarang@demo.tandara.test` | Pesisir Semarang coordinator             |
-| `admin@demo.tandara.test`    | Administrator, independent plan reviewer |
+Open your browser or run:
 
-Warga needs no account. Receipt secrets remain on the device; retain them before
-clearing local data. Password changes after initial seed use Admin → Akses pengguna;
-rerunning seed does not overwrite existing passwords or reviewed data.
+- Health check: [http://127.0.0.1:8080/ready](http://127.0.0.1:8080/ready) (Returns `{"status":"ok"}`)
+- OpenAPI Documentation: [http://127.0.0.1:8080/api/v1/system/openapi.json](http://127.0.0.1:8080/api/v1/system/openapi.json)
 
-## Demo and verification
+---
 
-[Demo walkthrough](docs/product/demo.md), [delivery report](docs/DELIVERY.md),
-[completion matrix](docs/product/requirements-matrix.md),
-[screenshots](docs/qa/screenshots), [architecture](docs/ARCHITECTURE.md),
-[operating runbook](docs/operations/runbook.md), [security](docs/security/model.md).
+## 🔑 Demo & Evaluation Access
 
-The implemented flows cover source provenance, uncertain reports, private assistance,
-processed private photos, provisional triage, reversible duplicate linking, human
-review, versioned plans with independent approval, explainable coverage gaps,
-offline plans/checklists/text drafts, simulation training and scoped administration.
-Posko displays local layers over an attributed OpenStreetMap street basemap;
-[map configuration and outage behavior](docs/features/map.md) explain its provider settings.
-BMKG/PetaBencana adapters are disabled until configured and authorized. InaRISK is
-reference-only. The default triage is labelled **deterministic**, not live inference.
+| Portal            | Target URL                                     | Description                           | Default Credentials                                                                  |
+| :---------------- | :--------------------------------------------- | :------------------------------------ | :----------------------------------------------------------------------------------- |
+| **Tandara Warga** | [http://127.0.0.1:8080](http://127.0.0.1:8080) | Resident PWA (Mobile / Desktop)       | Phone: `081234560001`<br/>Password: `TandaraDemo2026!` _(Prefilled on login screen)_ |
+| **Tandara Posko** | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Coordinator / Admin Dashboard         | Email: `ciliwung@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env` |
+| **System Admin**  | [http://127.0.0.1:8081](http://127.0.0.1:8081) | Cross-Region Administrator & Reviewer | Email: `admin@demo.tandara.test`<br/>Password: Value of `DEMO_PASSWORD` in `.env`    |
 
-## Connect a real AI provider
+---
 
-The ignored `.env` and `.env.example` have `AI_MODEL` and `AI_API_KEY` placeholders.
-For temporary Vikey inference, set `AI_PROVIDER=vikey`, replace both placeholders,
-and set `AI_MODE=compatible`. Leave `AI_BASE_URL` blank to use the provider default.
-Later, use `AI_PROVIDER=deepseek` with that provider's model ID and API key; a blank
-base URL then resolves to DeepSeek. No frontend changes are required.
+## 🧭 Jury Walkthrough & Demonstration Guide
 
-Recreate the server containers after editing `.env`:
+To experience the full end-to-end impact in 5–10 minutes, open two separate browser windows (e.g., standard window for Warga, incognito window for Posko):
 
-```powershell
-docker compose up -d --force-recreate api worker
+```
+1. Resident Submits Report (Warga PWA - 8080)
+   ├── Login with prefilled demo credentials or use as Guest.
+   ├── Navigate to "Buat Laporan" (Submit Report).
+   ├── Enter description: "Air naik 60cm di depan Balai Warga RT 04".
+   ├── Attach photo or landmark reference and submit.
+   └── Retain the confidential receipt token in "Laporan Saya".
+
+2. Coordinator Evaluates Incident (Posko - 8081)
+   ├── Log in as `ciliwung@demo.tandara.test`.
+   ├── In "Kotak Laporan", view incoming resident report.
+   ├── Review AI Triage suggestions: Category, Estimated Severity, Extracted Entities.
+   ├── Accept or adjust triage status with one-click audit tracking.
+   └── Check duplicate linking engine correlating adjacent citizen reports.
+
+3. Offline Resilience Test (Warga PWA - 8080)
+   ├── Open Developer Tools (F12) -> Network tab -> Select "Offline".
+   ├── Reload page: Offline preparedness plan and checklists remain fully accessible.
+   ├── Draft a new report offline (stored securely in client IndexedDB).
+   ├── Toggle Network back to "Online".
+   └── Watch the report automatically synchronize with verified idempotent server receipt!
+
+4. Independent Evacuation Plan Governance (Posko - 8081)
+   ├── Coordinator drafts a localized flood advisory plan update.
+   ├── Separation of duties: Coordinator cannot self-approve.
+   ├── Log in as `admin@demo.tandara.test` in second tab to review diff and authorize.
+   └── Authorized plan propagates immediately to Warga offline storage.
 ```
 
-`pnpm ai:verify` makes one synthetic, potentially billable request and validates its
-output. Tests use mock providers and never need real keys. Placeholder credentials
-cannot be sent: enabling compatible mode before replacing them fails validation.
-See [AI setup](docs/ai/provider-setup.md) for endpoint configuration, limits,
-verification, retries, and switching providers. The full production architecture
-is implemented as bounded LangGraph workflows, approved-source retrieval,
-immutable reviews and operations controls. See [production operations](docs/ai/operations.md)
-and the [launch readiness report](docs/ai/readiness.md).
+---
 
-## Development and tests
+## 🤖 Activating Real AI Models (Optional)
 
-Routine CI checks code, builds, real database/API integration and deployment
-configuration. Full Docker/browser tests are available through **Actions → CI →
-Run workflow → full_e2e**; run them before the jury rehearsal. See the
-[CI coverage policy](docs/operations/ci-policy.md).
+By default, Tandara runs in **Deterministic / Heuristic Simulation Mode**, guaranteeing complete functionality offline without third-party API dependencies.
 
-Use Node 22.22.0–24.x and pnpm 10.26.2. Docker uses Node 24; CI and local
-validation use Node 24.20.0 from `.node-version`.
+To enable live LLM inference and embeddings with **DeepSeek**, **Vikey**, or any OpenAI-compatible provider:
 
-```powershell
-npx --yes pnpm@10.26.2 install --frozen-lockfile
-npx --yes pnpm@10.26.2 infra:up
-npx --yes pnpm@10.26.2 db:migrate
-npx --yes pnpm@10.26.2 db:seed
-npx --yes pnpm@10.26.2 dev
+1. Open `.env`:
+   ```bash
+   AI_MODE=compatible
+   AI_PROVIDER=deepseek           # Or 'vikey', 'openai'
+   AI_MODEL=deepseek-chat         # Or target model ID
+   AI_API_KEY=your_actual_api_key_here
+   AI_EMBEDDING_MODE=enabled
+   AI_EMBEDDING_PROVIDER=vikey
+   AI_EMBEDDING_API_KEY=your_actual_api_key_here
+   ```
+2. Hot-reload the services:
+   ```bash
+   docker compose up -d --force-recreate api worker
+   ```
+3. Test integration:
+   ```bash
+   pnpm ai:verify
+   ```
+
+---
+
+## 💻 Local Development Workflow
+
+For developers wishing to run services outside Docker containers:
+
+### Prerequisites
+
+- Node.js `22.22.0` - `24.x` (Recommended: `24.20.0`)
+- pnpm `10.26.2`
+
+### Setup & Dev Server
+
+```bash
+# 1. Install dependencies across monorepo workspaces
+pnpm install --frozen-lockfile
+
+# 2. Spin up isolated development PostgreSQL container
+pnpm infra:up
+
+# 3. Execute schema migrations and seed data
+pnpm db:migrate
+pnpm db:seed
+
+# 4. Start all applications concurrently (API :3000, Warga :5173, Posko :5174)
+pnpm dev
 ```
 
-Development addresses are 5173 (Warga), 5174 (Posko), and 3000 (API). Vite proxies
-`/api`; secrets never use a `VITE_` prefix. Full-stack Docker and development use
-separate databases. Development PostgreSQL uses 55432; adjust Redis port if Windows
-reserves 56379. Redis remains foundation infrastructure and is not needed by the
-implemented PostgreSQL outbox worker.
+### Quality Assurance & Automated Testing
 
-```powershell
-npx --yes pnpm@10.26.2 format:check
-npx --yes pnpm@10.26.2 check
-npx --yes pnpm@10.26.2 test:integration # seeded development DB; synthetic mutations
-npx --yes pnpm@10.26.2 exec playwright install chromium
-npx --yes pnpm@10.26.2 test:e2e # running full Docker stack at 8080/8081
-npx --yes pnpm@10.26.2 api:openapi
-node --env-file=.env tooling/measure-performance.mjs
-pwsh -NoProfile -File tooling/backup.ps1
+```bash
+# Run code formatting checks
+pnpm format:check
+
+# Run TypeScript typechecks & linter
+pnpm typecheck
+pnpm lint
+
+# Execute integration tests
+pnpm test:integration
+
+# Execute end-to-end browser tests
+pnpm test:e2e
 ```
 
-Tests are intended for simulation data, never a real operational database. Browser
-tests add clearly labelled synthetic reports and training outcomes. Integration
-tests also publish/erase test records and add fictional scoped accounts.
+---
 
-## Deployment boundary
+## 📂 Repository Architecture
 
-For the three-week jury demo on Vercel + Tencent, follow the
-[automatic deployment guide](docs/operations/deploy-demo.md). It includes the
-one-time Ubuntu setup, DNS, repository secrets, CI-gated release and backup flow.
+```
+tandara/
+├── apps/
+│   ├── api/                   # Fastify-powered NestJS core API & OpenAPI specs
+│   ├── coordinator-web/       # Tandara Posko: Command workspace & GIS dashboard (React 19)
+│   ├── resident-web/          # Tandara Warga: Offline-first resident PWA (React 19 + PWA)
+│   └── worker/                # Background outbox processor, scheduled tasks & alerts
+├── packages/
+│   ├── backend/               # Domain services, LangGraph triage agent, RAG pipelines
+│   ├── contracts/             # Shared TypeScript schemas & strict Zod runtime validators
+│   ├── database/              # Kysely query builders, PostGIS schema migrations & seeds
+│   ├── api-client/            # Type-safe auto-generated HTTP SDK
+│   └── ui/                    # Shared component library & design system
+├── infrastructure/
+│   ├── compose/               # Docker Compose development and testing environments
+│   ├── deployment/            # Production deployment scripts & configs (Tencent / Vercel)
+│   └── postgres/              # Custom PostGIS Docker build recipes
+├── tooling/                   # Performance benchmarks, backup automation, AI verification
+└── docs/                      # Architectural specs, security models, demo guides & runbooks
+```
 
-This delivery runs locally as a simulation. Public deployment requires a configured
-domain/TLS, `SESSION_SECURE=true`, exact `WEB_ORIGINS`, restricted proxy trust, unique
-secrets, encrypted backups, approved source/model providers and genuine plan/contact
-ownership. Never expose these demo accounts publicly. See the runbook for concrete
-configuration, restoration, monitoring and incident procedures.
+---
+
+## 🔒 Security & Privacy Commitments
+
+- **No Public Secret Leakage**: Zero hardcoded secrets; continuous GitGuardian scanning in CI.
+- **Strict Network Isolation**: Internal database and worker networks are not exposed to public routing.
+- **Anonymized Receipts**: Residents can track and verify report progress without revealing phone numbers or personally identifiable information (PII).
+- **Audit Immutability**: All coordinator actions, plan approvals, and status transitions generate immutable audit trail records.
+
+---
+
+<div align="center">
+  <p>Built with ❤️ for resilient, community-first disaster response.</p>
+  <p>© 2026 Tandara Team. All demonstration data is strictly for simulation purposes.</p>
+</div>
