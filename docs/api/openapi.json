@@ -6949,6 +6949,34 @@
                           },
                           "simulation": {
                             "type": "boolean"
+                          },
+                          "location": {
+                            "default": null,
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "latitude": {
+                                    "type": "number",
+                                    "minimum": -90,
+                                    "maximum": 90
+                                  },
+                                  "longitude": {
+                                    "type": "number",
+                                    "minimum": -180,
+                                    "maximum": 180
+                                  }
+                                },
+                                "required": [
+                                  "latitude",
+                                  "longitude"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -6959,7 +6987,8 @@
                           "observationTime",
                           "reviewedAt",
                           "reviewer",
-                          "simulation"
+                          "simulation",
+                          "location"
                         ],
                         "additionalProperties": false
                       }
