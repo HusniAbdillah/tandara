@@ -1,0 +1,10 @@
+% Correct the final caption line without changing the supplied cover artwork.
+% Coordinates follow its 2380 x 3368 px A4 placement; the other lines stay intact.
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[Deep] ([xshift=54.5bp,yshift=-459bp]current page.north west)
+    rectangle ([xshift=250bp,yshift=-471bp]current page.north west);
+  \node[anchor=base west,inner sep=0pt,text=Tint,
+    font=\fontsize{10.9bp}{14bp}\selectfont]
+    at ([xshift=56.25bp,yshift=-469.4bp]current page.north west)
+    {bahkan ketika konektivitas terbatas.};
+\end{tikzpicture}

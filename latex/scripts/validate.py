@@ -32,6 +32,7 @@ check("Cover gambar satu halaman penuh", any(
     abs(img['bbox'][0]) < 1 and abs(img['bbox'][1]) < 1 and
     abs(img['bbox'][2] - doc[0].rect.width) < 1 and
     abs(img['bbox'][3] - doc[0].rect.height) < 1 for img in cover_images))
+check("Spasi konektivitas terbatas pada cover", "bahkan ketika konektivitas terbatas." in texts[0])
 check("Daftar pustaka pada halaman terakhir", "Daftar pustaka" in texts[-1])
 check("Tidak ada halaman isi kosong", all(len(t.strip()) > 200 for t in texts[1:]))
 check("Nomor halaman otomatis", all(re.search(rf"0?{i}\s*/\s*10", t)
@@ -82,7 +83,7 @@ check("Catatan audit dikeluarkan dari proposal", not any(s in flat.lower() for s
 report = {"pdf": str(PDF), "pages": len(doc), "sha256": hashlib.sha256(PDF.read_bytes()).hexdigest(),
           "citation_keys": sorted(cited), "unique_urls": sorted(set(links)), "checks": checks,
           "manual_checks_required": ["Bahasa Indonesia dan ketepatan klaim", "Keterbacaan screenshot/diagram", "Tidak ada overlap dan pemotongan visual"]}
-(BUILD / "validation.json").write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+(BUILD / "validation.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 for row in checks:
     print(f"[{'PASS' if row['pass'] else 'FAIL'}] {row['check']} {row['details']}")
 if not all(row["pass"] for row in checks):

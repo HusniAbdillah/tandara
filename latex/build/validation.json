@@ -1,7 +1,7 @@
 {
-  "pdf": "D:\\Hackathon\\Tandara\\latex\\build\\Tandara_Proposal_Sustainability.pdf",
+  "pdf": "C:\\Users\\llcxmn\\kerja\\tandara\\latex\\build\\Tandara_Proposal_Sustainability.pdf",
   "pages": 10,
-  "sha256": "73e73c40acef05268eb43debd7016a63f7c379e637e3fc9b4d775572afcbd8aa",
+  "sha256": "35f335628f8c91c3b991c5eb29f73508f672042fa711d4694e68f7e576d8d5bd",
   "citation_keys": [
     "bmkgcap",
     "bmkgforecast",
@@ -71,6 +71,11 @@
     },
     {
       "check": "Cover gambar satu halaman penuh",
+      "pass": true,
+      "details": ""
+    },
+    {
+      "check": "Spasi konektivitas terbatas pada cover",
       "pass": true,
       "details": ""
     },
