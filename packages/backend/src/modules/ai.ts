@@ -442,7 +442,7 @@ export class AiService implements OnApplicationShutdown {
         global: string;
         monthly: string;
         organization: string;
-      }>`SELECT COALESCE(sum(reserved) FILTER(WHERE day=current_date),0)::text global,COALESCE(sum(reserved) FILTER(WHERE day>=date_trunc('month',now())::date),0)::text monthly,COALESCE(sum(reserved) FILTER(WHERE day=current_date AND organization_id=${organizationId}::uuid),0)::text organization FROM ai_budget_ledger`.execute(
+      }>`SELECT COALESCE(sum(COALESCE(actual, reserved)) FILTER(WHERE day=current_date),0)::text global,COALESCE(sum(COALESCE(actual, reserved)) FILTER(WHERE day>=date_trunc('month',now())::date),0)::text monthly,COALESCE(sum(COALESCE(actual, reserved)) FILTER(WHERE day=current_date AND organization_id=${organizationId}::uuid),0)::text organization FROM ai_budget_ledger`.execute(
         tx,
       )
     ).rows[0]!;
