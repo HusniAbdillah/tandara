@@ -65,6 +65,13 @@ jobs:
         run: pnpm test
       - name: Build all application packages
         run: pnpm build
+      - name: Verify portable production dependencies
+        run: |
+          pnpm --filter @tandara/api deploy --prod "$RUNNER_TEMP/tandara-runtime/api"
+          pnpm --filter @tandara/worker deploy --prod "$RUNNER_TEMP/tandara-runtime/worker"
+          node --input-type=module -e 'await import(process.argv[1]); await import(process.argv[2])' \
+            "$RUNNER_TEMP/tandara-runtime/api/node_modules/@tandara/backend/dist/index.js" \
+            "$RUNNER_TEMP/tandara-runtime/worker/node_modules/@tandara/backend/dist/index.js"
       - name: Test AI evaluation and privacy tooling
         run: pnpm test:tooling
       - name: Verify migrations are repeatable
