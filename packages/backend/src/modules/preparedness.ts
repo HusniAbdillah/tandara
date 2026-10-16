@@ -51,7 +51,7 @@ export class PreparednessService {
     const reports = (
       await sql<
         PublicData['reports'][number]
-      >`SELECT r.id,r.category,r.public_summary AS summary,NULL AS "landmarkText",r.observation_time::text AS "observationTime",r.reviewed_at::text AS "reviewedAt",u.name AS reviewer,r.simulation FROM reports r JOIN users u ON u.id=r.reviewed_by WHERE r.region_id=${regionId}::uuid AND r.state='reviewed' AND r.public_summary IS NOT NULL AND NOT r.follow_up_requested AND NOT r.erased ORDER BY r.reviewed_at DESC LIMIT 30`.execute(
+      >`SELECT r.id,r.category,r.public_summary AS summary,NULL AS "landmarkText",r.observation_time::text AS "observationTime",r.reviewed_at::text AS "reviewedAt",u.name AS reviewer,r.simulation,CASE WHEN r.publish_on_map AND r.location IS NOT NULL THEN jsonb_build_object('latitude',ST_Y(r.location),'longitude',ST_X(r.location)) ELSE NULL END AS location FROM reports r JOIN users u ON u.id=r.reviewed_by WHERE r.region_id=${regionId}::uuid AND r.workflow_status IN ('verified','assigned','in_progress','awaiting_approval','resolved') AND r.state='reviewed' AND r.public_summary IS NOT NULL AND r.publish_on_map AND NOT r.follow_up_requested AND NOT r.erased ORDER BY r.reviewed_at DESC LIMIT 30`.execute(
         this.db,
       )
     ).rows;

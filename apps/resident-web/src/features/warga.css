@@ -561,6 +561,10 @@ body:has(.warga-app) {
   border: 1px solid var(--w-teal);
   color: var(--w-teal);
 }
+.w-map-pin.pin-report {
+  background: #1f6f7a;
+  border-color: white;
+}
 .warga-app .w-main-map {
   padding: 0;
   max-width: none;

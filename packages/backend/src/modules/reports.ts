@@ -330,7 +330,7 @@ export class ReportsService {
       const region = await this.identity.scope(user, regionId);
       if (data.category && !region.config.categories.includes(data.category))
         throw new BadRequestException('Kategori tidak diizinkan.');
-      await sql`UPDATE reports SET workflow_status=${data.state === 'reviewed' ? 'verified' : data.state === 'rejected' ? 'rejected' : data.state === 'clarification_requested' ? 'needs_information' : 'received'},state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
+      await sql`UPDATE reports SET workflow_status=${data.state === 'reviewed' ? 'verified' : data.state === 'rejected' ? 'rejected' : data.state === 'clarification_requested' ? 'needs_information' : 'received'},state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},publish_on_map=${data.state === 'reviewed' && !current.follow_up_requested && Boolean(data.publishOnMap)},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
         tx,
       );
       await sql`INSERT INTO report_history(report_id,actor_id,action,reason) VALUES(${id}::uuid,${user.id}::uuid,${data.state},${data.reason})`.execute(

@@ -201,6 +201,7 @@ export const reviewInputSchema = z.strictObject({
   reason: z.string().trim().min(5).max(1000),
   category: reportCategorySchema.optional(),
   publicSummary: z.string().trim().min(10).max(1000).optional(),
+  publishOnMap: z.boolean().optional(),
   revision: z.number().int().min(1),
 });
 export const aiReviewInputSchema = z.strictObject({
@@ -256,6 +257,10 @@ export const publicReportSchema = z.object({
   reviewedAt: z.string(),
   reviewer: z.string(),
   simulation: z.boolean(),
+  location: z
+    .object({ latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180) })
+    .nullable()
+    .default(null),
 });
 export const publicSourceHealthSchema = z.object({
   id: z.uuid(),

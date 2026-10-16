@@ -516,6 +516,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
   const [state, setState] = useState('reviewed');
   const [reason, setReason] = useState('');
   const [summary, setSummary] = useState('');
+  const [publishOnMap, setPublishOnMap] = useState(false);
   const [category, setCategory] = useState('');
   const [aiNote, setAiNote] = useState('');
   const [aiEdit, setAiEdit] = useState('');
@@ -795,6 +796,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
                     revision: r.revision,
                     ...(category ? { category } : {}),
                     ...(summary ? { publicSummary: summary } : {}),
+                    ...(state === 'reviewed' ? { publishOnMap } : {}),
                   },
                 }),
               );
@@ -856,6 +858,16 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
                   onChange={(e) => setSummary(e.target.value)}
                 />
               </Field>
+            )}
+            {!r.followUpRequested && state === 'reviewed' && (
+              <label className="mb-4 flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={publishOnMap}
+                  onChange={(event) => setPublishOnMap(event.target.checked)}
+                />
+                Tampilkan titik lokasi di peta warga
+              </label>
             )}
             <button className="primary" disabled={busy || r.state === 'closed'}>
               Simpan keputusan manusia
