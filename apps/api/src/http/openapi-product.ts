@@ -1,5 +1,10 @@
 import { z } from 'zod';
 import {
+  workflowDetailSchema,
+  workflowActionSchema,
+  citizenFeedbackSchema,
+  teamMemberSchema,
+  reportAnalyticsSchema,
   deploymentSchema,
   aiReviewInputSchema,
   assistanceSchema,
@@ -45,6 +50,11 @@ type Route = [
   z.ZodType?,
 ];
 export const productRoutes: Route[] = [
+  ['/reports/{id}/workflow', 'get', 'coordinator', workflowDetailSchema],
+  ['/reports/{id}/workflow', 'post', 'coordinator', ok, workflowActionSchema],
+  ['/reports/{id}/feedback', 'post', 'receipt', ok, citizenFeedbackSchema],
+  ['/regions/{regionId}/team', 'get', 'coordinator', z.array(teamMemberSchema)],
+  ['/regions/{regionId}/report-analytics', 'get', 'coordinator', reportAnalyticsSchema],
   ['/regions/{regionId}/observations', 'get', 'public', observationsSchema],
   ['/resident/auth/me', 'get', 'public', residentSessionSchema],
   [

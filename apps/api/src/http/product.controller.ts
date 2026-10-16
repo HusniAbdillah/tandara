@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Inject, Param, Post, Put, Query, Req, Res } from '@nestjs/common';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import {
+  workflowDetail,
+  updateWorkflow,
+  citizenFeedback,
+  reportTeam,
+  reportAnalytics,
   AdministrationService,
   IdentityService,
   PreparednessService,
@@ -232,6 +237,39 @@ export class ProductController {
   }
   @Get('reports/:id/tracking') track(@Param('id') id: string, @Req() req: FastifyRequest) {
     return this.reports.track(id, String(req.headers['x-tracking-token'] ?? ''));
+  }
+  @Get('reports/:id/workflow') async reportWorkflow(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+  ) {
+    await this.reports.accessible(await this.user(req), id);
+    return workflowDetail(this.reports, id);
+  }
+  @Post('reports/:id/workflow') async changeWorkflow(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+    @Body() body: unknown,
+  ) {
+    return updateWorkflow(this.reports, await this.user(req), id, body);
+  }
+  @Post('reports/:id/feedback') feedback(
+    @Param('id') id: string,
+    @Req() req: FastifyRequest,
+    @Body() body: unknown,
+  ) {
+    return citizenFeedback(this.reports, id, String(req.headers['x-tracking-token'] ?? ''), body);
+  }
+  @Get('regions/:regionId/team') async reportTeam(
+    @Param('regionId') region: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return reportTeam(this.reports, await this.user(req), region);
+  }
+  @Get('regions/:regionId/report-analytics') async reportAnalytics(
+    @Param('regionId') region: string,
+    @Req() req: FastifyRequest,
+  ) {
+    return reportAnalytics(this.reports, await this.user(req), region);
   }
   @Post('reports/:id/deletion-request') erase(@Param('id') id: string, @Req() req: FastifyRequest) {
     return this.reports.eraseRequest(id, String(req.headers['x-tracking-token'] ?? ''));

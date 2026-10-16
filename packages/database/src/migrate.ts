@@ -9,6 +9,7 @@ import * as governance from './migrations/007_ai_governance.js';
 import * as delivery from './migrations/008_ai_delivery.js';
 import * as warnings from './migrations/009_public_warnings.js';
 import * as residents from './migrations/010_residents.js';
+import * as workflow from './migrations/011_report_workflow.js';
 import { createDatabase } from './client.js';
 
 const connectionString = process.env['DATABASE_URL'];
@@ -32,6 +33,7 @@ try {
           '008_ai_delivery': delivery,
           '009_public_warnings': warnings,
           '010_residents': residents,
+          '011_report_workflow': workflow,
         };
       },
     },

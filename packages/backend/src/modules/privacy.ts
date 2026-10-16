@@ -12,10 +12,11 @@ export async function eraseReport(
   await sql`INSERT INTO erasure_ledger(report_id) VALUES(${id}::uuid) ON CONFLICT DO NOTHING`.execute(
     tx,
   );
-  await sql`UPDATE reports SET description=${reason},state='closed',landmark_text=NULL,location=NULL,accuracy_meters=NULL,observation_time=NULL,public_summary=NULL,erased=true,updated_at=now(),revision=revision+1 WHERE id=${id}::uuid AND NOT erased`.execute(
+  await sql`UPDATE reports SET workflow_status='closed',assignee_id=NULL,description=${reason},state='closed',landmark_text=NULL,location=NULL,accuracy_meters=NULL,observation_time=NULL,public_summary=NULL,erased=true,updated_at=now(),revision=revision+1 WHERE id=${id}::uuid AND NOT erased`.execute(
     tx,
   );
   await sql`DELETE FROM report_private_details WHERE report_id=${id}::uuid`.execute(tx);
+  await sql`DELETE FROM report_updates WHERE report_id=${id}::uuid`.execute(tx);
   await sql`DELETE FROM report_attachments WHERE report_id=${id}::uuid`.execute(tx);
   const runs = (
     await sql<{

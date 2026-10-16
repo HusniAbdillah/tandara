@@ -22,11 +22,16 @@ import { categories, ok } from './reports-ui.js';
 
 export function AdminPage({
   user,
+  initialTab = 'operations',
   region,
   run,
-}: Omit<ManagementProps, 'region'> & { region?: Region | undefined; regions: Region[] }) {
+}: Omit<ManagementProps, 'region'> & {
+  region?: Region | undefined;
+  regions: Region[];
+  initialTab?: string;
+}) {
   const now = useClock();
-  const [tab, setTab] = useState('operations');
+  const [tab, setTab] = useState(initialTab);
   const [error, setError] = useState('');
   const [orgEdit, setOrgEdit] = useState<z.infer<typeof organizationSchema> | null | undefined>();
   const [userEdit, setUserEdit] = useState<User | null | undefined>();
@@ -59,7 +64,7 @@ export function AdminPage({
     <>
       <PageHeader
         eyebrow="Administrasi / tata kelola"
-        title="Konfigurasi yang dapat dipertanggungjawabkan."
+        title={initialTab === 'users' ? 'Anggota & peran' : 'Pengaturan Posko'}
         description="Kelola akses, wilayah, sumber, dan retensi. Semua perubahan penting masuk jejak audit."
       />
       <div className="actions" role="group" aria-label="Bagian administrasi">
@@ -309,10 +314,7 @@ export function AdminPage({
           )}
         </>
       )}
-      <p className="meta">
-        Wilayah konteks saat ini: {region?.name ?? 'Belum ada wilayah'}. Backup dan pemulihan
-        dijalankan melalui runbook, tidak dilabeli berhasil tanpa hasil pengujian.
-      </p>
+      <p className="meta">Wilayah aktif: {region?.name ?? 'Belum ada wilayah'}.</p>
     </>
   );
 }
@@ -518,7 +520,7 @@ function RegionEditor({
   const [boundary, setBoundary] = useState(
     JSON.stringify(region?.boundary ?? { type: 'Polygon', coordinates: [] }, null, 2),
   );
-  const [contacts, setContacts] = useState(JSON.stringify(region?.config.contacts ?? [], null, 2));
+  const [contacts, setContacts] = useState(region?.config.contacts ?? []);
   const [suspended, setSuspended] = useState(region?.suspended ?? false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -540,7 +542,7 @@ function RegionEditor({
                   categories: selected,
                   coverageHours: hours,
                   retentionDays: days,
-                  contacts: JSON.parse(contacts),
+                  contacts,
                   languages: ['id'],
                 },
                 boundary: JSON.parse(boundary),
@@ -611,26 +613,101 @@ function RegionEditor({
           </label>
         ))}
       </fieldset>
-      <Field
-        label="Batas wilayah (GeoJSON Polygon)"
-        hint="Urutan koordinat longitude, latitude; ring tertutup dan valid. Wilayah baru memerlukan batas yang disepakati pengelola."
-      >
-        <textarea
-          className="json-editor"
-          value={boundary}
-          onChange={(e) => setBoundary(e.target.value)}
-        />
-      </Field>
-      <Field
-        label="Kontak yang ditinjau (JSON array)"
-        hint="Setiap kontak berisi name, channel, sourceUrl (HTTPS), reviewedAt (ISO). Jangan membuat nomor untuk demo."
-      >
-        <textarea
-          className="json-editor"
-          value={contacts}
-          onChange={(e) => setContacts(e.target.value)}
-        />
-      </Field>
+      <details>
+        <summary>Pengaturan batas wilayah</summary>
+        <Field
+          label="Batas wilayah (GeoJSON Polygon)"
+          hint="Urutan koordinat longitude, latitude; ring tertutup dan valid. Wilayah baru memerlukan batas yang disepakati pengelola."
+        >
+          <textarea
+            className="json-editor"
+            value={boundary}
+            onChange={(e) => setBoundary(e.target.value)}
+          />
+        </Field>
+      </details>
+      <section className="p-card p-card-pad">
+        <h3>Kontak wilayah</h3>
+        <p className="hint">
+          Kontak ini tampil pada Tandara Warga. Gunakan kontak yang sudah dikonfirmasi.
+        </p>
+        {contacts.map((contact, index) => (
+          <fieldset key={index}>
+            <legend>Kontak {index + 1}</legend>
+            <div className="form-grid">
+              <Field label="Nama kontak">
+                <input
+                  required
+                  value={contact.name}
+                  onChange={(e) =>
+                    setContacts(
+                      contacts.map((c, i) => (i === index ? { ...c, name: e.target.value } : c)),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Nomor atau kanal kontak">
+                <input
+                  required
+                  value={contact.channel}
+                  onChange={(e) =>
+                    setContacts(
+                      contacts.map((c, i) => (i === index ? { ...c, channel: e.target.value } : c)),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Tautan sumber">
+                <input
+                  required
+                  type="url"
+                  value={contact.sourceUrl}
+                  onChange={(e) =>
+                    setContacts(
+                      contacts.map((c, i) =>
+                        i === index ? { ...c, sourceUrl: e.target.value } : c,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+              <Field label="Tanggal diperiksa">
+                <input
+                  required
+                  type="date"
+                  value={contact.reviewedAt.slice(0, 10)}
+                  onChange={(e) =>
+                    setContacts(
+                      contacts.map((c, i) =>
+                        i === index ? { ...c, reviewedAt: e.target.value + 'T00:00:00.000Z' } : c,
+                      ),
+                    )
+                  }
+                />
+              </Field>
+            </div>
+            <button
+              type="button"
+              className="danger"
+              onClick={() => setContacts(contacts.filter((_, i) => i !== index))}
+            >
+              Hapus kontak {index + 1}
+            </button>
+          </fieldset>
+        ))}
+        <button
+          type="button"
+          disabled={contacts.length >= 20}
+          onClick={() =>
+            setContacts([
+              ...contacts,
+              { name: '', channel: '', sourceUrl: '', reviewedAt: new Date().toISOString() },
+            ])
+          }
+        >
+          Tambah kontak
+        </button>
+      </section>
       <label className="checkbox">
         <input
           type="checkbox"

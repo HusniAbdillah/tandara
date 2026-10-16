@@ -15,7 +15,7 @@ export function NotificationsPage({ user, run }: ManagementProps) {
       <PageHeader
         eyebrow="Preferensi"
         title="Pembaruan untuk Anda."
-        description="Pembaruan di dalam Posko. Simulasi ini tidak mengirim peringatan darurat atau pesan ke luar platform."
+        description="Pembaruan laporan dan aktivitas wilayah Anda."
       />
       <section className="panel">
         <label className="checkbox-row">

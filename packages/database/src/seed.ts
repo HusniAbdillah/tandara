@@ -1,6 +1,7 @@
 import { randomBytes, scryptSync } from 'node:crypto';
 import { sql } from 'kysely';
 import { createDatabase } from './client.js';
+import { seedWorkflow } from './seed-workflow.js';
 
 if (process.env['APP_MODE'] !== 'simulation')
   throw new Error('Seed allowed only in explicit simulation mode.');
@@ -240,7 +241,8 @@ try {
       }
     }
   });
-  console.info('Simulation seed complete. Existing records preserved.');
+  await seedWorkflow(db);
+  console.info('Development seed complete. Existing records preserved.');
 } finally {
   await db.destroy();
 }

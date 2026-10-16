@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { registerSW } from 'virtual:pwa-register';
 import '@tandara/ui/styles.css';
+import './features/posko.css';
 import { Providers } from './app/providers.js';
 import { router } from './app/router.js';
 

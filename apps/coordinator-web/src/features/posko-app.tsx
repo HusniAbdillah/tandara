@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import { NavLink, Link, useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { request } from '@tandara/api-client';
 import { deploymentSchema, regionSchema, userSchema } from '@tandara/contracts';
 import type { Region, User } from '@tandara/contracts';
 import {
-  Badge,
   Brand,
   Button,
   Field,
@@ -17,16 +16,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  cn,
 } from '@tandara/ui';
-import { Inbox, Overview, ReportDetailPage } from './reports-ui.js';
 import {
-  PlansPage,
-  AssistancePage,
-  SourcesPage,
-  AuditPage,
-  TrainingManagement,
-} from './management-ui.js';
+  OperationsOverview,
+  OperationsInbox,
+  OperationsDetail,
+  AnalyticsPage,
+  TeamPage,
+} from './operations-ui.js';
+import { PlansPage, AssistancePage, SourcesPage, AuditPage } from './management-ui.js';
 import { SituationMap } from './situation-map.js';
 import { AdminPage } from './admin-ui.js';
 import { NotificationsPage } from './notifications-ui.js';
@@ -36,31 +34,45 @@ import { AccountSecurity } from './security-ui.js';
 const authSchema = z.object({ user: userSchema, csrf: z.string() });
 const nav = [
   ['/', 'Ringkasan', 'home'],
-  ['/inbox', 'Kotak laporan', 'inbox'],
+  ['/inbox', 'Laporan', 'inbox'],
+  ['/review', 'Tinjau hasil', 'shield'],
+  ['/members', 'Anggota & peran', 'help'],
+  ['/analytics', 'Rekap laporan', 'report'],
   ['/map', 'Peta situasi', 'map'],
   ['/plans', 'Rencana lokal', 'plan'],
-  ['/assistance', 'Tindak lanjut', 'help'],
+  ['/assistance', 'Permintaan bantuan', 'help'],
   ['/sources', 'Sumber informasi', 'source'],
+  ['/audit', 'Riwayat aktivitas', 'audit'],
+  ['/settings', 'Pengaturan', 'settings'],
 ] as const;
 export function PoskoApp() {
-  const client = useQueryClient();
-  const path = useLocation().pathname;
+  const client = useQueryClient(),
+    location = useLocation(),
+    path = location.pathname;
   const auth = useQuery({
     queryKey: ['auth'],
     queryFn: () => request('/auth/me', authSchema),
     retry: false,
     staleTime: 60000,
+    refetchOnWindowFocus: false,
   });
   const regions = useQuery({
     queryKey: ['regions'],
     queryFn: () => request('/regions', z.array(regionSchema)),
   });
-  const [selected, setSelected] = useState('');
   const deployment = useQuery({
     queryKey: ['deployment'],
     queryFn: () => request('/deployment', deploymentSchema),
   });
-  const [message, setMessage] = useState('');
+  const [selected, setSelected] = useState(''),
+    [message, setMessage] = useState(''),
+    [failure, setFailure] = useState(false),
+    [menu, setMenu] = useState(false);
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(''), 6000);
+    return () => clearTimeout(timer);
+  }, [message]);
   const user = auth.data?.user;
   const available = regions.data?.filter(
     (r) => user?.role === 'admin' || user?.regionIds.includes(r.id),
@@ -70,172 +82,190 @@ export function PoskoApp() {
     setMessage('');
     try {
       await action();
+      setFailure(false);
       setMessage(success);
       await client.invalidateQueries({ predicate: (q) => q.queryKey[0] !== 'auth' });
     } catch (e) {
-      setMessage(e instanceof Error ? e.message : 'Permintaan gagal.');
+      setFailure(true);
+      setMessage(e instanceof Error ? e.message : 'Permintaan gagal. Coba lagi.');
       throw e;
     }
   }
   async function logout() {
-    await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
-    client.clear();
-    window.location.assign('/');
+    try {
+      await request('/auth/logout', z.object({ ok: z.boolean() }), { method: 'POST' });
+      client.clear();
+      window.location.assign('/');
+    } catch (e) {
+      setFailure(true);
+      setMessage(e instanceof Error ? e.message : 'Tidak dapat keluar.');
+    }
   }
   if (auth.isPending)
     return (
       <main className="loading" role="status">
-        Memeriksa sesi…
+        Memeriksa sesi�
       </main>
     );
   if (!user)
     return (
       <>
         <Login
-          simulation={deployment.data?.mode === 'simulation'}
           residentOrigin={deployment.data?.residentOrigin}
           onLogin={(data) => client.setQueryData(['auth'], data)}
         />
         <PwaUpdateNotice />
       </>
     );
+  const admin = user.role === 'admin';
   let content;
-  if (path === '/admin' && user.role === 'admin')
-    content = <AdminPage user={user} region={region} regions={regions.data ?? []} run={run} />;
-  else if (path === '/security') content = <AccountSecurity />;
+  if (path === '/security') content = <AccountSecurity />;
+  else if (['/admin', '/settings', '/members'].includes(path) && admin)
+    content = (
+      <AdminPage
+        key={path}
+        initialTab={path === '/members' ? 'users' : path === '/settings' ? 'regions' : 'operations'}
+        region={region}
+        user={user}
+        regions={regions.data ?? []}
+        run={run}
+      />
+    );
   else if (!region)
     content = (
-      <Notice tone="warning">Tidak ada wilayah aktif yang ditugaskan untuk akun ini.</Notice>
+      <Notice tone="warning">
+        {regions.isError
+          ? 'Wilayah belum dapat dimuat. Periksa koneksi dan coba lagi.'
+          : 'Belum ada wilayah yang ditugaskan untuk akun ini.'}
+        <Button onClick={() => void regions.refetch()}>Muat ulang</Button>
+      </Notice>
     );
-  else if (path.startsWith('/reports/'))
-    content = <ReportDetailPage id={path.split('/')[2]!} region={region} user={user} run={run} />;
-  else
-    switch (path) {
-      case '/':
-        content = <Overview region={region} user={user} />;
-        break;
-      case '/inbox':
-        content = <Inbox region={region} user={user} />;
-        break;
-      case '/map':
-        content = <SituationMap region={region} user={user} />;
-        break;
-      case '/plans':
-        content = <PlansPage region={region} user={user} run={run} />;
-        break;
-      case '/assistance':
-        content = <AssistancePage region={region} user={user} run={run} />;
-        break;
-      case '/sources':
-        content = <SourcesPage region={region} user={user} run={run} />;
-        break;
-      case '/ai':
-        content = <AiWorkspace region={region} user={user} run={run} />;
-        break;
-      case '/security':
-        content = <AccountSecurity />;
-        break;
-      case '/audit':
-        content = <AuditPage region={region} user={user} />;
-        break;
-      case '/notifications':
-        content = <NotificationsPage region={region} user={user} run={run} />;
-        break;
-      case '/training':
-        content = <TrainingManagement region={region} user={user} run={run} />;
-        break;
-      case '/admin':
-        content =
-          user.role === 'admin' ? (
-            <AdminPage region={region} user={user} regions={regions.data ?? []} run={run} />
+  else {
+    const props = { region, user, run };
+    if (path.startsWith('/reports/'))
+      content = <OperationsDetail key={path} id={path.split('/')[2]!} {...props} />;
+    else
+      switch (path) {
+        case '/':
+          content = <OperationsOverview {...props} />;
+          break;
+        case '/inbox':
+          content = <OperationsInbox {...props} />;
+          break;
+        case '/review':
+          content = admin ? (
+            <ReviewQueue {...props} />
           ) : (
-            <Notice tone="error">Halaman ini khusus administrator.</Notice>
+            <Notice tone="error">Persetujuan hasil hanya dapat dilakukan Admin.</Notice>
           );
-        break;
-      default:
-        content = <Notice>Halaman tidak ditemukan. Pilih menu untuk melanjutkan.</Notice>;
-    }
+          break;
+        case '/analytics':
+          content = <AnalyticsPage {...props} />;
+          break;
+        case '/members':
+          content = <TeamPage {...props} />;
+          break;
+        case '/map':
+          content = <SituationMap {...props} />;
+          break;
+        case '/plans':
+          content = <PlansPage {...props} />;
+          break;
+        case '/assistance':
+          content = <AssistancePage {...props} />;
+          break;
+        case '/sources':
+          content = <SourcesPage {...props} />;
+          break;
+        case '/audit':
+          content = <AuditPage {...props} />;
+          break;
+        case '/notifications':
+          content = <NotificationsPage {...props} />;
+          break;
+        case '/ai':
+          content = <AiWorkspace {...props} />;
+          break;
+        case '/settings':
+          content = (
+            <>
+              <header className="p-page-heading">
+                <div>
+                  <h1>Pengaturan akun</h1>
+                  <p>
+                    {user.name} � {region.name}
+                  </p>
+                </div>
+              </header>
+              <AccountSecurity />
+              <NotificationsPage {...props} />
+            </>
+          );
+          break;
+        case '/admin':
+          content = <Notice tone="error">Halaman ini hanya dapat diakses Admin.</Notice>;
+          break;
+        default:
+          content = (
+            <div className="p-card p-card-pad">
+              <h1>Halaman tidak ditemukan</h1>
+              <Button asChild>
+                <Link to="/">Kembali ke ringkasan</Link>
+              </Button>
+            </div>
+          );
+      }
+  }
   return (
     <>
       <a className="skip-link" href="#main">
         Lewati ke konten
       </a>
-      <div className="posko-layout grid min-h-screen grid-cols-[232px_minmax(0,1fr)] max-[1100px]:grid-cols-[210px_minmax(0,1fr)] max-md:block print:block">
-        <aside className="sidebar sticky top-0 flex h-screen flex-col border-r border-[#244b56] bg-[#10303d] px-4 py-6 text-[#f7f5f0] max-md:sticky max-md:top-0 max-md:z-30 max-md:h-auto max-md:border-0 max-md:bg-white max-md:p-0 max-md:text-ink print:hidden">
-          <Brand
-            audience="Posko"
-            className="mx-2 mb-8 text-[#f7f5f0] max-md:mb-1 max-md:mt-2 max-md:flex max-md:px-1 max-md:text-brand"
-          />
-          <p className="mb-2.5 ml-3 mr-3 mt-2 text-[10px] font-medium tracking-[1.5px] text-[#7fb3b8] max-md:hidden">
-            RUANG KOORDINASI
-          </p>
-          <nav
-            className="flex flex-col gap-1 max-md:flex-row max-md:gap-1 max-md:overflow-x-auto max-md:border-b max-md:border-line max-md:px-3 max-md:py-2"
-            aria-label="Navigasi Posko"
-          >
-            {nav.map(([url, label, icon]) => (
-              <NavLink
-                key={url}
-                to={url}
-                end={url === '/'}
-                className={({ isActive }) =>
-                  cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-11 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
-                    isActive &&
-                      'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
-                  )
-                }
-              >
-                <Icon name={icon} />
-                {label}
-              </NavLink>
-            ))}
-            {user.role === 'admin' && (
-              <NavLink
-                to="/admin"
-                className={({ isActive }) =>
-                  cn(
-                    'flex min-h-10 items-center gap-3 rounded-md border border-transparent px-3 py-2 text-[13px] font-medium text-[#c4d7d8] no-underline transition-colors hover:bg-[#194b56] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e3a33b] max-md:min-h-11 max-md:whitespace-nowrap max-md:px-3 max-md:text-xs max-md:text-muted-foreground',
-                    isActive &&
-                      'border-[#1f6f7a] bg-[#1f6f7a] font-semibold text-white max-md:border-[#dcedee] max-md:bg-[#dcedee] max-md:text-brand',
-                  )
-                }
-              >
-                <Icon name="settings" />
-                Administrasi
-              </NavLink>
-            )}
+      <div className="p-shell">
+        <aside className={'p-sidebar ' + (menu ? 'is-open' : '')}>
+          <Brand audience="Posko" />
+          <div className="p-sidebar-context">{region?.name ?? 'Tandara Posko'}</div>
+          <nav aria-label="Navigasi Posko">
+            {nav
+              .filter(([url]) => admin || url !== '/review')
+              .map(([url, label, icon]) => (
+                <NavLink key={url} to={url} end={url === '/'} onClick={() => setMenu(false)}>
+                  <Icon name={icon} />
+                  <span>{url === '/members' && !admin ? 'Tim wilayah' : label}</span>
+                </NavLink>
+              ))}
           </nav>
-          <div className="mt-auto border-t border-[#315965] px-2.5 pt-5 max-md:hidden">
-            <p className="mb-1 text-xs">
+          <div className="p-profile">
+            <span className="p-avatar">{user.name[0]}</span>
+            <div>
               <strong>{user.name}</strong>
-            </p>
-            <p className="muted mb-1 text-xs">
-              {user.role === 'admin' ? 'Administrator' : 'Koordinator wilayah'}
-            </p>
+              <small>{admin ? 'Admin' : 'Koordinator'}</small>
+            </div>
             <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 w-full justify-start border-[#54747c] bg-[#183f4b] px-3 text-white hover:border-[#7fb3b8] hover:bg-[#1f6f7a] hover:text-white focus-visible:ring-[#e3a33b]"
-              onClick={logout}
+              variant="ghost"
+              size="icon"
+              aria-label="Keluar"
+              title="Keluar"
+              onClick={() => void logout()}
             >
-              <Icon name="logout" size={16} />
-              Keluar
+              <Icon name="logout" />
             </Button>
           </div>
         </aside>
-        <div>
-          <header className="posko-header sticky top-0 z-20 flex h-[72px] items-center justify-between gap-4 border-b border-line bg-paper/95 px-9 py-3 backdrop-blur-sm max-[1100px]:px-6 max-md:static max-md:h-auto max-md:flex-wrap max-md:px-5 print:hidden">
-            <div className="flex min-w-[180px] max-w-[360px] items-center gap-2.5 text-brand">
-              <Icon name="pin" />
-              <Select
-                value={region?.id ?? ''}
-                onValueChange={(value) => {
-                  setSelected(value);
-                  setMessage('');
-                }}
-              >
-                <SelectTrigger aria-label="Wilayah Posko" className="min-h-10 text-[13px]">
+        {menu && (
+          <button
+            className="p-menu-backdrop"
+            aria-label="Tutup menu"
+            onClick={() => setMenu(false)}
+          />
+        )}
+        <div className="p-workspace">
+          <header className="p-topbar">
+            <Brand audience="Posko" />
+            <div className="p-region">
+              <Icon name="pin" size={18} />
+              <Select value={region?.id ?? ''} onValueChange={setSelected}>
+                <SelectTrigger aria-label="Wilayah Posko">
                   <SelectValue placeholder="Pilih wilayah" />
                 </SelectTrigger>
                 <SelectContent>
@@ -247,38 +277,65 @@ export function PoskoApp() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="actions">
-              {region?.simulation && <Badge tone="amber">SIMULASI</Badge>}
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden border-line bg-white text-ink hover:border-[#7fb3b8] hover:bg-[#dcedee] max-md:inline-flex max-md:min-h-11"
-                onClick={logout}
-              >
-                <Icon name="logout" size={16} />
-                Keluar
+            <div className="p-top-actions">
+              <Button asChild variant="ghost" size="icon">
+                <Link to="/notifications" aria-label="Notifikasi" title="Notifikasi">
+                  <Icon name="inbox" />
+                </Link>
               </Button>
+              <Button asChild variant="ghost" size="icon">
+                <Link to="/security" aria-label="Keamanan akun" title="Keamanan akun">
+                  <Icon name="shield" />
+                </Link>
+              </Button>
+              <span className="p-avatar">{user.name[0]}</span>
             </div>
           </header>
-          <main
-            id="main"
-            className="posko-main mx-auto max-w-[1540px] px-9 py-8 min-[1600px]:px-12 min-[1600px]:py-9 max-[1100px]:px-6 max-[1100px]:py-7 max-md:px-5 max-md:py-6 print:p-0"
-            tabIndex={-1}
-          >
-            {message && <Notice>{message}</Notice>}
+          <main id="main" className="p-main" tabIndex={-1}>
             <div key={region?.id}>{content}</div>
-            <footer className="safe-footer print:hidden">
-              <p>
-                {region?.simulation ? 'Simulasi — bukan kejadian nyata. ' : ''}Laporan komunitas dan
-                saran AI bukan peringatan resmi. Area tanpa informasi tidak berarti aman.
-              </p>
-            </footer>
           </main>
         </div>
       </div>
+      <nav className="p-bottom-nav" aria-label="Navigasi mobile">
+        {(
+          [
+            ['/', 'Ringkasan', 'home'],
+            ['/inbox', 'Laporan', 'inbox'],
+            ['/analytics', 'Rekap', 'report'],
+            ['/notifications', 'Notifikasi', 'source'],
+          ] as const
+        ).map(([url, label, icon]) => (
+          <NavLink to={url} end={url === '/'} key={url} aria-label={label} title={label}>
+            <Icon name={icon} size={23} />
+          </NavLink>
+        ))}
+        <button
+          aria-label={menu ? 'Tutup menu' : 'Menu lainnya'}
+          aria-expanded={menu}
+          title="Menu lainnya"
+          onClick={() => setMenu(!menu)}
+        >
+          <Icon name="settings" size={23} />
+        </button>
+      </nav>
+      {message && (
+        <div
+          className={'p-toast ' + (failure ? 'is-error' : '')}
+          role={failure ? 'alert' : 'status'}
+        >
+          <Icon name={failure ? 'help' : 'check'} />
+          <span>{message}</span>
+          <button aria-label="Tutup notifikasi" onClick={() => setMessage('')}>
+            �
+          </button>
+        </div>
+      )}
       <PwaUpdateNotice />
     </>
   );
+}
+function ReviewQueue(props: ManagementProps) {
+  return <OperationsInbox {...props} />;
 }
 
 function PwaUpdateNotice() {
@@ -308,11 +365,9 @@ function PwaUpdateNotice() {
 
 function Login({
   onLogin,
-  simulation,
   residentOrigin,
 }: {
   onLogin: (data: z.infer<typeof authSchema>) => void;
-  simulation: boolean;
   residentOrigin: string | undefined;
 }) {
   const [code, setCode] = useState('');
@@ -325,13 +380,12 @@ function Login({
     <div className="login-layout">
       <section className="login-story">
         <Brand audience="Posko" className="login-brand" />
-        <p className="eyebrow">TANDARA / RUANG KOORDINASI</p>
-        <h1>Dari kabar lokal, ke kesiapan bersama.</h1>
+        <p className="eyebrow">Tandara Posko</p>
+        <h1>Laporan warga, ditangani bersama.</h1>
         <p>
           Tinjau laporan warga, pahami informasi yang belum lengkap, dan kelola rencana komunitas
           dengan keputusan yang dapat ditelusuri.
         </p>
-        {simulation && <Badge tone="amber">SIMULASI</Badge>}
       </section>
       <main className="login-form">
         <h1>Masuk ke Posko</h1>
@@ -399,7 +453,7 @@ function Login({
           </button>
         </form>
         <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
-          Gunakan akun {simulation ? 'simulasi ' : ''}yang diberikan pengelola lingkungan ini.
+          Gunakan akun yang diberikan pengelola lingkungan ini.
         </p>
         {residentOrigin && <a href={residentOrigin}>Buka Tandara Warga →</a>}
       </main>

@@ -13,6 +13,8 @@ import sharp from 'sharp';
 import { IdentityService } from './identity.js';
 import { audit, conflict, found, hash, parse, rateLimit, reportProjection } from './shared.js';
 
+import { workflowDetail } from './report-workflow.js';
+
 export const transitions: Record<ReportReviewState, ReportReviewState[]> = {
   submitted: ['under_review', 'clarification_requested', 'reviewed', 'rejected', 'closed'],
   under_review: ['clarification_requested', 'reviewed', 'rejected', 'closed'],
@@ -120,7 +122,7 @@ export class ReportsService {
       await audit(tx, null, data.regionId, 'report.created', row.id, {
         simulation: process.env['APP_MODE'] !== 'production',
       });
-      await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,${(process.env['APP_MODE'] === 'production' ? '' : 'Simulasi: ') + 'laporan komunitas baru menunggu tinjauan.'} FROM users u JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE m.region_id=${data.regionId}::uuid AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
+      await sql`INSERT INTO notifications(user_id,region_id,title) SELECT DISTINCT u.id,${data.regionId}::uuid,${'Laporan warga baru menunggu verifikasi.'} FROM users u LEFT JOIN memberships m ON m.user_id=u.id LEFT JOIN notification_preferences p ON p.user_id=u.id WHERE (m.region_id=${data.regionId}::uuid OR u.role='admin') AND NOT u.suspended AND COALESCE(p.enabled,true)`.execute(
         tx,
       );
       return { id: row.id, trackingToken: token, state: row.state };
@@ -148,7 +150,8 @@ export class ReportsService {
         this.db,
       )
     ).rows;
-    return { ...r, history };
+    const detail = await workflowDetail(this, id, true);
+    return { ...r, history, workflow: detail.workflow, updates: r.erased ? [] : detail.events };
   }
   async eraseRequest(id: string, token: string | undefined) {
     await this.track(id, token);
@@ -166,10 +169,24 @@ export class ReportsService {
         q: z.string().max(100).default(''),
         category: z.string().max(50).optional(),
         sort: z.enum(['newest', 'oldest']).default('newest'),
+        workflow: z
+          .enum([
+            'received',
+            'verified',
+            'assigned',
+            'in_progress',
+            'awaiting_approval',
+            'resolved',
+            'closed',
+            'rejected',
+            'needs_information',
+          ])
+          .optional(),
+        mine: z.enum(['true', 'false']).optional(),
       }),
       query,
     );
-    const where = sql`r.region_id=${regionId}::uuid AND NOT r.erased AND (${filter.state ?? null}::text IS NULL OR r.state=${filter.state ?? null}) AND (${filter.category ?? null}::text IS NULL OR r.category=${filter.category ?? null}) AND (r.description ILIKE ${'%' + filter.q + '%'} OR COALESCE(r.landmark_text,'') ILIKE ${'%' + filter.q + '%'})`;
+    const where = sql`(${filter.workflow ?? null}::text IS NULL OR r.workflow_status=${filter.workflow ?? null}) AND (${filter.mine === 'true'} = false OR r.assignee_id=${user.id}::uuid) AND r.region_id=${regionId}::uuid AND NOT r.erased AND (${filter.state ?? null}::text IS NULL OR r.state=${filter.state ?? null}) AND (${filter.category ?? null}::text IS NULL OR r.category=${filter.category ?? null}) AND (r.description ILIKE ${'%' + filter.q + '%'} OR COALESCE(r.landmark_text,'') ILIKE ${'%' + filter.q + '%'})`;
     const items = (
       await sql<{
         data: Report;
@@ -255,6 +272,19 @@ export class ReportsService {
         ).rows[0],
       );
       if (current.revision !== data.revision) conflict();
+      if (data.state === 'closed')
+        throw new ForbiddenException(
+          'Gunakan persetujuan penyelesaian dan konfirmasi warga untuk menutup laporan.',
+        );
+      const workflow = (
+        await sql<{
+          status: string;
+        }>`SELECT workflow_status status FROM reports WHERE id=${id}::uuid`.execute(tx)
+      ).rows[0]!;
+      if (!['received', 'needs_information', 'verified', 'rejected'].includes(workflow.status))
+        conflict('Gunakan tindakan penanganan untuk laporan yang telah ditugaskan.');
+      if (data.state === 'rejected' && user.role !== 'admin')
+        throw new ForbiddenException('Penolakan laporan hanya dapat dilakukan Admin.');
       if (!canTransition(current.state, data.state)) conflict('Perubahan status tidak diizinkan.');
       if (data.publicSummary && (data.state !== 'reviewed' || current.follow_up_requested))
         throw new BadRequestException(
@@ -263,7 +293,7 @@ export class ReportsService {
       const region = await this.identity.scope(user, regionId);
       if (data.category && !region.config.categories.includes(data.category))
         throw new BadRequestException('Kategori tidak diizinkan.');
-      await sql`UPDATE reports SET state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
+      await sql`UPDATE reports SET workflow_status=${data.state === 'reviewed' ? 'verified' : data.state === 'rejected' ? 'rejected' : data.state === 'clarification_requested' ? 'needs_information' : 'received'},state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
         tx,
       );
       await sql`INSERT INTO report_history(report_id,actor_id,action,reason) VALUES(${id}::uuid,${user.id}::uuid,${data.state},${data.reason})`.execute(
