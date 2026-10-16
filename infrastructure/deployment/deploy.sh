@@ -64,6 +64,8 @@ if [[ ${DEMO_LOGIN_ENABLED:-true} == true ]]; then
   # The operation is simulation-only and preserves reports that already exist.
   "${dc[@]}" run --rm --no-deps seed-resident
 fi
+# Provision the public Warga judging account on existing demo installations too.
+"${dc[@]}" run --rm --no-deps seed node api/node_modules/@tandara/backend/database-command.mjs seed-resident
 "${dc[@]}" up -d --wait --wait-timeout 180 api worker caddy
 curl --fail --silent --show-error --retry 12 --retry-delay 5 --retry-all-errors "https://$API_DOMAIN/ready" >/dev/null
 ln -sfn "$release" "$root/current.new"

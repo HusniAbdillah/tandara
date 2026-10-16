@@ -318,11 +318,34 @@ export class ReportsService {
           status: string;
         }>`SELECT workflow_status status FROM reports WHERE id=${id}::uuid`.execute(tx)
       ).rows[0]!;
-      if (!['received', 'needs_information', 'verified', 'rejected'].includes(workflow.status))
+      if (
+        ![
+          'received',
+          'needs_information',
+          'verified',
+          'assigned',
+          'in_progress',
+          'awaiting_approval',
+          'resolved',
+          'rejected',
+        ].includes(workflow.status)
+      )
         conflict('Gunakan tindakan penanganan untuk laporan yang telah ditugaskan.');
       if (data.state === 'rejected' && user.role !== 'admin')
         throw new ForbiddenException('Penolakan laporan hanya dapat dilakukan Admin.');
-      if (!canTransition(current.state, data.state)) conflict('Perubahan status tidak diizinkan.');
+      const validWorkflowReview =
+        data.state === 'reviewed' &&
+        [
+          'received',
+          'needs_information',
+          'verified',
+          'assigned',
+          'in_progress',
+          'awaiting_approval',
+          'resolved',
+        ].includes(workflow.status);
+      if (!validWorkflowReview && !canTransition(current.state, data.state))
+        conflict('Perubahan status tidak diizinkan.');
       if (data.publicSummary && (data.state !== 'reviewed' || current.follow_up_requested))
         throw new BadRequestException(
           'Ringkasan publik hanya untuk laporan yang ditinjau tanpa kebutuhan bantuan pribadi.',
@@ -330,7 +353,7 @@ export class ReportsService {
       const region = await this.identity.scope(user, regionId);
       if (data.category && !region.config.categories.includes(data.category))
         throw new BadRequestException('Kategori tidak diizinkan.');
-      await sql`UPDATE reports SET workflow_status=${data.state === 'reviewed' ? 'verified' : data.state === 'rejected' ? 'rejected' : data.state === 'clarification_requested' ? 'needs_information' : 'received'},state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
+      await sql`UPDATE reports SET workflow_status=${data.state === 'reviewed' ? 'verified' : data.state === 'rejected' ? 'rejected' : data.state === 'clarification_requested' ? 'needs_information' : 'received'},state=${data.state},category=COALESCE(${data.category ?? null},category),public_summary=${data.state === 'reviewed' ? (data.publicSummary ?? null) : null},publish_on_map=${data.state === 'reviewed' && !current.follow_up_requested},reviewed_by=${user.id}::uuid,reviewed_at=now(),updated_at=now(),revision=revision+1 WHERE id=${id}::uuid`.execute(
         tx,
       );
       await sql`INSERT INTO report_history(report_id,actor_id,action,reason) VALUES(${id}::uuid,${user.id}::uuid,${data.state},${data.reason})`.execute(

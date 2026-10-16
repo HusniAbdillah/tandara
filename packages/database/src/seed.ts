@@ -3,6 +3,7 @@ import { sql } from 'kysely';
 import { createDatabase } from './client.js';
 import { seedWorkflow, seedResidentReports } from './seed-workflow.js';
 import { seedDemoAccounts } from './demo-accounts.js';
+import { seedDemoResident } from './demo-resident.js';
 
 if (process.env['APP_MODE'] !== 'simulation')
   throw new Error('Seed allowed only in explicit simulation mode.');
