@@ -541,7 +541,7 @@ test('signed-out routes redirect to login and registration returns to the reques
 
 test('a 401 during submission redirects to login and preserves the queued report', async ({
   page,
-}, testInfo) => {
+}) => {
   await fixtures(page);
   await page.goto('/report');
   await page

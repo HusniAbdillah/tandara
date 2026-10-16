@@ -278,6 +278,7 @@ try {
     }
   });
   await seedDemoAccounts(db, password, process.env['DEMO_LOGIN_ENABLED'] === 'true');
+  await seedDemoResident(db);
   await seedWorkflow(db);
   await seedResidentReports(db);
   console.info('Development seed complete. Existing records preserved.');
