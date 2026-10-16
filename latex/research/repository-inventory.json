@@ -1,0 +1,2880 @@
+{
+  "revision": "1c427abb16f5836a4097a9c9d899a71ebacdad22",
+  "files": [
+    {
+      "path": ".dockerignore",
+      "bytes": 195,
+      "sha256": "03ae0d3217504e163a56b4857ab772f8b88254d3622520437b9242bb2f15de50"
+    },
+    {
+      "path": ".editorconfig",
+      "bytes": 188,
+      "sha256": "a6b98ea7cb6d61ed8d430dd0dffa46c87012b5cf859d4ce7207898954951fdcd"
+    },
+    {
+      "path": ".env.example",
+      "bytes": 2044,
+      "sha256": "8402ffa04e4be13db6d81c4738b2bdd6710def2eb344df88a8410d3a4a96505e"
+    },
+    {
+      "path": ".env.production.example",
+      "bytes": 1596,
+      "sha256": "74e897939eaf60fed51e7160b68940f9fcc25564692f1554ab39c24e47a41b19"
+    },
+    {
+      "path": ".gitattributes",
+      "bytes": 45,
+      "sha256": "67c8553872a8e7d08366c8ec66767ef13938ea04f749c3bcdbe050c664d340af"
+    },
+    {
+      "path": ".github/dependabot.yml",
+      "bytes": 225,
+      "sha256": "87223c44aee7ddc5f00a29e03e23da3c604f8f9261d25169485159c6b8ff7e38",
+      "lines": 11
+    },
+    {
+      "path": ".github/workflows/ai-evaluation.yml",
+      "bytes": 2794,
+      "sha256": "559061722dc8c42b562d881c7172e1fd48ac2671c6829f437ce9176771032364",
+      "lines": 63
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "bytes": 4923,
+      "sha256": "655d09e78ffcfeb31a08632513672955d2d006b90763c969b4e3854b8869b069",
+      "lines": 117
+    },
+    {
+      "path": ".github/workflows/deploy-demo.yml",
+      "bytes": 11182,
+      "sha256": "3c9f0217f750f362c3862c41765d067da95a3c87a3fde958313e5d859898f04a",
+      "lines": 205
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 264,
+      "sha256": "78ba83019600e1043a726cbf4d3d89f6f2f0297d654fdd2f18bd13fe776db0f8"
+    },
+    {
+      "path": ".node-version",
+      "bytes": 8,
+      "sha256": "5b9d0e73029969ae9000117cb877f17bb9841c1279bfe8024e294acfcf017800"
+    },
+    {
+      "path": ".npmrc",
+      "bytes": 65,
+      "sha256": "2421febef445a76babc0ee7ae760b4eac0e0849304d8b208c9cacddd9fe8073e"
+    },
+    {
+      "path": ".prettierignore",
+      "bytes": 247,
+      "sha256": "8640a9e575344a0d2d17f8fb9812452d4a2495c597e38c4fffc109d2e03d6d53"
+    },
+    {
+      "path": ".prettierrc.json",
+      "bytes": 73,
+      "sha256": "85378d4d734cb7d35641c44ffdf322fe0bc76a3b12841927f20aa5f0eba12695",
+      "lines": 5
+    },
+    {
+      "path": "Dockerfile",
+      "bytes": 1975,
+      "sha256": "9d90d80dab8008051ad1e3f928aac8072be6268a75a29985c4324ad2456deec2",
+      "lines": 37
+    },
+    {
+      "path": "README.md",
+      "bytes": 7026,
+      "sha256": "43d831104b57712cb26648054d5bcb796c34cbf301ce26f016959b8b9d9b3e56",
+      "lines": 135,
+      "headings": [
+        "# Tandara / ArahSiaga",
+        "## Run the complete local product",
+        "# Edit .env: choose POSTGRES_PASSWORD and DEMO_PASSWORD (at least 12 characters).",
+        "## Demo and verification",
+        "## Connect a real AI provider",
+        "## Development and tests",
+        "## Deployment boundary"
+      ]
+    },
+    {
+      "path": "apps/api/package.json",
+      "bytes": 1015,
+      "sha256": "b6dadc2a5fce7be5d982fe75bdf279b37ed945a2662b1fff5943c123c4fa3e89",
+      "lines": 36
+    },
+    {
+      "path": "apps/api/src/app.module.ts",
+      "bytes": 730,
+      "sha256": "822f537dce4379bf8298c0eecbd7ef3094de6c8b6ef02c210046b86924248572",
+      "lines": 18
+    },
+    {
+      "path": "apps/api/src/bootstrap.ts",
+      "bytes": 3130,
+      "sha256": "dd734b66e442adef7bdb7208f3c7ee1fa85bd90272ae6d2595cab9e6a831d37c",
+      "lines": 86
+    },
+    {
+      "path": "apps/api/src/export-openapi.ts",
+      "bytes": 339,
+      "sha256": "7c925e293434d0eb6a40368fd72c91cf1da8477fb7ebdec3f6a298b41adf01e3",
+      "lines": 9
+    },
+    {
+      "path": "apps/api/src/http/api-error.filter.ts",
+      "bytes": 1719,
+      "sha256": "884e7a2d23cca1bffb5b7019d2590ff860bb9f9fc4ce7d2da3d27dbbc087c3f9",
+      "lines": 49
+    },
+    {
+      "path": "apps/api/src/http/health.controller.ts",
+      "bytes": 828,
+      "sha256": "2ad12cd534c7dd1b90621fb134ed58ddc3f08d487ac129fc974fa025da96f4d6",
+      "lines": 22,
+      "routes": [
+        ["Get", "/health"],
+        ["Get", "/ready"]
+      ]
+    },
+    {
+      "path": "apps/api/src/http/openapi-product.ts",
+      "bytes": 12045,
+      "sha256": "483db71c0d82d1092dc079f4aebbec95acedd799c53c7d75b6b1ff7a297d54eb",
+      "lines": 408
+    },
+    {
+      "path": "apps/api/src/http/openapi.ts",
+      "bytes": 2168,
+      "sha256": "c26b6dc3144b345f1c88e2eac9e089b461032a6e1212a31e11ba5f38d25011ed",
+      "lines": 69
+    },
+    {
+      "path": "apps/api/src/http/product.controller.ts",
+      "bytes": 14392,
+      "sha256": "40ddd4a35867194e9c9e3da89864c5d1fcaa5f9a8afb5662fcf758cdeefd58b7",
+      "lines": 397,
+      "routes": [
+        ["Get", "deployment"],
+        ["Get", "regions/:regionId/knowledge"],
+        ["Get", "regions/:regionId/knowledge/references"],
+        ["Post", "regions/:regionId/knowledge/references"],
+        ["Post", "regions/:regionId/knowledge/references/:id/review"],
+        ["Post", "regions/:regionId/ai/runs"],
+        ["Get", "regions/:regionId/ai/runs"],
+        ["Get", "regions/:regionId/ai/runs/:id"],
+        ["Post", "regions/:regionId/ai/runs/:id/review"],
+        ["Post", "regions/:regionId/ai/runs/:id/cancel"],
+        ["Post", "regions/:regionId/ai/runs/:id/retry"],
+        ["Get", "admin/ai/operations"],
+        ["Post", "admin/ai/controls"],
+        ["Post", "admin/ai/releases/:id/approve"],
+        ["Post", "admin/ai/releases/:id/evaluations"],
+        ["Post", "admin/ai/releases/:id/activate"],
+        ["Post", "auth/login"],
+        ["Get", "auth/me"],
+        ["Post", "auth/mfa/enroll"],
+        ["Post", "auth/mfa/confirm"],
+        ["Post", "auth/logout"],
+        ["Get", "regions"],
+        ["Get", "notifications"],
+        ["Post", "notifications/preferences"],
+        ["Post", "notifications/:id/read"],
+        ["Get", "regions/:regionId/public"],
+        ["Post", "reports"],
+        ["Get", "reports/:id/tracking"],
+        ["Post", "reports/:id/deletion-request"],
+        ["Post", "reports/:id/attachments"],
+        ["Get", "regions/:regionId/reports"],
+        ["Get", "reports/:id"],
+        ["Post", "reports/:id/reviews"],
+        ["Post", "reports/:id/triage"],
+        ["Post", "reports/:id/suggestions/:suggestionId/review"],
+        ["Post", "reports/:id/duplicates/:candidateId"],
+        ["Get", "reports/:id/attachments/:attachmentId"],
+        ["Get", "regions/:regionId/plans"],
+        ["Post", "regions/:regionId/plans"],
+        ["Put", "regions/:regionId/plans/:id"],
+        ["Post", "regions/:regionId/plans/:id/transition"],
+        ["Get", "regions/:regionId/coverage"],
+        ["Get", "regions/:regionId/triage-summary"],
+        ["Get", "regions/:regionId/assistance"],
+        ["Post", "regions/:regionId/assistance/:id"],
+        ["Get", "regions/:regionId/training"],
+        ["Get", "regions/:regionId/training/outcomes"],
+        ["Post", "regions/:regionId/training"],
+        ["Post", "regions/:regionId/training/:id/results"],
+        ["Get", "regions/:regionId/sources"],
+        ["Post", "regions/:regionId/sources"],
+        ["Post", "regions/:regionId/sources/:id/refresh"],
+        ["Get", "regions/:regionId/audit"],
+        ["Get", "admin/organizations"],
+        ["Post", "admin/organizations"],
+        ["Get", "admin/users"],
+        ["Get", "admin/regions"],
+        ["Post", "admin/users"],
+        ["Post", "admin/regions"],
+        ["Get", "admin/operations"],
+        ["Post", "admin/jobs/:id/retry"],
+        ["Post", "admin/deletions/:id/complete"]
+      ]
+    },
+    {
+      "path": "apps/api/src/http/system.controller.ts",
+      "bytes": 429,
+      "sha256": "8548e6f331c65cec177c1e329538e5f7a48830e961d13e2151481038033d836c",
+      "lines": 16,
+      "routes": [
+        ["Get", "/info"],
+        ["Get", "/openapi.json"]
+      ]
+    },
+    {
+      "path": "apps/api/src/main.ts",
+      "bytes": 475,
+      "sha256": "1339d7dd6d38c88d9f9702f2617a646cf8d145afb42e7ea3c74612b8d1f09f2f",
+      "lines": 13
+    },
+    {
+      "path": "apps/api/test/http.test.mjs",
+      "bytes": 2773,
+      "sha256": "55967f5db05180916307262fa998875289898f49a75689b28047e919b789124b",
+      "lines": 71
+    },
+    {
+      "path": "apps/api/tsconfig.build.json",
+      "bytes": 35,
+      "sha256": "56bcc42b9cedc7661908ad28ebefb4985c4abc8097b6e4ed586c14b51b5e8d59",
+      "lines": 3
+    },
+    {
+      "path": "apps/api/tsconfig.json",
+      "bytes": 226,
+      "sha256": "99e9d5b017644dcd265a7d689f64969137ff386a05b630c54a72c918810b9f8d",
+      "lines": 10
+    },
+    {
+      "path": "apps/coordinator-web/index.html",
+      "bytes": 687,
+      "sha256": "df292ca9fe988410acb4ea5e0ec414cf603663dd92331a65d7feb8a23919936c",
+      "lines": 18
+    },
+    {
+      "path": "apps/coordinator-web/package.json",
+      "bytes": 850,
+      "sha256": "0680ac15a8c029abf7c858a3c895acf5b84f24b026c3f0c2459201265b286324",
+      "lines": 31
+    },
+    {
+      "path": "apps/coordinator-web/public/basemap.json",
+      "bytes": 248,
+      "sha256": "afe35e3fc9b06c9a5e5cad74b149a1ee94b57d4e17bf04b30197734eba81ed75",
+      "lines": 8
+    },
+    {
+      "path": "apps/coordinator-web/public/icon-192.png",
+      "bytes": 7694,
+      "sha256": "aee9f220d5a4514751d55e667e22a4909eabc1a9c20191711e25150b84c158c5"
+    },
+    {
+      "path": "apps/coordinator-web/public/icon-512.png",
+      "bytes": 26899,
+      "sha256": "01a008cda6ef9a60ffd5a00b3eaf43feac31220c14fa9bd17a104999a365c6cb"
+    },
+    {
+      "path": "apps/coordinator-web/public/icon.svg",
+      "bytes": 8229,
+      "sha256": "e0f9391baa1f093e8d21529fd8db65a3c9d8fa97c87e62443ad5a8b0029ad390",
+      "lines": 1
+    },
+    {
+      "path": "apps/coordinator-web/src/app/providers.tsx",
+      "bytes": 374,
+      "sha256": "7d044c7226810958093968eff35e45de407bd17223e3c4ceca096ec0206e7799",
+      "lines": 9
+    },
+    {
+      "path": "apps/coordinator-web/src/app/router.tsx",
+      "bytes": 189,
+      "sha256": "6063f966e465e5e062b595293d15f697ab1f0e5da43511fefc4d6c2ab5b6dd1c",
+      "lines": 4
+    },
+    {
+      "path": "apps/coordinator-web/src/features/admin-ui.tsx",
+      "bytes": 22592,
+      "sha256": "7c18ae0ec3360ccf422a0812c7aefcff192a58d28d6b3d24dd216e32ef3a20aa",
+      "lines": 653
+    },
+    {
+      "path": "apps/coordinator-web/src/features/ai-ui.tsx",
+      "bytes": 25660,
+      "sha256": "ce69896c84e79bca5258834721e68fd4b99b5f6bcb54537373ef993888698bf4",
+      "lines": 709
+    },
+    {
+      "path": "apps/coordinator-web/src/features/basemap.ts",
+      "bytes": 2360,
+      "sha256": "07b687136b9d9fc25c0319b98ee7f1b8e6ba10e15bb696b91b5ca0ff7a25eda2",
+      "lines": 75
+    },
+    {
+      "path": "apps/coordinator-web/src/features/knowledge-ui.tsx",
+      "bytes": 5712,
+      "sha256": "a40369f9b57abc1238447fed1fe31ad0c1f8249ea84b443b19acf91032d3bef8",
+      "lines": 177
+    },
+    {
+      "path": "apps/coordinator-web/src/features/management-ui.tsx",
+      "bytes": 43172,
+      "sha256": "b0b5b65d3d4f25eb4897231d34373f66b2e489e96f1180b4d8da57020895705c",
+      "lines": 1167
+    },
+    {
+      "path": "apps/coordinator-web/src/features/notifications-ui.tsx",
+      "bytes": 2277,
+      "sha256": "d71d0c0360632c573b97fb3f4b0c2c8d6ead602e471dc7563e35eb9ea710045b",
+      "lines": 65
+    },
+    {
+      "path": "apps/coordinator-web/src/features/posko-app.tsx",
+      "bytes": 15504,
+      "sha256": "b936a83fae896302620344027bbeb776b73f41cb85f3bae72a447ff5cc9b3ef3",
+      "lines": 413
+    },
+    {
+      "path": "apps/coordinator-web/src/features/reports-ui.tsx",
+      "bytes": 34976,
+      "sha256": "dfa72ea31f1b96bd24dd9a20ca659d06d9570216ea1b42e1956f68a3e3858b9a",
+      "lines": 916
+    },
+    {
+      "path": "apps/coordinator-web/src/features/security-ui.tsx",
+      "bytes": 3788,
+      "sha256": "709410558f93f15db23a9ddc06605bd79b9a03351d0e81f06156282c99931464",
+      "lines": 110
+    },
+    {
+      "path": "apps/coordinator-web/src/features/situation-map.tsx",
+      "bytes": 15557,
+      "sha256": "260cdf2e55572dfe1bdb54f87b750e80eb6c5413d1bb5126da177ab64adccf82",
+      "lines": 419
+    },
+    {
+      "path": "apps/coordinator-web/src/main.tsx",
+      "bytes": 939,
+      "sha256": "3fca28ecefcbfefb5c526c09d6335378109d147c2a8e83acb0fc29252b001a19",
+      "lines": 29
+    },
+    {
+      "path": "apps/coordinator-web/src/vite-env.d.ts",
+      "bytes": 87,
+      "sha256": "63402eb45931ed925cec4f2a9bc8bda714753d3fb9aef48bb09ea05493fe8fa8",
+      "lines": 2
+    },
+    {
+      "path": "apps/coordinator-web/tsconfig.json",
+      "bytes": 160,
+      "sha256": "5fe5544f5985cbe75271d55dd978c022fd5487e44f90c729b3a52ea901bd052b",
+      "lines": 7
+    },
+    {
+      "path": "apps/coordinator-web/vite.config.ts",
+      "bytes": 1478,
+      "sha256": "9ac0f74fe318cac552efa7d57006afa6901f00a383281ac02c9a9e0085e47d5f",
+      "lines": 43
+    },
+    {
+      "path": "apps/resident-web/index.html",
+      "bytes": 548,
+      "sha256": "afa3b0df9c2c27f1bee78bfda06c193c34b3c443aae974df8e2dc3b7cb1736e1",
+      "lines": 16
+    },
+    {
+      "path": "apps/resident-web/package.json",
+      "bytes": 840,
+      "sha256": "4783e383c1431ecb7b4766cec3cddad3e9e0dae601aeac976ff626e1eddfc3a4",
+      "lines": 31
+    },
+    {
+      "path": "apps/resident-web/public/icon-192.png",
+      "bytes": 7694,
+      "sha256": "aee9f220d5a4514751d55e667e22a4909eabc1a9c20191711e25150b84c158c5"
+    },
+    {
+      "path": "apps/resident-web/public/icon-512.png",
+      "bytes": 26899,
+      "sha256": "01a008cda6ef9a60ffd5a00b3eaf43feac31220c14fa9bd17a104999a365c6cb"
+    },
+    {
+      "path": "apps/resident-web/public/icon.svg",
+      "bytes": 8229,
+      "sha256": "e0f9391baa1f093e8d21529fd8db65a3c9d8fa97c87e62443ad5a8b0029ad390",
+      "lines": 1
+    },
+    {
+      "path": "apps/resident-web/src/app/providers.tsx",
+      "bytes": 374,
+      "sha256": "a1ea3d965948e379049dc6e2994d239cab047868632773264a067c5099abce09",
+      "lines": 9
+    },
+    {
+      "path": "apps/resident-web/src/app/pwa-update-notice.tsx",
+      "bytes": 735,
+      "sha256": "375af9b4537b8de8aa95ab671e8a30e3cb5077aef43294c30a47ef71b2237aba",
+      "lines": 28
+    },
+    {
+      "path": "apps/resident-web/src/app/router.tsx",
+      "bytes": 198,
+      "sha256": "2deccf3901a97ed1b9efd9ffdcfc98522633c3e5da2a65590cd9a0a86b5fae3c",
+      "lines": 4
+    },
+    {
+      "path": "apps/resident-web/src/features/resident-app.tsx",
+      "bytes": 26944,
+      "sha256": "dcddf350adb345f60d1076a4b88e26cfcace9f6ff6045c5d209c3e6786861627",
+      "lines": 696
+    },
+    {
+      "path": "apps/resident-web/src/features/resident-workflows.tsx",
+      "bytes": 22284,
+      "sha256": "82777f8fe03e95502b0dcd51cef473cb7cefb80ab73b5bf4a39debc7318852cb",
+      "lines": 610
+    },
+    {
+      "path": "apps/resident-web/src/main.tsx",
+      "bytes": 900,
+      "sha256": "f0aaf87d885f72951236cec45c538fff06a287791fbbe489accd81aa392f36b9",
+      "lines": 29
+    },
+    {
+      "path": "apps/resident-web/src/offline/database.ts",
+      "bytes": 1235,
+      "sha256": "7e4fa1910cbf9233ba6111a33444d7536b7de04bffc7cb2d920f121d6cc7df49",
+      "lines": 46
+    },
+    {
+      "path": "apps/resident-web/src/offline/sync.ts",
+      "bytes": 2436,
+      "sha256": "8e12969e990edf6b7b91d26a4ecf3b8fbe055a1458d5d628a0f07a54f7a81f5a",
+      "lines": 74
+    },
+    {
+      "path": "apps/resident-web/src/offline/use-online-status.ts",
+      "bytes": 533,
+      "sha256": "5fcc0d05d5bcf8295d35d541940b753e840f0a8615b085db4ed24270613894a0",
+      "lines": 19
+    },
+    {
+      "path": "apps/resident-web/src/vite-env.d.ts",
+      "bytes": 87,
+      "sha256": "63402eb45931ed925cec4f2a9bc8bda714753d3fb9aef48bb09ea05493fe8fa8",
+      "lines": 2
+    },
+    {
+      "path": "apps/resident-web/tsconfig.json",
+      "bytes": 160,
+      "sha256": "5fe5544f5985cbe75271d55dd978c022fd5487e44f90c729b3a52ea901bd052b",
+      "lines": 7
+    },
+    {
+      "path": "apps/resident-web/vite.config.ts",
+      "bytes": 1474,
+      "sha256": "717e29abb740bdc990bd9a21d4e7310ae8a2407f91dd795d70f65bc707d7d9a4",
+      "lines": 43
+    },
+    {
+      "path": "apps/worker/package.json",
+      "bytes": 665,
+      "sha256": "9f583f048bba5c3c4a471e8bdbe51131344cd42d191a8d6899c99ba89f8c580c",
+      "lines": 26
+    },
+    {
+      "path": "apps/worker/src/main.ts",
+      "bytes": 1417,
+      "sha256": "db5b64c728be82f0ec718293f3e0a4c59c55d69be3b4a83de1b0b9720f0ad103",
+      "lines": 47
+    },
+    {
+      "path": "apps/worker/src/worker.module.ts",
+      "bytes": 417,
+      "sha256": "382f7cfa04c4590492c4421bd277c15846c38a3a2768c390868f6a31d4beea09",
+      "lines": 11
+    },
+    {
+      "path": "apps/worker/tsconfig.build.json",
+      "bytes": 35,
+      "sha256": "56bcc42b9cedc7661908ad28ebefb4985c4abc8097b6e4ed586c14b51b5e8d59",
+      "lines": 3
+    },
+    {
+      "path": "apps/worker/tsconfig.json",
+      "bytes": 226,
+      "sha256": "99e9d5b017644dcd265a7d689f64969137ff386a05b630c54a72c918810b9f8d",
+      "lines": 10
+    },
+    {
+      "path": "assets/P03 Detail laporan.png",
+      "bytes": 129254,
+      "sha256": "ec5b9df8134c0ebd552e5f0b1e31af60fed26eb8bf74299a4cd8a8f7cd324358"
+    },
+    {
+      "path": "assets/P05 Rencana lokal.png",
+      "bytes": 103089,
+      "sha256": "6ea9b060735a666ccbc4f76c2fa9c366449624243726642ea2057ba308d3a974"
+    },
+    {
+      "path": "assets/P07 Latihan.png",
+      "bytes": 109585,
+      "sha256": "edf368ec015536dd1b0f625310951012cd847579d5922a0f59dc347e308130d1"
+    },
+    {
+      "path": "assets/Tandara Brand Guidelines.pdf",
+      "bytes": 3783195,
+      "sha256": "55b8be08bacb040165477fa7c167b42270847ab70145a35972bc635344aa049a"
+    },
+    {
+      "path": "assets/Tandara · Components.svg",
+      "bytes": 191090,
+      "sha256": "28bb9d0485e04a53eced567d8eda3b42bb75a52d4e0d4b4f160e820cc183c4d0",
+      "lines": 344
+    },
+    {
+      "path": "assets/p01.png",
+      "bytes": 124299,
+      "sha256": "4b735bb9504d9af9f9d6eb4bf438c9bb442d1155adab1998cf575167d9af891c"
+    },
+    {
+      "path": "compose.yaml",
+      "bytes": 4241,
+      "sha256": "cccc581759f14d0ab288c651501e1a30d19f53e55e398a4261d4047c8dc4c2d6",
+      "lines": 106
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "bytes": 6925,
+      "sha256": "31ee30758308de78b2fe18e11d9149e9c9d51f2c7c74291492eeabf6c439aec6",
+      "lines": 119,
+      "headings": [
+        "# Implemented architecture",
+        "## Boundaries",
+        "## Persistence and concurrency",
+        "## Geospatial behavior",
+        "## AI and source separation",
+        "## Offline and media"
+      ]
+    },
+    {
+      "path": "docs/DELIVERY.md",
+      "bytes": 9597,
+      "sha256": "fdbd4e0968762391f33861077c2bda1e7f84f6ec69efee7869768592f355866e",
+      "lines": 167,
+      "headings": [
+        "# Tandara / ArahSiaga delivery",
+        "## Executive summary",
+        "## Repository information",
+        "## Implemented capabilities",
+        "## Architecture",
+        "## UI/UX",
+        "## Testing",
+        "## How to run",
+        "# Choose POSTGRES_PASSWORD and DEMO_PASSWORD (>=12 chars) in .env.",
+        "## Demonstration",
+        "## External dependencies",
+        "## Security and operational readiness",
+        "## Known limitations",
+        "## Completion matrix",
+        "## Recommended next steps"
+      ]
+    },
+    {
+      "path": "docs/Implementation-Plan.md",
+      "bytes": 10221,
+      "sha256": "49c2c1d1d6d35fbf747af4b84f25bc9891a726c5978654d0befed935bed26b7c",
+      "lines": 157,
+      "headings": [
+        "# Tandara — Three-Day Implementation Plan",
+        "## 1. Scope and source of truth",
+        "## 2. Ownership",
+        "## 3. Required MVP slices",
+        "## 4. Foundation handoff checklist",
+        "## 5. Before writing business tables",
+        "## 6. Day 1 — Complete the online report path",
+        "## 7. Day 2 — Review, offline, and async reliability",
+        "## 8. Day 3 — Verification and demo",
+        "## 9. Git and collaboration",
+        "## 10. Required evidence"
+      ]
+    },
+    {
+      "path": "docs/PLAN.md",
+      "bytes": 57868,
+      "sha256": "4e9474cc90c33c9d939a947864836b354e421aebe511826a846abcb99b08a682",
+      "lines": 2109,
+      "headings": [
+        "# Tandara — 3-Day Implementation Plan",
+        "## Hackathon MVP Execution Plan for 3 Technical Members + 1 Non-Technical Member",
+        "# 1. Critical Scope Decision",
+        "# 2. MVP Definition",
+        "## 2.1 The One Core Story",
+        "## 2.2 MVP Must-Have Features",
+        "## 2.3 Nice-to-Have Features",
+        "## 2.4 Explicitly Deferred Features",
+        "# 3. Product Scope for the 3-Day Demo",
+        "## 3.1 Tandara Warga Pages",
+        "## 3.2 Tandara Posko Pages",
+        "# 4. Team Structure and Ownership",
+        "## 4.1 Recommended Team Roles",
+        "## 4.2 Responsibility Matrix",
+        "## 4.3 Daily Rituals",
+        "### Mandatory schedule",
+        "### Stand-up format",
+        "# 5. Delivery Strategy",
+        "## 5.1 Development Principle",
+        "## 5.2 Priority Order",
+        "# 6. Technical MVP Architecture",
+        "# 7. Detailed Task Breakdown",
+        "# EPIC 0 — Project Setup and Working Agreement",
+        "## T-001 — Create Monorepo",
+        "### Brief",
+        "### Deliverables",
+        "### Definition of Done",
+        "## T-002 — Create Shared Design Tokens",
+        "### Deliverables",
+        "### Recommended Tandara Palette",
+        "### Status Visual Rules",
+        "## T-003 — Create Demo Seed Data",
+        "### Seed Region",
+        "### Seed Plan",
+        "### Seed Reports",
+        "### Definition of Done",
+        "# EPIC 1 — Backend Foundation",
+        "## T-101 — PostgreSQL/PostGIS Setup",
+        "### Deliverables",
+        "### Definition of Done",
+        "## T-102 — Core Database Schema",
+        "### MVP Tables",
+        "### Simplification for MVP",
+        "### Definition of Done",
+        "## T-103 — Auth and Role Guard",
+        "### MVP Approach",
+        "### Definition of Done",
+        "## T-104 — Preparedness Plan API",
+        "### Endpoints",
+        "### Required Response Data",
+        "### Definition of Done",
+        "## T-105 — Resident Report Submission API",
+        "### Endpoint",
+        "### Required Input",
+        "### Requirements",
+        "### Definition of Done",
+        "## T-106 — Coordinator Report Inbox API",
+        "### Endpoints",
+        "### Filters",
+        "### Definition of Done",
+        "## T-107 — Coordinator Review API",
+        "### Endpoint",
+        "### Supported Actions",
+        "### Definition of Done",
+        "# EPIC 2 — AI Triage and Duplicate Suggestions",
+        "## T-201 — AI Triage Contract",
+        "### Build",
+        "### Required Output",
+        "### Definition of Done",
+        "## T-202 — Deterministic Mock AI Engine",
+        "### Why It Is Important",
+        "### Rule Examples",
+        "### Definition of Done",
+        "## T-203 — Optional Live AI Adapter",
+        "### Rule",
+        "### Requirements",
+        "### Definition of Done",
+        "## T-204 — Duplicate Candidate Logic",
+        "### MVP Logic",
+        "### For Demo",
+        "### Definition of Done",
+        "# EPIC 3 — Tandara Warga Frontend",
+        "## T-301 — Resident App Shell and Region Selection",
+        "### Screens",
+        "### Definition of Done",
+        "## T-302 — Resident Home Screen",
+        "### Required Sections",
+        "### Definition of Done",
+        "## T-303 — Preparedness Plan Page",
+        "### Page Sections",
+        "### Definition of Done",
+        "## T-304 — Preparedness Checklist",
+        "### Requirements",
+        "### Definition of Done",
+        "## T-305 — Report Form",
+        "### Form Fields",
+        "### UX Requirements",
+        "### Definition of Done",
+        "## T-306 — Offline Report Queue",
+        "### Requirements",
+        "### Definition of Done",
+        "## T-307 — Resident Status and Contacts Page",
+        "### Includes",
+        "### Definition of Done",
+        "# EPIC 4 — Tandara Posko Frontend",
+        "## T-401 — Coordinator Login",
+        "### Definition of Done",
+        "## T-402 — Coordinator Dashboard Overview",
+        "### Dashboard Cards",
+        "### Definition of Done",
+        "## T-403 — Report Inbox",
+        "### Required Columns",
+        "### Required Filters",
+        "### Definition of Done",
+        "## T-404 — Report Detail and AI Review",
+        "### Layout",
+        "### Definition of Done",
+        "## T-405 — Duplicate Candidate Page",
+        "### UI",
+        "### Definition of Done",
+        "## T-406 — Restricted Help Request Page",
+        "### Requirements",
+        "### Definition of Done",
+        "# EPIC 5 — Offline, Safety, and Trust UI",
+        "## T-501 — Status Label System",
+        "### Required Status Labels",
+        "### Definition of Done",
+        "## T-502 — Safety Disclaimer Components",
+        "### Required Copy",
+        "### Definition of Done",
+        "# EPIC 6 — Deployment, QA, and Demo Readiness",
+        "## T-601 — Docker Compose Environment",
+        "### Services",
+        "### Definition of Done",
+        "## T-602 — VPS Deployment",
+        "### VPS Checklist",
+        "### Definition of Done",
+        "## T-603 — Functional QA Checklist",
+        "### Test Cases",
+        "#### Resident Flow",
+        "#### Coordinator Flow",
+        "#### Safety Flow",
+        "## T-604 — Demo Fallback Plan",
+        "### Rule",
+        "### Fallback Assets",
+        "### Definition of Done",
+        "# 8. Detailed 3-Day Schedule",
+        "# Day 0 — Before Development Starts",
+        "# Day 1 — Foundation and First End-to-End Flow",
+        "## Day 1 Goal",
+        "## Day 1 Morning: 08:00–12:00",
+        "### Day 1 Morning Checkpoint",
+        "## Day 1 Afternoon: 13:00–18:00",
+        "### Day 1 Non-Negotiable Milestone",
+        "## Day 1 Evening: 19:00–22:00",
+        "# Day 2 — Trust, Preparedness, AI, and Offline Capability",
+        "## Day 2 Goal",
+        "## Day 2 Morning: 08:00–12:00",
+        "### Day 2 Morning Checkpoint",
+        "## Day 2 Afternoon: 13:00–18:00",
+        "### Day 2 Non-Negotiable Milestone",
+        "## Day 2 Evening: 19:00–22:00",
+        "# Day 3 — Deployment, Polish, QA, and Presentation",
+        "## Day 3 Goal",
+        "## Day 3 Morning: 08:00–12:00",
+        "### Feature Freeze Rule",
+        "## Day 3 Afternoon: 13:00–17:00",
+        "## Day 3 Evening: 18:00–Final",
+        "# 9. Demo Script and Feature Mapping",
+        "## 9.1 Recommended 5-Minute Demo",
+        "### Minute 0:00–0:30 — Problem",
+        "### Minute 0:30–1:15 — Tandara Warga",
+        "### Minute 1:15–2:00 — Offline Resilience",
+        "### Minute 2:00–2:45 — Synchronization",
+        "### Minute 2:45–4:15 — Tandara Posko",
+        "### Minute 4:15–4:45 — Privacy",
+        "### Minute 4:45–5:00 — Closing",
+        "# 10. Definition of Done for the Entire MVP",
+        "## Resident Flow",
+        "## Coordinator Flow",
+        "## Trust and Safety",
+        "## Technical",
+        "# 11. Quality Gates",
+        "## Gate 1 — End of Day 1",
+        "## Gate 2 — End of Day 2",
+        "## Gate 3 — Midday Day 3",
+        "# 12. Risk Management",
+        "# 13. Git Workflow",
+        "## Branch Rules",
+        "## Rules",
+        "# 14. Suggested Task Board Structure",
+        "## Columns",
+        "## Labels",
+        "## Rule",
+        "# 15. If Only Three People Total Are Available",
+        "## Team Structure",
+        "## Features to Remove First",
+        "## Three-Person MVP",
+        "# 16. Final Recommended MVP Cut",
+        "## Tandara Warga",
+        "## Tandara Posko",
+        "## System",
+        "# 17. Final Team Rule"
+      ]
+    },
+    {
+      "path": "docs/PRD.md",
+      "bytes": 79930,
+      "sha256": "2090853eeb52f438b3fa8f2b50b592b6eac98b6a4b129e0223e31943492b23ef",
+      "lines": 2088,
+      "headings": [
+        "# PRD — Product Requirements Document",
+        "# **TANDARA**",
+        "## _From Local Signals to Shared Readiness._",
+        "# 1. Document Control",
+        "# 2. Executive Summary",
+        "## 2.1 Product Overview",
+        "## 2.2 Product Statement",
+        "## 2.3 Primary Problem",
+        "## 2.4 Core Product Insight",
+        "# 3. Product Vision, Mission, and Principles",
+        "## 3.1 Vision",
+        "## 3.2 Mission",
+        "## 3.3 Product Principles",
+        "### Principle 1 — Trust must be visible",
+        "### Principle 2 — Unknown is safer than invented",
+        "### Principle 3 — AI assists; humans decide",
+        "### Principle 4 — No reports does not mean safe",
+        "### Principle 5 — Offline does not mean current",
+        "### Principle 6 — Local plans require local ownership",
+        "### Principle 7 — Privacy is part of safety",
+        "### Principle 8 — Accessibility is a core requirement",
+        "# 4. Sustainability Positioning",
+        "### Relevant Sustainable Development Goals",
+        "# 5. Goals and Non-Goals",
+        "## 5.1 Product Goals",
+        "## 5.2 Non-Goals",
+        "# 6. Scope and Release Strategy",
+        "## 6.1 Release Phases",
+        "## 6.2 Hackathon MVP Scope",
+        "### Included",
+        "### Excluded",
+        "# 7. Personas",
+        "## 7.1 Persona A — Resident",
+        "### Goals",
+        "### Pain Points",
+        "## 7.2 Persona B — Community Coordinator",
+        "### Goals",
+        "### Pain Points",
+        "## 7.3 Persona C — Community Organization Administrator",
+        "### Goals",
+        "## 7.4 Persona D — Resident With Accessibility Needs",
+        "### Needs",
+        "# 8. Jobs To Be Done",
+        "# 9. Product Architecture Overview",
+        "# 10. User Roles and Access Model",
+        "## 10.1 Roles",
+        "## 10.2 Permission Matrix",
+        "# 11. Functional Requirements",
+        "# 11.1 Tandara Warga — Resident PWA",
+        "## FR-R01 — Region Selection",
+        "### Requirements",
+        "### Acceptance Criteria",
+        "## FR-R02 — Home Situation Screen",
+        "### Required Information Labels",
+        "## FR-R03 — Local Preparedness Plan",
+        "### Required Plan Statuses",
+        "### Plan Safety Disclaimer",
+        "## FR-R04 — Household Preparedness Checklist",
+        "### Default Checklist Items",
+        "### Requirements",
+        "## FR-R05 — Community Condition Reporting",
+        "### Required Fields",
+        "### Initial Report Categories",
+        "### Requirements",
+        "## FR-R06 — Help / Follow-Up Request",
+        "### Requirements",
+        "### Mandatory Disclaimer",
+        "## FR-R07 — Offline Mode",
+        "### Offline Content",
+        "### Offline Requirements",
+        "# 11.2 Tandara Posko — Coordinator Dashboard",
+        "## FR-C01 — Secure Authentication",
+        "## FR-C02 — Report Inbox",
+        "### Required Views",
+        "## FR-C03 — Report Detail View",
+        "## FR-C04 — Human Review Workflow",
+        "### Requirements",
+        "## FR-C05 — Duplicate Report Management",
+        "### Requirements",
+        "### Example Explanation",
+        "## FR-C06 — Local Plan Management",
+        "### Plan Workflow",
+        "### Publishing Rules",
+        "## FR-C07 — Coverage Gap View",
+        "### Restrictions",
+        "## FR-C08 — Drill Management",
+        "### Drill Data Separation",
+        "# 11.3 Platform Administration",
+        "## FR-A01 — Organization Management",
+        "## FR-A02 — Region Configuration",
+        "## FR-A03 — Audit Logs",
+        "# 12. AI Triage Specification",
+        "## 12.1 AI Purpose",
+        "## 12.2 Allowed AI Features",
+        "## 12.3 Prohibited AI Behavior",
+        "## 12.4 Structured AI Output",
+        "## 12.5 AI Processing Flow",
+        "## 12.6 AI Failure Handling",
+        "# 13. Data Model",
+        "## 13.1 Main Entities",
+        "## 13.2 Core Report Schema",
+        "## 13.3 PostGIS Data Types",
+        "### Required Geospatial Indexes",
+        "## 13.4 Data Privacy Levels",
+        "# 14. API Design",
+        "## 14.1 API Style",
+        "## 14.2 Core API Endpoints",
+        "### Authentication",
+        "### Regions",
+        "### Preparedness Plans",
+        "### Community Reports",
+        "### Help Requests",
+        "### Drills",
+        "### Media",
+        "### System",
+        "# 15. Technical Stack",
+        "# 15.1 Frontend Stack",
+        "# 15.2 Backend Stack",
+        "# 15.3 Database Stack",
+        "# 15.4 Infrastructure Stack",
+        "# 16. VPS Deployment Architecture",
+        "## 16.1 MVP Infrastructure",
+        "## 16.2 Docker Services",
+        "## 16.3 Network Segmentation",
+        "### Security Rules",
+        "## 16.4 VPS Sizing",
+        "### Hackathon / Demo Environment",
+        "### Closed Pilot",
+        "# 17. Offline-First Design",
+        "## 17.1 Offline Strategy",
+        "## 17.2 Synchronization Strategy",
+        "## 17.3 Conflict Handling",
+        "# 18. Map and Geospatial Design",
+        "## 18.1 Map Principles",
+        "## 18.2 Map Layers",
+        "# 19. Security Requirements",
+        "## 19.1 Authentication Security",
+        "## 19.2 Authorization Security",
+        "## 19.3 API Security",
+        "## 19.4 File Security",
+        "# 20. Privacy Requirements",
+        "## 20.1 Data Minimization",
+        "## 20.2 Suggested Data Retention Policy",
+        "## 20.3 Resident Privacy Controls",
+        "# 21. Non-Functional Requirements",
+        "## 21.1 Performance Targets",
+        "## 21.2 Reliability Targets",
+        "## 21.3 Accessibility Targets",
+        "# 22. Observability and Monitoring",
+        "## 22.1 Required Monitoring",
+        "## 22.2 Health Endpoints",
+        "### Health Endpoint Expectations",
+        "# 23. Logging and Audit Requirements",
+        "## 23.1 Structured Logs",
+        "## 23.2 Audit Log Events",
+        "# 24. Testing Strategy",
+        "## 24.1 Testing Layers",
+        "## 24.2 Critical End-to-End Test Cases",
+        "# 25. Product Analytics",
+        "## 25.1 North-Star Metric",
+        "## 25.2 Key Metrics",
+        "## 25.3 Events to Track",
+        "# 26. Risk Register",
+        "# 27. Hackathon Demo Requirements",
+        "## 27.1 Simulated Scenario",
+        "### Seed Reports",
+        "## 27.2 Demo Sequence",
+        "# 28. Team Allocation — Three Developers",
+        "# 29. Implementation Roadmap",
+        "## Sprint 1 — Foundation",
+        "## Sprint 2 — Resident Experience",
+        "## Sprint 3 — Coordinator Experience",
+        "## Sprint 4 — AI and Background Jobs",
+        "## Sprint 5 — Security, Testing, and Demo",
+        "# 30. Final Product Positioning",
+        "## Product Name",
+        "## Tagline",
+        "## Short Description",
+        "## Honest Product Claim",
+        "## Final Differentiator",
+        "# 31. Current implementation boundary"
+      ]
+    },
+    {
+      "path": "docs/TDD.md",
+      "bytes": 70088,
+      "sha256": "6c41a8ac10280c2c6c2f13ce2cb4e090b5869ccd9c4118dbcac8d8ef2c71a133",
+      "lines": 2410,
+      "headings": [
+        "# TDD — Technical Design Document",
+        "# **TANDARA**",
+        "## _From Local Signals to Shared Readiness._",
+        "# 1. Purpose",
+        "# 2. Technical Goals",
+        "# 3. Technical Non-Goals",
+        "# 4. Architecture Decisions",
+        "## 4.1 Decision Summary",
+        "## 4.2 Self-hosting Trade-off",
+        "## 4.3 Why a Modular Monolith Instead of Microservices",
+        "### Reasoning",
+        "# 5. High-Level System Architecture",
+        "# 6. Repository and Monorepo Structure",
+        "# 7. Frontend Technical Design",
+        "# 7.1 Applications",
+        "# 7.2 Frontend Stack",
+        "# 7.3 State Management Strategy",
+        "# 7.4 Resident PWA Routes",
+        "# 7.5 Coordinator Dashboard Routes",
+        "# 7.6 PWA Caching Strategy",
+        "# 7.7 Offline Data Schema",
+        "# 7.8 Offline Submission Strategy",
+        "### Required synchronization triggers",
+        "### Offline report state machine",
+        "### Idempotency",
+        "# 7.9 Accessibility Implementation",
+        "# 8. Backend Technical Design",
+        "# 8.1 Backend Stack",
+        "# 8.2 NestJS Module Structure",
+        "# 8.3 Request Lifecycle",
+        "# 8.4 Error Response Standard",
+        "### Rules",
+        "# 9. Authentication and Authorization",
+        "# 9.1 Authentication Model",
+        "## Public Visitors",
+        "## Residents",
+        "## Coordinators and Administrators",
+        "# 9.2 Session Model",
+        "# 9.3 Guest Report Receipt Token",
+        "# 9.4 Authorization Model",
+        "### Example permission check",
+        "# 10. Database Design",
+        "# 10.1 Database Principles",
+        "# 10.2 PostgreSQL Extensions",
+        "# 10.3 Core Tables",
+        "## `users`",
+        "## `organizations`",
+        "## `organization_memberships`",
+        "## `regions`",
+        "## `preparedness_plans`",
+        "## `preparedness_plan_versions`",
+        "## `plan_locations`",
+        "## `reports`",
+        "## `report_private_details`",
+        "## `report_media`",
+        "## `report_reviews`",
+        "## `ai_triage_results`",
+        "## `duplicate_candidates`",
+        "## `help_requests`",
+        "## `audit_logs`",
+        "# 11. Report State Machine",
+        "## Allowed Transitions",
+        "# 12. Geospatial Design",
+        "# 12.1 Coordinate Policy",
+        "# 12.2 Public Location Generalization",
+        "# 12.3 Coverage Gap Calculation",
+        "# 13. API Design",
+        "# 13.1 API Standards",
+        "# 13.2 Core Endpoint Summary",
+        "## Authentication",
+        "## Regions",
+        "## Plans",
+        "## Reports",
+        "## Guest Report Status",
+        "## Help Requests",
+        "## Drills",
+        "## System",
+        "# 13.3 Report Creation API Example",
+        "# 13.4 Pagination Standard",
+        "# 14. Background Jobs and Reliable Event Processing",
+        "# 14.1 Required Queues",
+        "# 14.2 Transactional Outbox Pattern",
+        "## `outbox_events`",
+        "# 14.3 Retry Policy",
+        "# 15. AI Triage Technical Design",
+        "# 15.1 AI Provider Adapter",
+        "# 15.2 AI Input Rules",
+        "# 15.3 AI Prompt Safety",
+        "# 15.4 AI Output Validation",
+        "# 15.5 Duplicate Detection Design",
+        "## Candidate pre-filter",
+        "## Duplicate suggestion output",
+        "# 16. Media Upload and Processing",
+        "# 16.1 MVP Upload Approach",
+        "# 16.2 Pilot Upload Improvement",
+        "# 16.3 Media Security Controls",
+        "# 17. Infrastructure and VPS Deployment",
+        "# 17.1 VPS Operating System",
+        "# 17.2 Network Security",
+        "# 17.3 Docker Compose Services",
+        "# 17.4 Environment Separation",
+        "# 17.5 Caddy Routing",
+        "# 17.6 Docker Compose Production Principles",
+        "# 18. Backup and Disaster Recovery",
+        "# 18.1 Backup Policy",
+        "# 18.2 Restore Test Requirement",
+        "# 19. CI/CD Design",
+        "# 19.1 Pull Request Pipeline",
+        "# 19.2 Deployment Pipeline",
+        "# 19.3 Migration Rules",
+        "# 20. Security Design",
+        "# 20.1 Security Baseline",
+        "# 20.2 Rate Limiting",
+        "# 20.3 Data Access Rules",
+        "# 20.4 Secret Management",
+        "# 21. Observability",
+        "# 21.1 Logging",
+        "# 21.2 Monitoring Stack",
+        "## MVP",
+        "## Pilot",
+        "# 21.3 Required Alerts",
+        "# 22. Testing Strategy",
+        "# 22.1 Test Layers",
+        "# 22.2 Mandatory Test Cases",
+        "## Resident PWA",
+        "## Coordinator Dashboard",
+        "## AI",
+        "## Infrastructure",
+        "# 23. Performance and Capacity Assumptions",
+        "## 23.1 MVP Assumptions",
+        "## 23.2 Performance Targets",
+        "# 24. Operational Runbooks",
+        "# 24.1 API Is Down",
+        "# 24.2 AI Provider Is Down",
+        "# 24.3 Redis Is Down",
+        "# 24.4 Database Is Down",
+        "# 24.5 Suspected Sensitive Data Leak",
+        "# 25. Development Standards",
+        "## 25.1 TypeScript Standards",
+        "## 25.2 Code Review Requirements",
+        "## 25.3 Branch Strategy",
+        "# 26. Development Roadmap",
+        "## Sprint 1 — Foundation",
+        "## Sprint 2 — Resident PWA",
+        "## Sprint 3 — Coordinator Dashboard",
+        "## Sprint 4 — Worker and AI",
+        "## Sprint 5 — Quality and Demo",
+        "# 27. Definition of Done",
+        "# 28. Final Technical Recommendation",
+        "## Product name",
+        "## Product architecture",
+        "## Frontend",
+        "## Backend",
+        "## Database",
+        "## Background processing",
+        "## Media storage",
+        "## Mapping",
+        "## Deployment",
+        "## Observability",
+        "## AI design",
+        "# 29. Final Engineering Principle",
+        "# 30. Current implementation and historical design gates"
+      ]
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "bytes": 3602,
+      "sha256": "0544aba654c5baaeb8a612b2e116cb06efe053d2ced1765e5affb27eaacdb18a",
+      "lines": 56,
+      "headings": [
+        "# Foundation validation",
+        "## Corrections found during verification",
+        "## Reproduce"
+      ]
+    },
+    {
+      "path": "docs/adr/0001-foundation.md",
+      "bytes": 2607,
+      "sha256": "6cb226657af3b97bfec93102247a0e658302100a9fd9abd1fea93ac75b06d6e3",
+      "lines": 49,
+      "headings": [
+        "# ADR-0001: Shared server modules in a small TypeScript monorepo",
+        "## Context",
+        "## Decision",
+        "## Consequences and limits",
+        "## References"
+      ]
+    },
+    {
+      "path": "docs/ai/evaluation.md",
+      "bytes": 6214,
+      "sha256": "7f24b94e107ca5805ec5526e367e750002111c4125a98c0205fa3e0ec40a654d",
+      "lines": 113,
+      "headings": [
+        "# Protected AI evaluation",
+        "## Prepare the held-out corpus",
+        "## Run both candidates",
+        "## Independent scoring",
+        "## Activate and monitor"
+      ]
+    },
+    {
+      "path": "docs/ai/operations.md",
+      "bytes": 11191,
+      "sha256": "a9e21533b2c024d41a2b684d0b6b5a1dffea9342ab03266a6432510ff6a450f8",
+      "lines": 171,
+      "headings": [
+        "# Production AI operations",
+        "## Configure inference",
+        "## Migrate and onboard",
+        "## Knowledge and human decisions",
+        "## Evaluate, approve and roll back",
+        "## Observe and respond",
+        "## Load, faults and recovery"
+      ]
+    },
+    {
+      "path": "docs/ai/production-delivery-plan.md",
+      "bytes": 40392,
+      "sha256": "dfb14a2e004777d058792166e56f9f214acfe352cad191d1d452b9f81e399024",
+      "lines": 280,
+      "headings": [
+        "# Tandara AI: production delivery plan",
+        "## 1. Architecture decision",
+        "## 2. Complete product scope",
+        "## 3. Workflows and output contracts",
+        "## 4. Knowledge and retrieval",
+        "## 5. Domain persistence and migrations",
+        "## 6. Execution reliability and cost control",
+        "## 7. Security, privacy, and governance",
+        "## 8. Production deployment and operations",
+        "## 9. Model and release management",
+        "### Temporary Vikey integration and planned DeepSeek migration",
+        "### Evaluated model releases",
+        "## 10. Proposed capacity and acceptance targets",
+        "## 11. Validation and release evidence",
+        "## 12. Implementation work packages",
+        "## 13. Repository gaps to address",
+        "## 14. Definition of delivery-ready",
+        "## 15. Full software implementation update"
+      ]
+    },
+    {
+      "path": "docs/ai/provider-setup.md",
+      "bytes": 9294,
+      "sha256": "cac1c5b3fc13c20becb52599dd1ecae990d5789bbfa3c577b2fd9b93bf2d0630",
+      "lines": 169,
+      "headings": [
+        "# Real model inference: Vikey and DeepSeek",
+        "## Environment configuration",
+        "## Apply and verify",
+        "## Failure behavior and limits",
+        "## Switch to DeepSeek later",
+        "## Embeddings and operational settings"
+      ]
+    },
+    {
+      "path": "docs/ai/readiness.md",
+      "bytes": 6037,
+      "sha256": "e442e595b54a4cc3d01f76952e84b3c6bc539fd424dc192c336116724142f449",
+      "lines": 52,
+      "headings": ["# AI delivery and launch readiness"]
+    },
+    {
+      "path": "docs/ai/threat-model.md",
+      "bytes": 5937,
+      "sha256": "37cefdc459402e81a69f46bbb2af3d4cf5b09590e3dc1cfd4a8d0eedc6896357",
+      "lines": 41,
+      "headings": ["# AI trust boundaries and review scope"]
+    },
+    {
+      "path": "docs/api/openapi.json",
+      "bytes": 364704,
+      "sha256": "3a077405660995c1d0eb6163c689ae25baed1514913b4b4bc8de54e06d1ad6d2",
+      "lines": 10075
+    },
+    {
+      "path": "docs/design/system.md",
+      "bytes": 2519,
+      "sha256": "190194e78cc22089a090db606e42323b81f65e3474609d18afdd5ef052af5115",
+      "lines": 38,
+      "headings": ["# Design decisions and visual checks"]
+    },
+    {
+      "path": "docs/engineering/initial-audit.md",
+      "bytes": 1806,
+      "sha256": "7e55c2092712dfeb954e54a697cb13a9e32e3ab2c70773c970011415a58d832f",
+      "lines": 28,
+      "headings": ["# Initial implementation audit — 13 October 2026"]
+    },
+    {
+      "path": "docs/engineering/markdown-audit-2026-10-13.md",
+      "bytes": 12631,
+      "sha256": "d889910516a16e72d77f28c84ddf92d25d823f2030e0a260bc7d3412af05410c",
+      "lines": 58,
+      "headings": ["# Indeks audit seluruh Markdown Tandara"]
+    },
+    {
+      "path": "docs/features/map.md",
+      "bytes": 2271,
+      "sha256": "126f7c25c3923749fa582a0cae1d1fcd7af6c0a2c10845832aa7ae7a8cec48ed",
+      "lines": 36,
+      "headings": ["# Street map and local situation layers"]
+    },
+    {
+      "path": "docs/features/offline-sync.md",
+      "bytes": 2206,
+      "sha256": "124bcf6dcea2edf98ba7c1e5e463e6c909438873b356c91b1bfe51f00d099c91",
+      "lines": 35,
+      "headings": ["# Offline saving and delivery"]
+    },
+    {
+      "path": "docs/integrations/adapters.md",
+      "bytes": 4635,
+      "sha256": "aea2278b5311a961ee512f844eb433910e4959d2b59afc4e81dcac7937134acc",
+      "lines": 59,
+      "headings": ["# Integration status and configuration"]
+    },
+    {
+      "path": "docs/operations/ci-policy.md",
+      "bytes": 2989,
+      "sha256": "0d817998666c968dcc879e7519a14fba14a8a5bb5d988804c89f3c48b7929dde",
+      "lines": 56,
+      "headings": [
+        "# CI for the three-week demo",
+        "## Routine gate",
+        "## Full browser validation",
+        "## Deployment",
+        "## Baseline and measurement"
+      ]
+    },
+    {
+      "path": "docs/operations/deploy-demo.md",
+      "bytes": 25586,
+      "sha256": "b9cb494577ff31e5d2dbdf69c73b8e493b55bb69e9cf2828f635a713fe1e12c0",
+      "lines": 481,
+      "headings": [
+        "# Deployment otomatis demo Tandara: Vercel + Tencent",
+        "## Hasil akhir",
+        "## Jalur utama: persiapan dari console Tencent, tanpa SSH/SCP laptop",
+        "## 1. Persiapan laptop dan SSH key",
+        "## 2. Masuk Tencent sekali",
+        "## 3. SSH host key dan firewall",
+        "## 4. Dua project Vercel Hobby",
+        "### Menggunakan custom domain dan domain vercel.app bersamaan",
+        "## 5. DNS milik teman",
+        "## 6. GitHub Secrets dan Variables",
+        "## 7. Aktivasi otomatis",
+        "## 8. Pemeriksaan pertama dan demo juri",
+        "## Status verifikasi"
+      ]
+    },
+    {
+      "path": "docs/operations/deployment-analysis-2026-10-13.md",
+      "bytes": 30345,
+      "sha256": "1fa0bcd144926976c8b8aeb6964cd98cc2964be8a6ed60edbb2708a66a5ae9fd",
+      "lines": 451,
+      "headings": [
+        "# Analisis deployment Tandara: Vercel, Heroku, dan Tencent",
+        "## 1. Keputusan yang disarankan",
+        "## 2. Dasar dan batas verifikasi",
+        "## 3. Kebutuhan nyata aplikasi sekarang",
+        "## 4. Kapasitas Tencent yang dimiliki",
+        "## 5. Perbandingan opsi dan biaya",
+        "### Koreksi setelah konfirmasi kredit student $13/bulan",
+        "## 6. Latency dan pemisahan layanan",
+        "## 7. Deployment Vercel yang sesuai kode",
+        "## 8. Perubahan sebelum Tencent dapat melayani domain publik",
+        "## 9. Perubahan khusus alternatif Heroku",
+        "## 10. Rencana bertahap dan kriteria keputusan"
+      ]
+    },
+    {
+      "path": "docs/operations/frontend-hosting-decision-2026-10-13.md",
+      "bytes": 11662,
+      "sha256": "ffd7fd17a8e2ddb41291c9496a3fc37e7c8d9b84ba5ac1e505b1f3db39b490bb",
+      "lines": 204,
+      "headings": [
+        "# Frontend Tandara: Vercel atau Tencent?",
+        "## Keputusan",
+        "## Perbandingan yang relevan untuk demo",
+        "## Temuan kode dan pengujian baru",
+        "## Domain dan DNS",
+        "## Detail terpenting: API proxy dan cookie",
+        "## Headers, PWA, dan map",
+        "## Anggaran nol dan kerja tim",
+        "## Mengapa bukan seluruh produk di Vercel?",
+        "## Kriteria sebelum link dikirim ke juri"
+      ]
+    },
+    {
+      "path": "docs/operations/public-sources.md",
+      "bytes": 7985,
+      "sha256": "a34936a19a5bcd2f4e9a88235a498581c5ecd69e4496a010ec4212fb11f3377b",
+      "lines": 138,
+      "headings": [
+        "# Aktivasi sumber publik asli untuk demo Tandara",
+        "## 1. Deploy source dan migration terlebih dahulu",
+        "## 2. Opt-in di Tencent",
+        "## 3. Konfigurasi sumber di Posko sebagai admin",
+        "## 4. Periksa ketepatan data",
+        "## 5. Ganti konten lokal secara sah",
+        "## 6. Rehearsal akhir"
+      ]
+    },
+    {
+      "path": "docs/operations/runbook.md",
+      "bytes": 7610,
+      "sha256": "7918c9c84f176b81687093f706b0e7a230af8a52007e73a4ee0fe5e63de7206e",
+      "lines": 106,
+      "headings": [
+        "# Operating the simulation",
+        "## Startup and health",
+        "## Environment reference",
+        "## Backup and restoration",
+        "## Failure and incident response",
+        "## Release and rollback"
+      ]
+    },
+    {
+      "path": "docs/operations/tencent-env-siap-pakai.md",
+      "bytes": 27924,
+      "sha256": "a2ee628da67a6aacec0c2653f01cb84b3aba45261cc4f7d4bedf5db9c21fcc95",
+      "lines": 596,
+      "headings": [
+        "# Tencent Tandara â€” env lengkap dan password berbentuk kalimat",
+        "## 1. File yang digunakan",
+        "# Install as /opt/tandara/.env, chmod 600. Never commit the filled file.",
+        "# Read by both Bash and Compose: quote passphrases with single quotes.",
+        "# Do not use apostrophes or backslashes inside the passphrase in this shared format.",
+        "# Generate the DB password only for a fresh database: openssl rand -hex 24",
+        "# Preserve the original DB password when the Postgres volume already exists.",
+        "# Unique password, >=12 characters. Seed does not reset existing passwords.",
+        "# Explicitly enable the synthetic seed for the FIRST release only.",
+        "# Opt in to reviewed public-data connectors; reports and seed plans remain demo data.",
+        "# Runtime is NODE_ENV=production / APP_MODE=simulation in backend.compose.yml.",
+        "# Database URL, SQL worker, proxy and secure cookies are configured by Compose.",
+        "# Keep an existing MFA key unchanged. For a new key: openssl rand -hex 32",
+        "# Selected deployment profile: real Vikey chat and Gemini embeddings.",
+        "# Replace key placeholders privately or apply the prepared .local/tencent-ai.env overlay.",
+        "# Estimates below are illustrative, not current provider price quotes.",
+        "# Small demo application caps: USD 1/day, USD 3/month, USD 1/run. Not provider balances.",
+        "# Optional private telemetry collector; no external model-content tracing.",
+        "### Konfigurasi AI lokal yang ditemukan",
+        "## 2. Salin sekali: buat atau perbaiki env secara aman",
+        "## 3. Terapkan setelah Compose baru terdeploy, tanpa build ulang untuk perubahan env",
+        "## 4. Ganti password akun yang sudah terbentuk",
+        "## 5. Mengapa password kalimat dapat menyebabkan gagal?",
+        "# Salah: kata setelah spasi dibaca sebagai perintah Bash.",
+        "# Benar secara format; ini hanya ilustrasi, jangan dipakai sebagai password.",
+        "## 6. Pemeriksaan akhir tanpa mencetak secrets",
+        "## 7. Profil Vikey + Gemini yang dipilih tim — 14 Oktober 2026",
+        "### Kirim profil sekali dari PowerShell laptop",
+        "### Gabungkan dan terapkan di terminal Tencent"
+      ]
+    },
+    {
+      "path": "docs/product/alur-aplikasi-dan-naskah-video.md",
+      "bytes": 42410,
+      "sha256": "4bb0547aa8656cde0687c0191daf0424bd5bf2466f5b94841ed41774569aa225",
+      "lines": 645,
+      "headings": [
+        "# Tandara — alur aplikasi dan panduan video demonstrasi",
+        "## 0. Mengapa sesuai tema sustainability dan subtema lomba?",
+        "### 0.1. Fokus masalah dan posisi produk",
+        "### 0.2. Hubungan dengan sustainability yang dapat dipertanggungjawabkan",
+        "### 0.3. Perubahan penekanan dalam video",
+        "### 0.4. Apa yang diukur sebelum penjurian?",
+        "### 0.5. Prioritas tiga hari dan kaitan penilaian",
+        "## 1. Alur kerja lengkap dalam satu gambar",
+        "## 2. Siapa melakukan apa?",
+        "## 3. Tentukan konteks data sebelum merekam",
+        "## 4. Persiapan perekaman",
+        "## 5. Susunan video utama — target lima menit",
+        "### Adegan 1 — masalah dan pengenalan",
+        "### Adegan 2 — memilih wilayah dan membaca sumber",
+        "### Adegan 3 — rencana dan checklist",
+        "### Adegan 4 — membuktikan offline dan membuat laporan uji",
+        "### Adegan 5 — sinkronisasi dan tanda terima",
+        "### Adegan 6 — peninjauan oleh koordinator",
+        "### Adegan 7 — hasil kembali kepada warga",
+        "### Adegan 8 — manfaat dan penutup",
+        "## 6. Segmen tambahan — pilih sesuai durasi",
+        "### A. Peta situasi — 20–30 detik",
+        "### B. Rencana yang ditinjau dua orang — 30–45 detik",
+        "### C. Asisten Posko berbasis sumber — 45–60 detik",
+        "### D. Tindak lanjut komunitas — 20–30 detik",
+        "## 7. Kalimat yang akurat untuk dipakai",
+        "## 8. Checklist hasil rekaman",
+        "## 9. Dasar verifikasi dan referensi"
+      ]
+    },
+    {
+      "path": "docs/product/demo-flow.md",
+      "bytes": 9599,
+      "sha256": "25529805bea5820e75adb2ac27fd1f421853928b737a4be95e40702a5d4e9c32",
+      "lines": 188,
+      "headings": [
+        "# Tandara demo flow — 10–12 minutes",
+        "## Prepare before presenting",
+        "## 1. Introduce the two workspaces — 0:00–0:45",
+        "## 2. Show resident preparedness — 0:45–2:00",
+        "## 3. Submit a resident observation — 2:00–3:15",
+        "## 4. Review it in Posko — 3:15–5:00",
+        "## 5. Explain the real map — 5:00–6:15",
+        "## 6. Demonstrate cited AI assistance — 6:15–8:45",
+        "## 7. Prove offline access — 8:45–10:00",
+        "## 8. Close with accountability — 10:00–11:00",
+        "## Optional extensions"
+      ]
+    },
+    {
+      "path": "docs/product/demo.md",
+      "bytes": 3939,
+      "sha256": "c46ca2dfc2a8294dd0351fa5bec324250072d219dc42d8a3fb783c6ecfee4c0d",
+      "lines": 57,
+      "headings": ["# Complete simulation walkthrough"]
+    },
+    {
+      "path": "docs/product/hackathon-audit-2026-10-13.md",
+      "bytes": 25424,
+      "sha256": "44af3458d70528b6f986644d0c3ec596b8371621cdf365dfd44ec7228e5ea663",
+      "lines": 260,
+      "headings": [
+        "# Audit Tandara dan keputusan tiga hari menuju penjurian",
+        "## Keputusan utama",
+        "## Yang sudah dan belum tersedia",
+        "## Membaca PLAN, PRD, dan TDD dengan benar",
+        "## Strategi data asli",
+        "## Inovasi yang paling masuk akal untuk lomba",
+        "## Implementasi yang diterapkan",
+        "## Dampak yang layak diukur dalam tiga hari",
+        "## Jadwal tiga hari dan pembagian kerja",
+        "## Demo yang disarankan",
+        "## Gate yang belum tertutup"
+      ]
+    },
+    {
+      "path": "docs/product/requirements-matrix.md",
+      "bytes": 10243,
+      "sha256": "db0ecebff6c462902ae336119633c8d88d6fc0effc13be6d2706c5b9cbbffa2f",
+      "lines": 62,
+      "headings": [
+        "# Completion and verification matrix",
+        "## External gates, not activated in the simulation"
+      ]
+    },
+    {
+      "path": "docs/qa/ai-delivery.md",
+      "bytes": 5741,
+      "sha256": "398a9fb20528d90f6cbd6ad88bebd8da5720017090fe5b3b170a4eff0f0279af",
+      "lines": 47,
+      "headings": ["# Full AI software verification — 13 October 2026"]
+    },
+    {
+      "path": "docs/qa/ai-main-rebase-verification.md",
+      "bytes": 5454,
+      "sha256": "9a488c9e3dbf09a38645eaaea6442cf9c22e8b9c7928382dcfce60742687c69f",
+      "lines": 71,
+      "headings": [
+        "# AI branch rebase onto main — 13 October 2026",
+        "## History and preservation",
+        "## Integration corrections",
+        "## Executed checks"
+      ]
+    },
+    {
+      "path": "docs/qa/ai-provider-validation.md",
+      "bytes": 3400,
+      "sha256": "fec41b0b27b3d1357efb5b86fb82f1cdffab251ee2141bfe5768488dff1be607",
+      "lines": 48,
+      "headings": [
+        "# AI provider integration validation",
+        "## Verified results",
+        "## Configuration and limits"
+      ]
+    },
+    {
+      "path": "docs/qa/dependency-audit.json",
+      "bytes": 394,
+      "sha256": "a2277c91887d663b23af3cc2088810da928374e6c383b201122eedc7130f9a61",
+      "lines": 20
+    },
+    {
+      "path": "docs/qa/gemini-provider-verification.md",
+      "bytes": 3846,
+      "sha256": "986c019e42d459ac985aba800f3d8eff0320fa9de8938a5715782bbb21fd30ba",
+      "lines": 62,
+      "headings": ["# Vikey chat and Gemini embedding verification — 13 October 2026"]
+    },
+    {
+      "path": "docs/qa/performance.json",
+      "bytes": 1093,
+      "sha256": "43f5f0907208b684d0f41e3ad716ba50902b72601647eda07db7fa3b9a2102ea",
+      "lines": 47
+    },
+    {
+      "path": "docs/qa/public-source-probe.json",
+      "bytes": 444,
+      "sha256": "516c5b33947f42b0a1a73d003b01f6c2b6a5649c0ecd332bb6c478a601d54930",
+      "lines": 18
+    },
+    {
+      "path": "docs/qa/public-sources-2026-10-13.md",
+      "bytes": 8159,
+      "sha256": "d7c57fc78933a05d1d9ec162e7f63b3a5ad4e4e4ff8a9f681e27174eb15b03c3",
+      "lines": 107,
+      "headings": [
+        "# Verifikasi audit hackathon dan sumber publik",
+        "## Bukti yang sudah dieksekusi",
+        "## Koreksi yang ditemukan saat verifikasi",
+        "## Source-test acceptance",
+        "## Batas verifikasi",
+        "## Final verification"
+      ]
+    },
+    {
+      "path": "docs/qa/rebase-validation.md",
+      "bytes": 5117,
+      "sha256": "ab76591639cf9532520769f1950a16b7ccb1bf63b44f7469df73cbb1d484592b",
+      "lines": 68,
+      "headings": [
+        "# Rebase and final regression verification",
+        "## History and preservation",
+        "## Executed checks",
+        "## Integration corrections"
+      ]
+    },
+    {
+      "path": "docs/qa/screenshots/posko-admin.png",
+      "bytes": 467626,
+      "sha256": "7a7bbece19ba7b48098eaaa8e69a9dfe6f8652392349fc4a24fb01fe81b50f0e"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-ai-reviewed.png",
+      "bytes": 732480,
+      "sha256": "474736bce20e1ee8ef38f45e05c7d91a8ec0fcb44fc73ea5822055f67979f791"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-ai.png",
+      "bytes": 137852,
+      "sha256": "6300d3b5921c1441f4b20c3bd3ef1f98830c26f74e2955a6eb6a4abde9e7c8a6"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-assistance.png",
+      "bytes": 78549,
+      "sha256": "f2f382987ddcb09c18fe1bdf5d396195794c74819a10246eb7346d04895069cc"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-audit.png",
+      "bytes": 996727,
+      "sha256": "c659969c680945f55ffaac4b2afb738d98d2c08178bb59baf44741faeaf7c927"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-inbox-1440.png",
+      "bytes": 267371,
+      "sha256": "6d3a1160c805d59136d845ba08b91aa99e6a87381b29069a6c04467f72567800"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-inbox-1920.png",
+      "bytes": 272190,
+      "sha256": "9dda3542e41b37b5e0e05ce7b066c40c849c0c3795c8356042bbadc76a2b4ade"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-inbox-360.png",
+      "bytes": 157636,
+      "sha256": "812db14edbe05d7158bddbc9062242153c2f1df3a3f392cd3bfd86262bdc572d"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-inbox-768.png",
+      "bytes": 289327,
+      "sha256": "f3b16dead19f7605b67395bded758502486c4886b35fad7b10cca9af5a16f167"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-inbox.png",
+      "bytes": 262040,
+      "sha256": "813975c1a41b70b7b4ec5a0b65df2b72cbdac51fa3aa757f3d464539bd4a45d3"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-map-after-rebase.png",
+      "bytes": 70993,
+      "sha256": "8b89c98b8d80f0bc2e0fb235e676a44aabfc877be3919b4721d6cef33eb7304f"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-map-streets.png",
+      "bytes": 77632,
+      "sha256": "5586d83d4169d9b70641c2ed82c154509f3a0a9c175fa756ffff21a911db19d3"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-map.png",
+      "bytes": 77632,
+      "sha256": "5586d83d4169d9b70641c2ed82c154509f3a0a9c175fa756ffff21a911db19d3"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-notifications.png",
+      "bytes": 58167,
+      "sha256": "de75058dbbc718c39ca8cbb7485b5c0eb38e6c4149454570d69378d6ca3b05ca"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-overview.png",
+      "bytes": 182546,
+      "sha256": "d623922b596f3cfe299b41df5dec926f4903805791250f23a0ed4050b2c953f2"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-plans.png",
+      "bytes": 289938,
+      "sha256": "854c7015eec03e2a1bf92cb385eb5f3943ce6b55b07258871e303949bf3088c8"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-report-detail.png",
+      "bytes": 136883,
+      "sha256": "bf3618fac6e9cad9b870a3cac8e1cc207c51d47707feef1148ee3931a1bdfa55"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-security.png",
+      "bytes": 56533,
+      "sha256": "20af6960f043180735ca4c37b6ed244a02a87c832c8d2780511314355efdea22"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-sources.png",
+      "bytes": 101888,
+      "sha256": "02ad0bfa1f0dd34a2ff509258242be0e775c9d65e6868e9bb50b1f332dea9916"
+    },
+    {
+      "path": "docs/qa/screenshots/posko-training.png",
+      "bytes": 75467,
+      "sha256": "01266232b0683ae9540fa22a78b841c4360c6ce846170d692f795bf5d640f2c2"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-checklist.png",
+      "bytes": 50386,
+      "sha256": "f8c54498e449a7f8a91e3891805077e8ac92b6ca1cb8737192b140c12d2ca6d8"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-help.png",
+      "bytes": 56798,
+      "sha256": "ac446c302435607f558e5e01052cde7b8b1a32e88083bde95018b12bf802c6c1"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-1024.png",
+      "bytes": 228985,
+      "sha256": "f98bf4e05ea5bd8895eaca18a9a985ea2785e2e04f75beec1d514537885b1eda"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-1440.png",
+      "bytes": 249331,
+      "sha256": "bcd4a98baf5b4e0105a6728dce87d8ea4bde5b196cb08f61b617b745525f839e"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-1920.png",
+      "bytes": 259175,
+      "sha256": "8d9fa92b46487efc7bd0ce0510613872c2376960710aa16de161fa6cced2084b"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-360.png",
+      "bytes": 201909,
+      "sha256": "68f3ffdb922aa3755711ce23ac81eb9f2bd6e881b48087fd3e4a593ee2a26125"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-390.png",
+      "bytes": 197621,
+      "sha256": "b4bae220f4b236eaaa80e79e0cb16235cdeebabca2a8ad53c372de353c77c0eb"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home-768.png",
+      "bytes": 220114,
+      "sha256": "8229e44e9419dca5cc6234320e26c819577d6aaf58960c38b6fc7933d45c9c2d"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-home.png",
+      "bytes": 259175,
+      "sha256": "8d9fa92b46487efc7bd0ce0510613872c2376960710aa16de161fa6cced2084b"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-knowledge-search.png",
+      "bytes": 70107,
+      "sha256": "3a257e3388f72480240c1d803ac0adbbd600584fa6bf0473fa56f7a79e6435cc"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-knowledge.png",
+      "bytes": 45948,
+      "sha256": "98d02604ce30e01983be19c804675106ea28bafb2f2bae182d8b241e5e6f6ebb"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-plan.png",
+      "bytes": 68520,
+      "sha256": "07daebd7f4cd9fd92284291a9485ddf65537789a9e6be2edc9b1adc75b396039"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-report.png",
+      "bytes": 91829,
+      "sha256": "a8551e002e2461ea3fcb3573793f8eb41ddf1461a2a34e97762d750d96da30ba"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-tracking.png",
+      "bytes": 49661,
+      "sha256": "d8999ba9d7272c9e552bc1d045e6d110a6995d6d7face9caf6eea4c4350d2766"
+    },
+    {
+      "path": "docs/qa/screenshots/warga-training.png",
+      "bytes": 79559,
+      "sha256": "2ec92082ff9328e79145df2e76b21a19e1467783a8d9d6a71264db7f91a109b1"
+    },
+    {
+      "path": "docs/qa/validation.md",
+      "bytes": 7620,
+      "sha256": "d87b461071f4d90eff87ee826525df72b1f4fb0db21074ea6fdb9b6d715cd3c9",
+      "lines": 87,
+      "headings": ["# Executed validation"]
+    },
+    {
+      "path": "docs/security/model.md",
+      "bytes": 3902,
+      "sha256": "d149f1ec90587b5c592156051485cc3e96914960f564a6e7eb4d6deac0fa67f0",
+      "lines": 64,
+      "headings": [
+        "# Security and privacy model",
+        "## Access and writes",
+        "## Exposure limits",
+        "## Deployment responsibilities"
+      ]
+    },
+    {
+      "path": "eslint.config.mjs",
+      "bytes": 1603,
+      "sha256": "2779b29fade7290a4de1e2b0768788d0eb35da04c8dca23e721e0114b679cc0f",
+      "lines": 63
+    },
+    {
+      "path": "infrastructure/README.md",
+      "bytes": 1313,
+      "sha256": "3745264b09415c9dd0f645ff94278292ec81d60500e1bcb760328104c5e08e7b",
+      "lines": 21,
+      "headings": ["# Infrastructure scope"]
+    },
+    {
+      "path": "infrastructure/aws/.terraform.lock.hcl",
+      "bytes": 1481,
+      "sha256": "2446c95c0f9037f02e9d4376bb5f9dc7244d7d37407ee8a17148bb9aa339296f"
+    },
+    {
+      "path": "infrastructure/aws/main.tf",
+      "bytes": 11465,
+      "sha256": "323b28dccdf70d14a1f07ff264b8e050b2baa2ae56fcfd33add0cef8e78d3e49",
+      "lines": 337
+    },
+    {
+      "path": "infrastructure/aws/operations.tf",
+      "bytes": 4976,
+      "sha256": "1f046fc85e7bb5fbd8957c7f4aed351ce92305efb394b635496cec06c42baa18",
+      "lines": 77
+    },
+    {
+      "path": "infrastructure/aws/privacy-backup.tf",
+      "bytes": 4430,
+      "sha256": "6767998b9e61f2d727e7f4baa7002ac5761b5d9a33a1df957aeacaf6565b617e",
+      "lines": 90
+    },
+    {
+      "path": "infrastructure/aws/variables.tf",
+      "bytes": 1659,
+      "sha256": "6fd33e090b5363b214e389007b7300fbf2492ba8d819fdd0e7571cec2b163bde",
+      "lines": 71
+    },
+    {
+      "path": "infrastructure/aws/versions.tf",
+      "bytes": 279,
+      "sha256": "1ef7ae38e09a5b0585cc16584073fd8b3618dc671c345882fbf105055ad69ba7",
+      "lines": 14
+    },
+    {
+      "path": "infrastructure/caddy/Caddyfile",
+      "bytes": 508,
+      "sha256": "9be188b3ae0f6382f026e676ec5a346f74b0be41f94f7f455030bc87d8fb4b95",
+      "lines": 24
+    },
+    {
+      "path": "infrastructure/caddy/Caddyfile.local",
+      "bytes": 1441,
+      "sha256": "d7bc68ebc5928be33bdfa2ada76cb01cd93f3fc6deabddd36576fe2efccf55de",
+      "lines": 53
+    },
+    {
+      "path": "infrastructure/caddy/Caddyfile.production",
+      "bytes": 1458,
+      "sha256": "c78245888876f56244a39c80f63d2af36a766b9b8eae7457006224e91cf440e9",
+      "lines": 45
+    },
+    {
+      "path": "infrastructure/compose/compose.dev.yml",
+      "bytes": 1205,
+      "sha256": "0f4546a04ebc3d9e715a1dd59d0e067d274379b081be142656b877f40cf60799",
+      "lines": 48
+    },
+    {
+      "path": "infrastructure/compose/compose.production.yml",
+      "bytes": 1915,
+      "sha256": "6b6ebbc90948f003b97fa8cfe8fa3e648ea2b56432660fff051bbbfe9f7c4787",
+      "lines": 52
+    },
+    {
+      "path": "infrastructure/deployment/Caddyfile",
+      "bytes": 420,
+      "sha256": "04525f681e68e051766a291c5d9da371cb4550af127170c6fbe2151b4966f0b0",
+      "lines": 27
+    },
+    {
+      "path": "infrastructure/deployment/Dockerfile.backend",
+      "bytes": 1940,
+      "sha256": "b5ae3710cf9d0ee128b4fc1cc53a2b0a073d9843d17cde6b54a43da37a04d75f",
+      "lines": 35
+    },
+    {
+      "path": "infrastructure/deployment/Dockerfile.postgres",
+      "bytes": 901,
+      "sha256": "aa852c5a1670cd7182d7e3e65910286b6331b53dc2ec842ed9a73af151c3a8ff",
+      "lines": 10
+    },
+    {
+      "path": "infrastructure/deployment/backend.compose.yml",
+      "bytes": 5310,
+      "sha256": "7a33077e731cb71866ebc9757064676c50ebdc23087d76ad35ef6ba705ab97eb",
+      "lines": 147
+    },
+    {
+      "path": "infrastructure/deployment/backup.sh",
+      "bytes": 613,
+      "sha256": "bb5d72fda9be5c48057a128be4df83b54dee00a11e531da1bfd11d379115c3a9",
+      "lines": 12
+    },
+    {
+      "path": "infrastructure/deployment/bootstrap-tencent.sh",
+      "bytes": 2318,
+      "sha256": "5194477ef8c442183a97e3449677abc2c6cdbe5e40b361d001707713ab060017",
+      "lines": 40
+    },
+    {
+      "path": "infrastructure/deployment/database-command.mjs",
+      "bytes": 329,
+      "sha256": "697bb0924e050e85cba4a70bd6a29c2336576b11d59c319b51af3303b07c7df0",
+      "lines": 5
+    },
+    {
+      "path": "infrastructure/deployment/deploy.sh",
+      "bytes": 3480,
+      "sha256": "a2bc8512737ab2f9271ad37919aa678df7551024d8bca7f02ac932de153a8f6b",
+      "lines": 64
+    },
+    {
+      "path": "infrastructure/deployment/image_config_id.py",
+      "bytes": 2745,
+      "sha256": "b8511a035ff66f37e927b9a22496e260483cc465802b55fe1b7f492adef54a0e",
+      "lines": 69
+    },
+    {
+      "path": "infrastructure/deployment/tencent.env.example",
+      "bytes": 2474,
+      "sha256": "d71c7fe8ecaffc3e2189e578018b91e42c50d1dc6665fbe3471dd586a21dc1ad"
+    },
+    {
+      "path": "infrastructure/deployment/worker-health.mjs",
+      "bytes": 646,
+      "sha256": "3b4f57548f753ea0f98b515f532fc7da94a06de0657668dc41dc646a814297b4",
+      "lines": 16
+    },
+    {
+      "path": "infrastructure/monitoring/alerts.yaml",
+      "bytes": 1022,
+      "sha256": "6c4ddd6973ee1696bdfaa1084ee4db4d64c175768d61c311b5c005da0fee6c5f",
+      "lines": 25
+    },
+    {
+      "path": "infrastructure/monitoring/otel-collector.yaml",
+      "bytes": 912,
+      "sha256": "8c4a4ed708ff0f5c08703667432669a04b3b364c4e1ce5e5dd88d2ec85f76352",
+      "lines": 34
+    },
+    {
+      "path": "infrastructure/postgres/Dockerfile",
+      "bytes": 455,
+      "sha256": "7e514aee0fe208982705c80174d423f40bdf027e32e56da9c20b0b089f87119e",
+      "lines": 6
+    },
+    {
+      "path": "infrastructure/postgres/rds-ca-bundle.pem",
+      "bytes": 169984,
+      "sha256": "fe45bbebf92ad3e27a583bbb2ddd1553c521ed4d49af5514dc0a40372ea5395c"
+    },
+    {
+      "path": "infrastructure/postgres/service-role.sql",
+      "bytes": 859,
+      "sha256": "b0ac76b8976ac0580dc02ae8d6aff81d224bf4e16a89088c8fba4f7bac13f159"
+    },
+    {
+      "path": "logo/.thumbnail",
+      "bytes": 16646,
+      "sha256": "33e6448d179008a8838c0939c7b60604a6987ae662c7da7efcf2cca1525480e1"
+    },
+    {
+      "path": "logo/Tandara Brand Guidelines-print.dc.html",
+      "bytes": 48740,
+      "sha256": "84621a96feb70e287cc470bb9197001205329cd4c306d63a8b66414f9667e601",
+      "lines": 468
+    },
+    {
+      "path": "logo/Tandara Brand Guidelines.dc.html",
+      "bytes": 48026,
+      "sha256": "108da1b6b7291b0df2a68a8620e31c708f6c7fdc127182fb7b5fd2e5ab34217c",
+      "lines": 457
+    },
+    {
+      "path": "logo/assets/tandara-logo-reverse.svg",
+      "bytes": 8367,
+      "sha256": "cc8426643550219a7df09df3fa7f2dfde85a2b7afd69ced92a2d38815675071d",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-logo.svg",
+      "bytes": 8367,
+      "sha256": "2a3b8e1fadb7e2d4931240dde8bd513f71f95b0e68434738d90dbcc74e7c9abd",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-mark-mono.svg",
+      "bytes": 8229,
+      "sha256": "ee3e0b80d956b3b94e08b48d9e3d476e8bab9ec6d1e11acc9ffa93955265f258",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-mark-teal.svg",
+      "bytes": 8229,
+      "sha256": "e0f9391baa1f093e8d21529fd8db65a3c9d8fa97c87e62443ad5a8b0029ad390",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-mark.svg",
+      "bytes": 8229,
+      "sha256": "dd5e3a559a2cf701a6a79396026bfdd8473e907a37885e3740c442eb5dd02d02",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-symbol.svg",
+      "bytes": 8170,
+      "sha256": "e493f691404013429c52f87b29a0822cbbd55a94a6603e0b01204391889a16f5",
+      "lines": 1
+    },
+    {
+      "path": "logo/assets/tandara-tokens.json",
+      "bytes": 3719,
+      "sha256": "989b731d56a46f0576bd6892540693c259df3c76025ded68352756ba68073492",
+      "lines": 130
+    },
+    {
+      "path": "logo/doc-page.js",
+      "bytes": 38579,
+      "sha256": "f52ae9c02fca7ab44c37f3ff363194fdf81caa20ae63e2fe1f518ed21133185e",
+      "lines": 779
+    },
+    {
+      "path": "logo/support.js",
+      "bytes": 69150,
+      "sha256": "8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe",
+      "lines": 1911
+    },
+    {
+      "path": "package.json",
+      "bytes": 2874,
+      "sha256": "1198634dead2db48554bfed460afd5795068423db9f5325d3372a627746190bf",
+      "lines": 59
+    },
+    {
+      "path": "packages/api-client/package.json",
+      "bytes": 510,
+      "sha256": "3c60d79703491f32f4e0e76ca6f9c6302dc53d15d494b62dc32cd91d5d5c08d8",
+      "lines": 25
+    },
+    {
+      "path": "packages/api-client/src/index.test.ts",
+      "bytes": 2867,
+      "sha256": "6d50176ed1c9419dbf04a71e6427032aeb9065e4009452fa95fd29f7a56c9793",
+      "lines": 76
+    },
+    {
+      "path": "packages/api-client/src/index.ts",
+      "bytes": 2739,
+      "sha256": "99c0405d9561341d36fa8cd2917a4ece20cbb81fdac261d586005fa8bcd40ba3",
+      "lines": 84
+    },
+    {
+      "path": "packages/api-client/tsconfig.build.json",
+      "bytes": 91,
+      "sha256": "6d83ee6b78baaf5e7c4d9ba59b83574b0a7545eceeecb893d9af412ef01be971",
+      "lines": 4
+    },
+    {
+      "path": "packages/api-client/tsconfig.json",
+      "bytes": 201,
+      "sha256": "d64177a65768255292cd5efeaa5980168db9a79c4c64c290332ac1f89501e4dc",
+      "lines": 9
+    },
+    {
+      "path": "packages/backend/package.json",
+      "bytes": 1142,
+      "sha256": "c793855ecb7e0404726ab8ab157a51446b5e1734efcc6949ad5c93e7c82c831a",
+      "lines": 42
+    },
+    {
+      "path": "packages/backend/src/config/ai-embedding.test.ts",
+      "bytes": 2576,
+      "sha256": "3ae30edf9ea4b1a97d09d524855162b51338bc6597a86f0e2934c7b115fdecfe",
+      "lines": 62
+    },
+    {
+      "path": "packages/backend/src/config/ai-embedding.ts",
+      "bytes": 3081,
+      "sha256": "8212ba8c695a62ea485fa505da030d65360b6fe3339b4b3a05b8a32b5184d7be",
+      "lines": 82
+    },
+    {
+      "path": "packages/backend/src/config/ai-operations.ts",
+      "bytes": 1484,
+      "sha256": "c2a8a1e2f3e37576fc770f356e2b1f6cf7b8d132f6b4482013819d53a47072e6",
+      "lines": 36
+    },
+    {
+      "path": "packages/backend/src/config/ai.test.ts",
+      "bytes": 2759,
+      "sha256": "3278842554e974b8a7654a9f0c22c79324b84b706c148fb86ebaa2e76abfb02e",
+      "lines": 75
+    },
+    {
+      "path": "packages/backend/src/config/ai.ts",
+      "bytes": 2720,
+      "sha256": "5a50c5272ae29efa6460aeaa5e21a117492a53549db3df532a1b4cf3b481d4a3",
+      "lines": 82
+    },
+    {
+      "path": "packages/backend/src/config/config.module.ts",
+      "bytes": 481,
+      "sha256": "6bdc1c8d8f1108adf26a028a503e5a8a636a162f0c315ee3e7c7d60f250cc94d",
+      "lines": 16
+    },
+    {
+      "path": "packages/backend/src/config/environment.test.ts",
+      "bytes": 2824,
+      "sha256": "faa56f868a15a2b9d4696826ef32a0e7eb0af79e88eb13bfa391a277aa16eaf3",
+      "lines": 72
+    },
+    {
+      "path": "packages/backend/src/config/environment.ts",
+      "bytes": 4617,
+      "sha256": "036d97dba9b87655b0ca61b707f9e36a7c6e82e3092bbb166d28ef1aa5bdf534",
+      "lines": 106
+    },
+    {
+      "path": "packages/backend/src/index.ts",
+      "bytes": 822,
+      "sha256": "d6c58a3a0d0e58f6bef49b0180c882536a55d091cbca39481fabf19f60f847cd",
+      "lines": 16
+    },
+    {
+      "path": "packages/backend/src/modules/README.md",
+      "bytes": 699,
+      "sha256": "25b457b405e63d429180443c5ca4a20f4d295be3300737b7dff794183125b952",
+      "lines": 11,
+      "headings": ["# Business modules"]
+    },
+    {
+      "path": "packages/backend/src/modules/adapters.ts",
+      "bytes": 16669,
+      "sha256": "5bdfd1c90e3e8200d1160ff316b6fa8e6eb92c41246fd1629373565608768403",
+      "lines": 460
+    },
+    {
+      "path": "packages/backend/src/modules/administration.ts",
+      "bytes": 15651,
+      "sha256": "d001e432b74e58e27bc53d9fa2b9312f6a19f020da6cc2c200d10f1ae0c430c1",
+      "lines": 403
+    },
+    {
+      "path": "packages/backend/src/modules/ai-embeddings.test.ts",
+      "bytes": 4805,
+      "sha256": "57ed2f04288263f4bae20eded65d1c50d66b604ada9fc3d1315d9c08090f08b7",
+      "lines": 115
+    },
+    {
+      "path": "packages/backend/src/modules/ai-embeddings.ts",
+      "bytes": 4670,
+      "sha256": "3b734bebabba3e325f6a71a48228fc6efefb0b17887c00366a0a73d01e6e37e4",
+      "lines": 122
+    },
+    {
+      "path": "packages/backend/src/modules/ai-gateway.ts",
+      "bytes": 6196,
+      "sha256": "3170df2c0fed8ba31eebb25ed7fa5930d06b8bbcd3c8465e7a825daf02418638",
+      "lines": 137
+    },
+    {
+      "path": "packages/backend/src/modules/ai-policy.test.ts",
+      "bytes": 3291,
+      "sha256": "86f42bb0381c3b65fb75c4873588201d3f720306827ae4a4035dd2e72ca93685",
+      "lines": 78
+    },
+    {
+      "path": "packages/backend/src/modules/ai-policy.ts",
+      "bytes": 3509,
+      "sha256": "660e36884a9d0142abfa1476712b09e30137e08a741fd7fea705bd2b3055bfc1",
+      "lines": 86
+    },
+    {
+      "path": "packages/backend/src/modules/ai-provider.test.ts",
+      "bytes": 5210,
+      "sha256": "6be1f3d8db2eea9095bf312508060d238d359feda886c87cf952d92504761f8f",
+      "lines": 140
+    },
+    {
+      "path": "packages/backend/src/modules/ai.ts",
+      "bytes": 63967,
+      "sha256": "1a588da3361e86ada5de7973109a3b8c5df66ff626c1ecbb25399fc25b63142c",
+      "lines": 1522
+    },
+    {
+      "path": "packages/backend/src/modules/bmkg-nowcast.ts",
+      "bytes": 7371,
+      "sha256": "2888975fac7bff6c3d8e9331bc956fa0cbdcb123869f41470f90fc8592a23122",
+      "lines": 193
+    },
+    {
+      "path": "packages/backend/src/modules/identity.ts",
+      "bytes": 9672,
+      "sha256": "d892be676fdb4eba2d22526fcc63280165b0b829f49226474ed63b9ef81b691e",
+      "lines": 223
+    },
+    {
+      "path": "packages/backend/src/modules/jobs.ts",
+      "bytes": 18331,
+      "sha256": "7213d1bd00af092dd6d8dd1140d6e8af5d8fd8130e8e15f2aaf148d2e33a4913",
+      "lines": 353
+    },
+    {
+      "path": "packages/backend/src/modules/knowledge.ts",
+      "bytes": 10130,
+      "sha256": "c2382488a2b150496dd9eefee36b96ac85bd81491c552154adb0845d08480345",
+      "lines": 219
+    },
+    {
+      "path": "packages/backend/src/modules/mfa.test.ts",
+      "bytes": 1466,
+      "sha256": "1ee1237d1f66ade48c1ad0f3ec350b77d321d7f78a9afb8d993bf201626cf68d",
+      "lines": 33
+    },
+    {
+      "path": "packages/backend/src/modules/mfa.ts",
+      "bytes": 1737,
+      "sha256": "ca05af23ff8a1ddafcb62c96454ee4696304a35b93337d1c84843fb67177e747",
+      "lines": 34
+    },
+    {
+      "path": "packages/backend/src/modules/preparedness.ts",
+      "bytes": 18725,
+      "sha256": "48eb375d360a0636932ab3f2f8667524b0b0c9ff3d1af7b7729fd3aa58d23916",
+      "lines": 408
+    },
+    {
+      "path": "packages/backend/src/modules/privacy.ts",
+      "bytes": 2503,
+      "sha256": "944fcf3e199274a3590f20d81c329f43fc90b18102cea9a4a0fac871d4a64b3b",
+      "lines": 51
+    },
+    {
+      "path": "packages/backend/src/modules/product.module.ts",
+      "bytes": 854,
+      "sha256": "45b6e812a3711e35cc0dfafbfe423947b222a8ee458d3bff2467496311a667b4",
+      "lines": 32
+    },
+    {
+      "path": "packages/backend/src/modules/public-sources.test.ts",
+      "bytes": 6678,
+      "sha256": "5f2f56ff3b18ee6802332ceadf5b1dcc86d8d49890edcb579b6af1eae68d7a1b",
+      "lines": 159
+    },
+    {
+      "path": "packages/backend/src/modules/reports.ts",
+      "bytes": 18357,
+      "sha256": "cc95303501256829ff273fd78582b5b36a1e3781dc8e9e84efe4c8856b0f743f",
+      "lines": 392
+    },
+    {
+      "path": "packages/backend/src/modules/safety.test.ts",
+      "bytes": 4794,
+      "sha256": "3dd4a3aad9b039c30e964d2c456896c4624fcfda235cbc55d70fa45c20648e9e",
+      "lines": 122
+    },
+    {
+      "path": "packages/backend/src/modules/shared.ts",
+      "bytes": 3983,
+      "sha256": "4946f6c69edbf562c316ea22f080d088cdb8eadf76ab4dc3eb65ad13cb43cf9b",
+      "lines": 54
+    },
+    {
+      "path": "packages/backend/src/platform/database.module.ts",
+      "bytes": 200,
+      "sha256": "ab3420090971dd593be74608c37d3e6057cf55f25da99de6236b6a79843178be",
+      "lines": 5
+    },
+    {
+      "path": "packages/backend/src/platform/database.service.ts",
+      "bytes": 2359,
+      "sha256": "a0515af4d66abf5f217e83c6bae49ea920936e8bfff5b5d949669b9db6736244",
+      "lines": 60
+    },
+    {
+      "path": "packages/backend/src/platform/logger.ts",
+      "bytes": 916,
+      "sha256": "00452a950509eed2669717942414f0b2577c38a8e08eb2f27dae4a58cf3ecd01",
+      "lines": 26
+    },
+    {
+      "path": "packages/backend/src/platform/telemetry.ts",
+      "bytes": 2773,
+      "sha256": "4b41f95a5577d421a25249145b1633944cbcf0d36407768af45385cf0401fecf",
+      "lines": 80
+    },
+    {
+      "path": "packages/backend/tsconfig.build.json",
+      "bytes": 91,
+      "sha256": "6d83ee6b78baaf5e7c4d9ba59b83574b0a7545eceeecb893d9af412ef01be971",
+      "lines": 4
+    },
+    {
+      "path": "packages/backend/tsconfig.json",
+      "bytes": 226,
+      "sha256": "99e9d5b017644dcd265a7d689f64969137ff386a05b630c54a72c918810b9f8d",
+      "lines": 10
+    },
+    {
+      "path": "packages/contracts/package.json",
+      "bytes": 468,
+      "sha256": "b6641ea5a6695e3e25ddbd3a3bc604743cdea4eadc64922e668dec5bbd41f4dd",
+      "lines": 24
+    },
+    {
+      "path": "packages/contracts/src/ai.ts",
+      "bytes": 6511,
+      "sha256": "eb104513f6e16f88559471a9305732946c3ee96762cf038e51787d9326feac5e",
+      "lines": 198
+    },
+    {
+      "path": "packages/contracts/src/domain.ts",
+      "bytes": 11213,
+      "sha256": "2eae183907e111eeaafff6da560ad9484f46b41abd5772efcfe7a66f3ad8edbe",
+      "lines": 383
+    },
+    {
+      "path": "packages/contracts/src/index.ts",
+      "bytes": 113,
+      "sha256": "e8241446cc4f8363544efdbd7121571c3aeb988b50648db7ca0ff0e641d20196",
+      "lines": 4
+    },
+    {
+      "path": "packages/contracts/src/reports.test.ts",
+      "bytes": 1224,
+      "sha256": "89814483f6b6248394e94edbf6d794b68bf07b2203eeefc87e6d0c12cb5e0936",
+      "lines": 35
+    },
+    {
+      "path": "packages/contracts/src/reports.ts",
+      "bytes": 1414,
+      "sha256": "68816a9c1ad947d3e37e84f966a8ee48515f12e819bcce9a2f43697d8944d946",
+      "lines": 49
+    },
+    {
+      "path": "packages/contracts/src/system.ts",
+      "bytes": 833,
+      "sha256": "bbc5aadee301ce6e281d685adc5558ef4178bbb0615c97d5301f4358fbc09fcf",
+      "lines": 29
+    },
+    {
+      "path": "packages/contracts/tsconfig.build.json",
+      "bytes": 91,
+      "sha256": "6d83ee6b78baaf5e7c4d9ba59b83574b0a7545eceeecb893d9af412ef01be971",
+      "lines": 4
+    },
+    {
+      "path": "packages/contracts/tsconfig.json",
+      "bytes": 201,
+      "sha256": "d64177a65768255292cd5efeaa5980168db9a79c4c64c290332ac1f89501e4dc",
+      "lines": 9
+    },
+    {
+      "path": "packages/database/package.json",
+      "bytes": 655,
+      "sha256": "f4d3bab67435fdb2d92732559f315eba8465b0750cdf8adb9421bdf882f6c976",
+      "lines": 29
+    },
+    {
+      "path": "packages/database/src/client.ts",
+      "bytes": 773,
+      "sha256": "b0df466b8d28e4b66abb81ed01678425a9e39e37baeb700cb529b8865bcbd8b3",
+      "lines": 27
+    },
+    {
+      "path": "packages/database/src/index.ts",
+      "bytes": 91,
+      "sha256": "3672c61ff3d3c6cb8653258e34da848d7f1cc2ee9e24bfbc20455b85a434b05b",
+      "lines": 2
+    },
+    {
+      "path": "packages/database/src/migrate.ts",
+      "bytes": 1643,
+      "sha256": "3dd887bf02a4452c461183060a0f640c54b9a852a75dff9ed0d9f432210cf006",
+      "lines": 44
+    },
+    {
+      "path": "packages/database/src/migrations/001_foundation.ts",
+      "bytes": 888,
+      "sha256": "ea8c266b0f1774fd59fa66da64c1aaec3b7764b84a9bae3b982354ae7d6638db",
+      "lines": 20,
+      "tables": []
+    },
+    {
+      "path": "packages/database/src/migrations/002_product.ts",
+      "bytes": 10352,
+      "sha256": "0aa85d4abf1eed4701445b3b01ac20988c05547a56cf65f7e2354e61a10e9a98",
+      "lines": 53,
+      "tables": [
+        "organizations",
+        "regions",
+        "users",
+        "memberships",
+        "sessions",
+        "rate_limits",
+        "reports",
+        "report_private_details",
+        "report_history",
+        "assistance_requests",
+        "report_attachments",
+        "ai_suggestions",
+        "duplicate_candidates",
+        "plan_versions",
+        "information_sources",
+        "source_runs",
+        "information_records",
+        "information_revisions",
+        "training_scenarios",
+        "training_results",
+        "audit_events",
+        "outbox_jobs",
+        "deletion_requests",
+        "worker_heartbeat",
+        "notification_preferences",
+        "notifications"
+      ]
+    },
+    {
+      "path": "packages/database/src/migrations/003_indexes.ts",
+      "bytes": 860,
+      "sha256": "dcde75fcb4cbee0d36f3f3c2d2fb63d1a6f2bf29dfe95c431e13787dcdd7dc05",
+      "lines": 20,
+      "tables": []
+    },
+    {
+      "path": "packages/database/src/migrations/004_ai.ts",
+      "bytes": 8109,
+      "sha256": "9410450e65e4ab7ec4b950ee01373a570fa4604105cba3db3a7ea6fee114d000",
+      "lines": 65,
+      "tables": [
+        "ai_suggestion_reviews",
+        "ai_model_releases",
+        "ai_release_approvals",
+        "ai_controls",
+        "ai_runs",
+        "ai_attempts",
+        "ai_outputs",
+        "ai_reviews",
+        "ai_output_sources",
+        "ai_budget_reservations",
+        "knowledge_documents",
+        "knowledge_chunks"
+      ]
+    },
+    {
+      "path": "packages/database/src/migrations/005_security.ts",
+      "bytes": 849,
+      "sha256": "fe48d44ce49ea39e04dce5a523a1a1ddcf745f28aeb95116770a8184282bc9ad",
+      "lines": 17,
+      "tables": ["ai_admin_roles", "erasure_ledger", "ai_dispatch_turns"]
+    },
+    {
+      "path": "packages/database/src/migrations/006_knowledge.ts",
+      "bytes": 1744,
+      "sha256": "cda1bd3c49a8ff41d4f60d95876b21ceedbc7c3c1af10a4e587cd135057b4b26",
+      "lines": 18,
+      "tables": ["knowledge_references", "translation_reviewers"]
+    },
+    {
+      "path": "packages/database/src/migrations/007_ai_governance.ts",
+      "bytes": 1541,
+      "sha256": "5af611f61f06e6979e5b1d1dd0fe03f01708ba0fd75940dd41609874f9ec590e",
+      "lines": 18,
+      "tables": ["ai_budget_ledger", "ai_evaluations"]
+    },
+    {
+      "path": "packages/database/src/migrations/008_ai_delivery.ts",
+      "bytes": 916,
+      "sha256": "868200ef2077e4099535c30b50711203c7493330211f022125ca0d43d3717928",
+      "lines": 15,
+      "tables": []
+    },
+    {
+      "path": "packages/database/src/migrations/009_public_warnings.ts",
+      "bytes": 996,
+      "sha256": "a0a71911d8315e2bf208062ddd0258e124d34dce87434c65fcc298f670fb5289",
+      "lines": 22,
+      "tables": []
+    },
+    {
+      "path": "packages/database/src/seed.ts",
+      "bytes": 10813,
+      "sha256": "431431ca5926d733dfb374b57ddad60b77ff196cf9059e71ee7552da43edf85a",
+      "lines": 246
+    },
+    {
+      "path": "packages/database/tsconfig.build.json",
+      "bytes": 91,
+      "sha256": "6d83ee6b78baaf5e7c4d9ba59b83574b0a7545eceeecb893d9af412ef01be971",
+      "lines": 4
+    },
+    {
+      "path": "packages/database/tsconfig.json",
+      "bytes": 155,
+      "sha256": "0b0dee98add93b43bdb22d15f7cc5e094487ac75184a82a5809e5aa37b873c4a",
+      "lines": 8
+    },
+    {
+      "path": "packages/ui/components.json",
+      "bytes": 424,
+      "sha256": "79f63332c7b47740c3923b3069cf905cea8a1b778adf8163ca7f9c79597d1fd3",
+      "lines": 21
+    },
+    {
+      "path": "packages/ui/package.json",
+      "bytes": 991,
+      "sha256": "f2a3684043719a2576898b4587613535d55a16ad88ce1375543f7e59df10750d",
+      "lines": 42
+    },
+    {
+      "path": "packages/ui/src/components/button.tsx",
+      "bytes": 1774,
+      "sha256": "4d42b6b67eea00029ffde805ad15c9a1cc7b53b3c86a62850812f73b5199abc2",
+      "lines": 38
+    },
+    {
+      "path": "packages/ui/src/components/card.tsx",
+      "bytes": 1313,
+      "sha256": "e4d3c4eae4f6b0b5da8f059d59c9eb08dbe87f62f5fc894a6a93231f7e9ae643",
+      "lines": 43
+    },
+    {
+      "path": "packages/ui/src/components/input.tsx",
+      "bytes": 650,
+      "sha256": "adc983f56c0395c20a688c1677b034005be2ed82f52c54487d41cc5a69bdde15",
+      "lines": 17
+    },
+    {
+      "path": "packages/ui/src/components/select.tsx",
+      "bytes": 5142,
+      "sha256": "a692d25f58a4fdec02360dcdbeefa807fd029229a940be16876cb399ce740268",
+      "lines": 118
+    },
+    {
+      "path": "packages/ui/src/components/separator.tsx",
+      "bytes": 529,
+      "sha256": "7d9a271bf69f726087ca88bdedf1a9a9ca13f014a0440fa05645c94dc4b7a072",
+      "lines": 22
+    },
+    {
+      "path": "packages/ui/src/components/table.tsx",
+      "bytes": 1491,
+      "sha256": "9d89bcfd61b76344c7a2401b106dd5f3748bed369a6368b0dabe8c34f34f1364",
+      "lines": 43
+    },
+    {
+      "path": "packages/ui/src/design.css",
+      "bytes": 14702,
+      "sha256": "67c6cec4db803eb5d95b7820b012f09f1ed1ec574f239b61d485fffc987ecca0",
+      "lines": 712
+    },
+    {
+      "path": "packages/ui/src/index.tsx",
+      "bytes": 7426,
+      "sha256": "416cf7e25d87b3577f7d9f2d014bf3546d02948fb3ef51cc71ef495e0441e01f",
+      "lines": 286
+    },
+    {
+      "path": "packages/ui/src/lib/utils.ts",
+      "bytes": 169,
+      "sha256": "9304a861c8673bee09e0f12de31773abbde503b02e59dfd74763ddec2e37cf05",
+      "lines": 6
+    },
+    {
+      "path": "packages/ui/src/styles.css",
+      "bytes": 2903,
+      "sha256": "335647f2812b9d1493117c2e3736c0e026b6207663a98d06bedd1d5132d48187",
+      "lines": 108
+    },
+    {
+      "path": "packages/ui/tsconfig.build.json",
+      "bytes": 91,
+      "sha256": "6d83ee6b78baaf5e7c4d9ba59b83574b0a7545eceeecb893d9af412ef01be971",
+      "lines": 4
+    },
+    {
+      "path": "packages/ui/tsconfig.json",
+      "bytes": 306,
+      "sha256": "2a04a6174b901f615ab793a5d5089eb97adf75679bb33b6593384813ea853175",
+      "lines": 14
+    },
+    {
+      "path": "playwright.config.ts",
+      "bytes": 367,
+      "sha256": "b105176d92f22bdf0c2bb5c04cef6285b9e37789a4fd204cae4965373e757147",
+      "lines": 14
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "bytes": 338760,
+      "sha256": "15a1d233b0afef70af3de2075718344286e7e00aa353913476148ebd9ebb9bb9",
+      "lines": 9497
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "bytes": 222,
+      "sha256": "63376d4ba63eb13cf77cee48fa0bfd6dc58581b8aed93695b49f8acd4efad30f",
+      "lines": 12
+    },
+    {
+      "path": "tests/e2e/foundation.spec.ts",
+      "bytes": 2850,
+      "sha256": "a74b9b26242fc5c744a0b06476c76b0a39c6df6ffc0ca7fa118afcda369847d7",
+      "lines": 65
+    },
+    {
+      "path": "tests/e2e/product.spec.ts",
+      "bytes": 16375,
+      "sha256": "87679045d6917cee8c8653c9a91cf12a19cb58452ef22a68d251f9e93f6d89d3",
+      "lines": 371
+    },
+    {
+      "path": "tests/e2e/public-sources.spec.ts",
+      "bytes": 4751,
+      "sha256": "948ec859d3bca871e9657ccbe506e438846abe6872303af944b776f065de327c",
+      "lines": 129
+    },
+    {
+      "path": "tests/integration/ai.test.mjs",
+      "bytes": 37748,
+      "sha256": "3e78bd9539bd75ad2d1fcb9ad887bd1450134656a8a495b3a81ca7518be494cf",
+      "lines": 1029
+    },
+    {
+      "path": "tests/integration/database.test.mjs",
+      "bytes": 983,
+      "sha256": "23b7caa8a5540468ac4416fef8604ed9b4ef224cc3f1531020d1e6fbb1521428",
+      "lines": 27
+    },
+    {
+      "path": "tests/integration/product.test.mjs",
+      "bytes": 32894,
+      "sha256": "57d1638be7de8625cd2a32f7a947fb2211722d28447b643d234c195f0a74b7c3",
+      "lines": 939
+    },
+    {
+      "path": "tests/integration/public-sources.test.mjs",
+      "bytes": 7280,
+      "sha256": "a461390ac33b22549c656329381628323cf61fdf5dcdfb2ec963e5f68a2f8845",
+      "lines": 169
+    },
+    {
+      "path": "tests/integration/restore.test.mjs",
+      "bytes": 5749,
+      "sha256": "530224af1aa391e7cda17131339106709fa153b7b7e58ee6d549c354a6298604",
+      "lines": 145
+    },
+    {
+      "path": "tests/tooling/ai-evaluation.test.mjs",
+      "bytes": 3939,
+      "sha256": "cb1be470334b2f383867776336c311ad56fe12327abce596df7cd62773015521",
+      "lines": 110
+    },
+    {
+      "path": "tooling/ai-checkpoints.mjs",
+      "bytes": 175,
+      "sha256": "e3f1d664663c9776d3e82e806868ceacb2f3d8daa205aa72f5355c2c31d9f74d",
+      "lines": 4
+    },
+    {
+      "path": "tooling/backup.ps1",
+      "bytes": 639,
+      "sha256": "f2e18a5d604db1055a62ea25c6f58cec33fcc286482703d667ab9622fe3a08ba",
+      "lines": 10
+    },
+    {
+      "path": "tooling/check-boundaries.mjs",
+      "bytes": 4028,
+      "sha256": "2bc9aa4f4aa542a90613cf92bc19ae329a56a8601c39a0070acb04170067d168",
+      "lines": 107
+    },
+    {
+      "path": "tooling/deployment/image_config_id_test.py",
+      "bytes": 3094,
+      "sha256": "96a009415906c802f4a24ab79ca653fdbb6558b7dbbdf186b7cabd67f2b555a1",
+      "lines": 78
+    },
+    {
+      "path": "tooling/deployment/prepare-vercel.mjs",
+      "bytes": 3722,
+      "sha256": "b44be6d7d065d5bacf82370893969726cec59f097e13f20716e8c58409ebdf44",
+      "lines": 103
+    },
+    {
+      "path": "tooling/deployment/prepare-vercel.test.mjs",
+      "bytes": 2465,
+      "sha256": "52be34e7a4921cd34d6b48657f55ca8bc5efce5b52b5639c71b4f57ace5aa87f",
+      "lines": 47
+    },
+    {
+      "path": "tooling/deployment/smoke-backend.sh",
+      "bytes": 1972,
+      "sha256": "0001898e21d179b34f156bbb0473ad5b4619fce17b663acd3caad25794247f57",
+      "lines": 32
+    },
+    {
+      "path": "tooling/deployment/smoke-http.mjs",
+      "bytes": 1551,
+      "sha256": "355ef96b43d3a55272ce7d49c6551d5b5e3340198fb72e3e6f9ee4eaab1af87f",
+      "lines": 43
+    },
+    {
+      "path": "tooling/deployment/tencent-env.test.mjs",
+      "bytes": 4048,
+      "sha256": "2d7c7a789f9bac664bf5d7b55c971f05a4bbe94cd9ad40f83949c7633ae1dbbc",
+      "lines": 100
+    },
+    {
+      "path": "tooling/export-privacy-ledger.mjs",
+      "bytes": 1037,
+      "sha256": "3ebcd1312b87adf3907868cb24310d6fcb1f4fb294c9d493825b45a959c4408f",
+      "lines": 27
+    },
+    {
+      "path": "tooling/load-ai.mjs",
+      "bytes": 4951,
+      "sha256": "251a9190686fefd69a00ac4b49e8cc45d6a7cd8d4cb4cb205f913a55a2e3becc",
+      "lines": 141
+    },
+    {
+      "path": "tooling/measure-performance.mjs",
+      "bytes": 1924,
+      "sha256": "d79691b361a5e6f5531f847c827f16acd29e34a3695248ec968b86a16fea319c",
+      "lines": 54
+    },
+    {
+      "path": "tooling/onboard-production.mjs",
+      "bytes": 3495,
+      "sha256": "d5210f3b3aeec18ecdc3311d41d1ad71579d222c678a557b7faea34c06929f67",
+      "lines": 79
+    },
+    {
+      "path": "tooling/privacy-ledger-backup.mjs",
+      "bytes": 3260,
+      "sha256": "904d9921eb238bcb5f90b95504c0d809078d54869acf1f094880ebc5597760c0",
+      "lines": 81
+    },
+    {
+      "path": "tooling/probe-public-sources.mjs",
+      "bytes": 2187,
+      "sha256": "2488482d72df8df83e0cdff3946e737bde3d2ecd6e3b78752cbfd1cb13213834",
+      "lines": 61
+    },
+    {
+      "path": "tooling/provision-production-user.mjs",
+      "bytes": 4828,
+      "sha256": "96aea99780a4674251e8ecb6ca290dcea11fa153f0c789e6dc55b06eba90baad",
+      "lines": 127
+    },
+    {
+      "path": "tooling/provision-service-role.mjs",
+      "bytes": 1850,
+      "sha256": "ca255e9b48d01b08f914177fb99abaefefb02dabd9bd414c692d69fbaad87e5c",
+      "lines": 44
+    },
+    {
+      "path": "tooling/restore-privacy.mjs",
+      "bytes": 2384,
+      "sha256": "8ef2c5d7d110c0a0a3df936e8e32fd078ecd29f785bdca0b53369519c0e58198",
+      "lines": 56
+    },
+    {
+      "path": "tooling/run-ai-evaluation.mjs",
+      "bytes": 8529,
+      "sha256": "71e9bafdc8916030f64283929b7304062e9a11069f7b4939157f82e44684d7a7",
+      "lines": 232
+    },
+    {
+      "path": "tooling/score-ai-evaluation.mjs",
+      "bytes": 6443,
+      "sha256": "e18253dec7acd5412535c20d8d9c4e82426c9db36e46f4b6130c58f3ba94c493",
+      "lines": 170
+    },
+    {
+      "path": "tooling/tsconfig.json",
+      "bytes": 201,
+      "sha256": "c47acaaeffbe4987e83d089df3549e1b41c8c963ec3090c76d481445e75afb6c",
+      "lines": 8
+    },
+    {
+      "path": "tooling/typescript/base.json",
+      "bytes": 325,
+      "sha256": "752520eea50e59575bb0ebf993e724d24c7f21fa94fd739ab7e0d26202e96cce",
+      "lines": 13
+    },
+    {
+      "path": "tooling/typescript/node.json",
+      "bytes": 191,
+      "sha256": "578c22d341df3bf5950e3fced79f4d5baf2f57e0f55f12d702a991f6399f5a09",
+      "lines": 10
+    },
+    {
+      "path": "tooling/typescript/react.json",
+      "bytes": 241,
+      "sha256": "2acb50b65e93923ba49dbfe0d0b9b89db8facc222f0502041b93cbed0e48f264",
+      "lines": 11
+    },
+    {
+      "path": "tooling/verify-ai.mjs",
+      "bytes": 2779,
+      "sha256": "38ec650b749f5c12c04f8ebe70dc8f6e2649a2883e6a2d0060448e19964d8d4e",
+      "lines": 70
+    },
+    {
+      "path": "tooling/verify-restore.ps1",
+      "bytes": 1485,
+      "sha256": "53765b96da5a3b93b98b39f74a486079f1033564a128c01fff98c5384fae5785",
+      "lines": 13
+    },
+    {
+      "path": "tooling/worker-health.mjs",
+      "bytes": 654,
+      "sha256": "623eeda4168112264784acd75061dccbc6368c88995c70347e92bb32fa91e948",
+      "lines": 20
+    },
+    {
+      "path": "turbo.json",
+      "bytes": 396,
+      "sha256": "aa1e013c19f7ead4e01f2a097edd6903e4a20531d0d3b4528a4d18cac9a0c4d0",
+      "lines": 10
+    }
+  ],
+  "markdown_count": 43,
+  "example_pdfs": [
+    "Copy of Manusia yang tak pakai AI akan kalah_Proposal AI Open Innovation Challenge 2026.pdf",
+    "Copy of SIGAP Final Proposal.pdf",
+    "Hackathon FindIT! 2025_Seaside Vacation_SwarSware_ Aplikasi Peringatan Suara Lingkungan untuk Tunarungu_Executive Summary (1).pdf"
+  ]
+}

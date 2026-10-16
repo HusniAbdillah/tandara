@@ -1,0 +1,114 @@
+[
+  {
+    "key": "lindell2012",
+    "verified_on": "2026-10-16",
+    "DOI": "10.1111/j.1539-6924.2011.01647.x",
+    "title": [
+      "The Protective Action Decision Model: Theoretical Modifications and Additional Evidence"
+    ],
+    "author": [
+      {
+        "given": "Michael K.",
+        "family": "Lindell",
+        "sequence": "first",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      },
+      {
+        "given": "Ronald W.",
+        "family": "Perry",
+        "sequence": "additional",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      }
+    ],
+    "container-title": ["Risk Analysis"],
+    "volume": "32",
+    "issue": "4",
+    "page": "616-632",
+    "article-number": null,
+    "published-print": {
+      "date-parts": [[2012, 4]]
+    },
+    "published-online": {
+      "date-parts": [[2011, 6, 20]]
+    }
+  },
+  {
+    "key": "sufri2020",
+    "verified_on": "2026-10-16",
+    "DOI": "10.1016/j.pdisas.2019.100058",
+    "title": [
+      "A systematic review of Community Engagement (CE) in Disaster Early Warning Systems (EWSs)"
+    ],
+    "author": [
+      {
+        "given": "Sofyan",
+        "family": "Sufri",
+        "sequence": "first",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      },
+      {
+        "given": "Febi",
+        "family": "Dwirahmadi",
+        "sequence": "additional",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      },
+      {
+        "given": "Dung",
+        "family": "Phung",
+        "sequence": "additional",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      },
+      {
+        "given": "Shannon",
+        "family": "Rutherford",
+        "sequence": "additional",
+        "affiliation": [],
+        "role": [
+          {
+            "vocabulary": "crossref",
+            "role": "author"
+          }
+        ]
+      }
+    ],
+    "container-title": ["Progress in Disaster Science"],
+    "volume": "5",
+    "issue": null,
+    "page": "100058",
+    "article-number": "100058",
+    "published-print": {
+      "date-parts": [[2020, 1]]
+    },
+    "published-online": null
+  }
+]
