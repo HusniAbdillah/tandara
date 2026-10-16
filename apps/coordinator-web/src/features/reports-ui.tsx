@@ -513,10 +513,7 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
     queryFn: () => request('/reports/' + id, reportDetailSchema),
     refetchInterval: 10000,
   });
-  const [state, setState] = useState('reviewed');
   const [reason, setReason] = useState('');
-  const [summary, setSummary] = useState('');
-  const [publishOnMap, setPublishOnMap] = useState(false);
   const [category, setCategory] = useState('');
   const [aiNote, setAiNote] = useState('');
   const [aiEdit, setAiEdit] = useState('');
@@ -788,37 +785,19 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
             onSubmit={(e) => {
               e.preventDefault();
               void act(() =>
-                request('/reports/' + id + '/reviews', ok, {
+                request('/reports/' + id + '/workflow', ok, {
                   method: 'POST',
                   body: {
-                    state,
-                    reason,
+                    action: 'verify',
+                    message: reason,
                     revision: r.revision,
                     ...(category ? { category } : {}),
-                    ...(summary ? { publicSummary: summary } : {}),
-                    ...(state === 'reviewed' ? { publishOnMap } : {}),
                   },
                 }),
               );
             }}
           >
             <div className="form-grid">
-              <Field label="Status tujuan">
-                <Select value={state} onValueChange={setState}>
-                  <SelectTrigger aria-label="Status tujuan">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(statuses)
-                      .filter(([s]) => s !== r.state && s !== 'submitted')
-                      .map(([s, l]) => (
-                        <SelectItem value={s} key={s}>
-                          {l}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </Field>
               <Field label="Koreksi kategori (opsional)">
                 <Select
                   value={category || 'keep'}
@@ -847,28 +826,6 @@ export function ReportDetailPage({ id, region, user, run }: ManagementProps & { 
                 onChange={(e) => setReason(e.target.value)}
               />
             </Field>
-            {!r.followUpRequested && state === 'reviewed' && (
-              <Field
-                label="Ringkasan publik (opsional)"
-                hint="Jika diisi, ringkasan diterbitkan setelah keputusan tinjauan ini. Hindari kontak dan detail pribadi."
-              >
-                <textarea
-                  value={summary}
-                  maxLength={1000}
-                  onChange={(e) => setSummary(e.target.value)}
-                />
-              </Field>
-            )}
-            {!r.followUpRequested && state === 'reviewed' && (
-              <label className="mb-4 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={publishOnMap}
-                  onChange={(event) => setPublishOnMap(event.target.checked)}
-                />
-                Tampilkan titik lokasi di peta warga
-              </label>
-            )}
             <button className="primary" disabled={busy || r.state === 'closed'}>
               Simpan keputusan manusia
             </button>

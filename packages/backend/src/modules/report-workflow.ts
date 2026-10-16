@@ -59,8 +59,6 @@ export async function updateWorkflow(
       if (!assignee) conflict('Koordinator tidak aktif atau tidak memiliki akses wilayah ini.');
     }
     const status = decision.status!;
-    if (data.action === 'verify' && data.publishOnMap && !data.message.trim())
-      conflict('Catat alasan verifikasi sebelum menampilkan laporan di peta.');
     const legacyState =
       status === 'rejected'
         ? 'rejected'
@@ -71,7 +69,7 @@ export async function updateWorkflow(
               )
             ? 'reviewed'
             : 'under_review';
-    await sql`UPDATE reports SET workflow_status=${status},state=${legacyState},assignee_id=CASE WHEN ${data.action}='assign' THEN ${data.assigneeId ?? null}::uuid ELSE assignee_id END,priority=COALESCE(${data.priority ?? null},priority),resolution_author_id=CASE WHEN ${data.action}='submit_resolution' THEN ${user.id}::uuid ELSE resolution_author_id END,publish_on_map=CASE WHEN ${data.action}='verify' THEN COALESCE(${data.publishOnMap},false) WHEN ${status} IN ('rejected','needs_information','closed') THEN false ELSE publish_on_map END,revision=revision+1,updated_at=now(),reviewed_by=${user.id}::uuid,reviewed_at=now(),public_summary=CASE WHEN ${status} IN ('rejected','needs_information') THEN NULL ELSE public_summary END WHERE id=${id}::uuid`.execute(
+    await sql`UPDATE reports SET workflow_status=${status},state=${legacyState},assignee_id=CASE WHEN ${data.action}='assign' THEN ${data.assigneeId ?? null}::uuid ELSE assignee_id END,priority=COALESCE(${data.priority ?? null},priority),resolution_author_id=CASE WHEN ${data.action}='submit_resolution' THEN ${user.id}::uuid ELSE resolution_author_id END,publish_on_map=CASE WHEN ${status} IN ('rejected','needs_information','closed') THEN false WHEN ${status} IN ('verified','assigned','in_progress','awaiting_approval','resolved') THEN (location IS NOT NULL AND NOT follow_up_requested) ELSE publish_on_map END,revision=revision+1,updated_at=now(),reviewed_by=${user.id}::uuid,reviewed_at=now(),public_summary=CASE WHEN ${status} IN ('rejected','needs_information') THEN NULL ELSE public_summary END WHERE id=${id}::uuid`.execute(
       tx,
     );
     await sql`INSERT INTO report_updates(report_id,actor_id,action,message) VALUES(${id}::uuid,${user.id}::uuid,${status},${data.message})`.execute(

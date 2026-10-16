@@ -56,7 +56,6 @@ export const workflowActionSchema = z.strictObject({
   message: z.string().trim().min(5).max(2000),
   assigneeId: z.uuid().optional(),
   priority: z.enum(['normal', 'high', 'urgent']).optional(),
-  publishOnMap: z.boolean().optional(),
 });
 export const citizenFeedbackSchema = z.strictObject({
   action: z.enum(['confirm', 'reopen', 'clarify']),

@@ -201,7 +201,6 @@ export const reviewInputSchema = z.strictObject({
   reason: z.string().trim().min(5).max(1000),
   category: reportCategorySchema.optional(),
   publicSummary: z.string().trim().min(10).max(1000).optional(),
-  publishOnMap: z.boolean().optional(),
   revision: z.number().int().min(1),
 });
 export const aiReviewInputSchema = z.strictObject({

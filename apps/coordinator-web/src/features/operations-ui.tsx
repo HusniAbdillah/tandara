@@ -494,7 +494,6 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
     [reviewCategory, setReviewCategory] = useState(''),
     [reviewReason, setReviewReason] = useState(''),
     [publicSummary, setPublicSummary] = useState(''),
-    [publishOnMap, setPublishOnMap] = useState(false),
     [aiNote, setAiNote] = useState(''),
     [aiEdit, setAiEdit] = useState(''),
     [busy, setBusy] = useState(false),
@@ -1223,18 +1222,6 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
                   />
                 </Field>
               )}
-              {!r.followUpRequested && reviewState === 'reviewed' && (
-                <Field label="Lokasi laporan">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={publishOnMap}
-                      onChange={(e) => setPublishOnMap(e.target.checked)}
-                    />
-                    Tampilkan titik lokasi di peta warga
-                  </label>
-                </Field>
-              )}
               <Button
                 type="button"
                 variant="outline"
@@ -1251,7 +1238,6 @@ export function OperationsDetail({ id, region, user, run }: ManagementProps & { 
                           revision: r.revision,
                           ...(reviewCategory ? { category: reviewCategory } : {}),
                           ...(publicSummary ? { publicSummary } : {}),
-                          ...(reviewState === 'reviewed' ? { publishOnMap } : {}),
                         },
                       }),
                     'Keputusan tinjauan koordinator tersimpan.',

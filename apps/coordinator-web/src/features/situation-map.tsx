@@ -174,7 +174,19 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
               data: {
                 type: 'FeatureCollection',
                 features: reports
-                  .data!.items.filter((r) => r.latitude !== null && r.longitude !== null)
+                  .data!.items.filter(
+                    (r) =>
+                      r.latitude !== null &&
+                      r.longitude !== null &&
+                      [
+                        'verified',
+                        'assigned',
+                        'in_progress',
+                        'awaiting_approval',
+                        'resolved',
+                      ].includes(r.workflow?.status ?? '') &&
+                      !r.followUpRequested,
+                  )
                   .map((r) => ({
                     type: 'Feature' as const,
                     geometry: { type: 'Point' as const, coordinates: [r.longitude!, r.latitude!] },
@@ -183,7 +195,7 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
                       title: categories[r.category],
                       state: statuses[r.state],
                       observedAt: formatTime(r.observationTime),
-                      source: 'Laporan warga · simulasi',
+                      source: 'Laporan warga · terverifikasi',
                     },
                   })),
               },
@@ -463,12 +475,23 @@ export function SituationMap({ region, user }: { region: Region; user: User }) {
             </p>
             <h3>Alternatif teks lokasi</h3>
             <ul>
-              {reports.data?.items.map((r) => (
-                <li key={r.id}>
-                  {r.landmarkText || 'Lokasi tidak diketahui'} · {categories[r.category]} ·{' '}
-                  {statuses[r.state]} · pengamatan {formatTime(r.observationTime)}
-                </li>
-              ))}
+              {reports.data?.items
+                .filter(
+                  (r) =>
+                    [
+                      'verified',
+                      'assigned',
+                      'in_progress',
+                      'awaiting_approval',
+                      'resolved',
+                    ].includes(r.workflow?.status ?? '') && !r.followUpRequested,
+                )
+                .map((r) => (
+                  <li key={r.id}>
+                    {r.landmarkText || 'Lokasi tidak diketahui'} · {categories[r.category]} ·{' '}
+                    {statuses[r.state]} · pengamatan {formatTime(r.observationTime)}
+                  </li>
+                ))}
             </ul>
           </section>
         </>
