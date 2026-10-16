@@ -5,7 +5,8 @@ import {
   sensitiveAiText,
   validateAssistance,
 } from './ai-policy.js';
-import type { AiEvidence } from '@tandara/contracts';
+import { buildLexicalOrQuery } from './knowledge.js';
+import type { AiEvidence, AiTask } from '@tandara/contracts';
 const sources: AiEvidence[] = [
   {
     id: 'plan:1',
@@ -32,6 +33,44 @@ describe('bounded assistance policy', () => {
     const output = deterministicAssistance(sources);
     expect(validateAssistance(output, sources, 'answer').needsHumanReview).toBe(true);
     expect(output.limitation).toContain('bukan inferensi');
+  });
+  it('generates task-aware valid outputs across all 9 Posko AI tasks', () => {
+    const tasks: Exclude<AiTask, 'triage'>[] = [
+      'briefing',
+      'clarification',
+      'public_summary',
+      'plan_draft',
+      'training_draft',
+      'translation',
+      'answer',
+      'duplicates',
+      'coverage',
+    ];
+    for (const task of tasks) {
+      const taskSources =
+        task === 'translation' ? [{ ...sources[0]!, kind: 'instruction' as const }] : sources;
+      const output = deterministicAssistance(taskSources, task, 'Langkah kesiapsiagaan air minum');
+      const validated = validateAssistance(output, taskSources, task);
+      expect(validated.abstained).toBe(false);
+      expect(validated.needsHumanReview).toBe(true);
+      expect(validated.questions.length).toBeGreaterThan(0);
+      if (['clarification', 'public_summary', 'plan_draft', 'training_draft'].includes(task)) {
+        expect(validated.draft?.kind).toBe(task);
+        expect(validated.draft?.sections.length).toBeGreaterThan(0);
+      }
+      if (task === 'translation') {
+        expect(validated.translation).toContain('3 hari');
+      }
+    }
+  });
+  it('builds stopword-filtered OR lexical tsquery for natural Indonesian RAG questions', () => {
+    const orQuery = buildLexicalOrQuery(
+      'Bagaimana langkah evakuasi mandiri dan persiapan kelompok rentan di titik kumpul?',
+    );
+    expect(orQuery).toContain('evakuasi');
+    expect(orQuery).toContain('kelompok');
+    expect(orQuery).toContain(' | ');
+    expect(orQuery).not.toContain('bagaimana');
   });
   it('abstains with no approved evidence', () => {
     expect(deterministicAssistance([]).abstained).toBe(true);

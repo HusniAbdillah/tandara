@@ -21,7 +21,7 @@ export async function generateAssistance(
   const settings = readAiSettings(process.env);
   if (settings.AI_MODE === 'disabled') throw new AiInferenceError('provider_rejected', false);
   if (settings.AI_MODE === 'heuristic')
-    return { output: deterministicAssistance(sources), usage: null };
+    return { output: deterministicAssistance(sources, task, question), usage: null };
   const generator = RunnableLambda.from(async () => {
     let response: unknown;
     try {
@@ -124,8 +124,35 @@ export async function generateAssistance(
       const choice = parsed.choices[0]!;
       if (choice.message.refusal || (choice.finish_reason && choice.finish_reason !== 'stop'))
         throw new Error('Incomplete response');
+      const rawCandidate = JSON.parse(choice.message.content) as Record<string, unknown>;
+      if (Array.isArray(rawCandidate['claims'])) {
+        for (const claim of rawCandidate['claims'] as Array<Record<string, unknown>>) {
+          if (claim && claim['state'] === 'explicit' && Array.isArray(claim['citations'])) {
+            const citations = claim['citations'] as Array<Record<string, unknown>>;
+            const validCitation = citations.find((c) => {
+              const s = sources.find((src) => src.id === c?.['sourceId']);
+              return (
+                s &&
+                typeof c?.['quote'] === 'string' &&
+                c['quote'].length > 0 &&
+                s.text.includes(c['quote'])
+              );
+            });
+            if (
+              validCitation &&
+              citations.every((c) => {
+                const s = sources.find((src) => src.id === c?.['sourceId']);
+                return s && typeof c?.['quote'] === 'string' && s.text.includes(c['quote']);
+              }) &&
+              !citations.some((c) => c?.['quote'] === claim['text'])
+            ) {
+              claim['text'] = validCitation['quote'];
+            }
+          }
+        }
+      }
       return {
-        output: validateAssistance(JSON.parse(choice.message.content), sources, task),
+        output: validateAssistance(rawCandidate, sources, task),
         usage: parsed.usage ?? null,
       };
     } catch {

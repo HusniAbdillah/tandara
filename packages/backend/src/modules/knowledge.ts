@@ -22,6 +22,79 @@ export async function scopedAi<T>(
     return work(tx);
   });
 }
+
+const ID_QUERY_STOPWORDS = new Set([
+  'apa',
+  'apakah',
+  'bagaimana',
+  'dimana',
+  'kemana',
+  'kapan',
+  'siapa',
+  'mengapa',
+  'kenapa',
+  'berapa',
+  'yang',
+  'dan',
+  'atau',
+  'ini',
+  'itu',
+  'untuk',
+  'dari',
+  'pada',
+  'dalam',
+  'dengan',
+  'saat',
+  'jika',
+  'bila',
+  'ketika',
+  'karena',
+  'agar',
+  'supaya',
+  'sebagai',
+  'oleh',
+  'tentang',
+  'terhadap',
+  'secara',
+  'belum',
+  'sudah',
+  'akan',
+  'bisa',
+  'dapat',
+  'harus',
+  'perlu',
+  'mohon',
+  'tolong',
+  'buat',
+  'buatkan',
+  'susun',
+  'siapkan',
+  'jelaskan',
+  'ringkas',
+  'ringkaskan',
+  'ringkasan',
+  'draf',
+  'berdasarkan',
+  'sesuai',
+  'ada',
+  'adalah',
+  'merupakan',
+  'ke',
+  'di',
+  'se',
+]);
+
+export function buildLexicalOrQuery(raw: string): string {
+  const tokens = raw
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length >= 2);
+  const meaningful = tokens.filter((t) => t.length >= 3 && !ID_QUERY_STOPWORDS.has(t));
+  const selected = meaningful.length > 0 ? meaningful : tokens;
+  return [...new Set(selected)].slice(0, 16).join(' | ');
+}
+
 @Injectable()
 export class KnowledgeService {
   constructor(
@@ -114,6 +187,7 @@ export class KnowledgeService {
       ).rows[0],
     );
     await this.synchronize(regionId);
+    const orQuery = buildLexicalOrQuery(query);
     return scopedAi(this.db, regionId, async (tx) => {
       // Exact vector ranking with scope/lifecycle filters applied before ranking. RRF combines lexical and semantic ranks.
       const result = await sql<{
@@ -128,9 +202,9 @@ export class KnowledgeService {
         simulation: boolean;
       }>`
 WITH eligible AS (
- SELECT c.*,d.source_id,d.source_kind,d.version,d.expires_at,d.simulation,p.content->>'title' title,p.content->>'sourceUrl' source_url FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id JOIN public.ai_approved_plans p ON p.id=d.source_id
+ SELECT c.*,d.source_id,d.source_kind,d.version,d.expires_at,d.simulation,p.content->>'title' title,p.content->>'sourceUrl' source_url,(c.lexical || setweight(to_tsvector('simple',COALESCE(p.content->>'title','')),'A')) doc_lexical FROM knowledge_chunks c JOIN knowledge_documents d ON d.id=c.document_id JOIN public.ai_approved_plans p ON p.id=d.source_id
  WHERE c.region_id=${regionId}::uuid AND p.state='published' AND d.expires_at>now() AND (${process.env['APP_MODE'] !== 'production'} OR NOT d.simulation)
-), lexical AS (SELECT id,row_number() OVER(ORDER BY ts_rank_cd(lexical,plainto_tsquery('simple',${query})) DESC,id) rank FROM eligible WHERE lexical @@ plainto_tsquery('simple',${query}) LIMIT 30),
+), lexical AS (SELECT id,row_number() OVER(ORDER BY (CASE WHEN doc_lexical @@ plainto_tsquery('simple',${query}) THEN 10.0 ELSE 0.0 END + ts_rank_cd(doc_lexical,CASE WHEN ${orQuery !== ''} THEN to_tsquery('simple',${orQuery}) ELSE plainto_tsquery('simple',${query}) END)) DESC,id) rank FROM eligible WHERE doc_lexical @@ plainto_tsquery('simple',${query}) OR (${orQuery !== ''} AND doc_lexical @@ to_tsquery('simple',${orQuery})) LIMIT 30),
 semantic AS (SELECT id,row_number() OVER(ORDER BY embedding <=> ${vector ? JSON.stringify(vector) : null}::vector,id) rank FROM eligible e WHERE ${vector !== null} AND embedding IS NOT NULL AND embedding_release=${embeddingRelease()} AND NOT EXISTS(SELECT 1 FROM knowledge_chunks other WHERE other.document_id=e.document_id AND other.embedding_release IS DISTINCT FROM ${embeddingRelease()}) LIMIT 30),
 ranked AS (SELECT id,sum(1.0/(60+rank)) score FROM (SELECT * FROM lexical UNION ALL SELECT * FROM semantic) x GROUP BY id)
 SELECT e.id::text id,e.source_id::text AS "entityId",e.source_kind kind,e.source_url AS "sourceUrl",e.title,e.section,e.version,e.text,e.expires_at::text AS "expiresAt",e.simulation FROM ranked r JOIN eligible e ON e.id=r.id ORDER BY r.score DESC,e.id LIMIT 10`.execute(
