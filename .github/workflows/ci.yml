@@ -26,7 +26,7 @@ jobs:
       APP_MODE: simulation
       DEMO_PASSWORD: ci-only-synthetic-password
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: PostgreSQL with PostGIS and pgvector
         run: |
           docker build -t tandara-postgres:local -f infrastructure/postgres/Dockerfile .

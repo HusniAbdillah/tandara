@@ -40,7 +40,7 @@ jobs:
       COORDINATOR_PROJECT_ID: ${{ secrets.VERCEL_COORDINATOR_PROJECT_ID }}
       TANDARA_API_ORIGIN: https://api.tandara.my.id
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.RELEASE_SHA }}
           persist-credentials: false

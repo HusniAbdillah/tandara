@@ -40,7 +40,7 @@ jobs:
       LANGSMITH_TRACING: 'false'
       LANGCHAIN_TRACING_V2: 'false'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with: { version: 10.26.2 }
       - uses: actions/setup-node@v4
