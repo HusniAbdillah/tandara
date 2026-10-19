@@ -56,7 +56,7 @@ jobs:
           test -n "$DATASET_BUCKET" || exit 1
           aws s3 cp "s3://$DATASET_BUCKET/evaluations/$DATASET_VERSION.jsonl" dataset.jsonl --only-show-errors
       - run: node tooling/run-ai-evaluation.mjs dataset.jsonl results.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ai-${{matrix.candidate}}-${{inputs.dataset_version}}
           path: results.json

@@ -96,7 +96,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm test:e2e:demo
       - name: Upload Chalk browser failure evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure() && github.event_name == 'workflow_dispatch' && inputs.full_e2e
         with:
           name: chalk-browser-evidence
@@ -113,7 +113,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.full_e2e
         run: pnpm test:e2e
       - name: Upload full browser evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always() && github.event_name == 'workflow_dispatch' && inputs.full_e2e
         with:
           name: browser-evidence
