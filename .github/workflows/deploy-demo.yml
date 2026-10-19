@@ -79,7 +79,7 @@ jobs:
           pnpm exec turbo run build --filter=@tandara/resident-web... --filter=@tandara/coordinator-web...
           VERCEL_PROJECT_ID="$RESIDENT_PROJECT_ID" node tooling/deployment/prepare-vercel.mjs resident-web
           VERCEL_PROJECT_ID="$COORDINATOR_PROJECT_ID" node tooling/deployment/prepare-vercel.mjs coordinator-web
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
       - name: Build portable production backend
         run: docker build --platform linux/amd64 -f infrastructure/deployment/Dockerfile.backend -t "tandara-backend:$RELEASE_SHA" .
       - name: Build release database with PostGIS and pgvector
