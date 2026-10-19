@@ -66,7 +66,7 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/tandara" "$HOME/.ssh/known_hosts"
           ssh -i "$HOME/.ssh/tandara" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" 'test -f /opt/tandara/.env && docker compose version'
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 10.26.2
       - uses: actions/setup-node@v4
