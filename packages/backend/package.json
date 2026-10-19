@@ -33,7 +33,7 @@
     "@tandara/database": "workspace:*",
     "fast-xml-parser": "5.11.2",
     "kysely": "0.29.6",
-    "otpauth": "9.4.1",
+    "otpauth": "9.5.2",
     "parse5": "7.3.0",
     "pino": "10.4.0",
     "reflect-metadata": "0.2.2",
