@@ -45,7 +45,7 @@ jobs:
         with: { version: 10.26.2 }
       - uses: actions/setup-node@v4
         with: { node-version-file: .node-version, cache: pnpm }
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{vars.AI_EVALUATION_READ_ROLE_ARN}}
           aws-region: ${{vars.AWS_REGION}}
